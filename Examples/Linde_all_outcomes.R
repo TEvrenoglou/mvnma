@@ -1,0 +1,177 @@
+library(netmeta)
+library(tidyverse)
+library(rlist)
+library(rjags)
+library(R2jags)
+library(matrixStats)
+library(nmajags)
+
+
+source("mvdata.R")
+
+source("mvnma-internal.R")
+
+source("mvNMA_2out.R")
+
+source("mvNMA_3out.R")
+
+source("mvNMA_4out.R")
+
+source("mvNMA_5out.R")
+
+source("mvnma.R")
+
+source("mvrank.R")
+
+source("VIKOR.R")
+
+source("interpret.vikor.R")
+
+source("hasse.R")
+
+source("league.R")
+
+source("forest.mvnma.R")
+
+source("plot.mvrank.R")
+
+
+data("Linde2015")
+
+
+# use 'pairwise' to obtain contrast based data for each one of the five available outcomes
+
+## Early response
+
+p1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+               event = list(resp1, resp2, resp3), 
+               n = list(n1, n2, n3),
+               studlab = id,
+               data = dat.linde2015,
+               sm = "OR")
+
+
+
+## Early remissions
+
+p2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+               event = list(remi1, remi2, remi3),
+               n = list(n1, n2, n3),
+               studlab = id,
+               data = dat.linde2015,
+               sm = "OR")
+
+
+## Adverse events
+
+p3 <- pairwise(treat = list(treatment1, treatment2,treatment3),
+               event = list(ae1, ae2, ae3), 
+               n = list(n1, n2, n3),
+               studlab = id,
+               data = dat.linde2015,
+               sm = "OR")
+
+
+
+## Loss to follow-up
+
+p4 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+               event = list(loss1, loss2, loss3), 
+               n = list(n1, n2, n3),
+               studlab = id,
+               data = dat.linde2015,
+               sm = "OR")
+
+
+## Loss_to_follow_up_(AE)
+
+p5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+               event = list(loss.ae1, loss.ae2, loss.ae3),
+               n = list(n1, n2, n3),
+               studlab = id,
+               data = dat.linde2015,
+               sm = "OR")
+
+# Define outcome labels
+
+outlab <- c("Early_Response",
+            "Early_Remission",
+            "Adverse_events",
+            "Loss_to_follow_up",
+            "Loss_to_follow_up_AE")
+
+
+# Perform analysis in terms of the Efficacy outcomes
+
+p <- list(p1,p2,p3,p4,p5)
+
+# Use 'mvdata()' to transform the data in suitable JAGS format
+
+data <- mvdata(p)
+
+# Fit the model combining only the two efficacy outcomes
+
+mvmodel <- mvnma(data = data,
+                       reference.group = "Placebo",
+                       outlab = outlab,
+                       n.iter = 1000,
+                       n.burnin = 100)
+
+## get estimates for Early Response
+
+mvmodel$Early_Response$basic_estimates
+
+mvmodel$Early_Response$heterogeneity
+
+# get outcome correlation
+
+mvmodel$outcome_correlation
+
+# Plot the results for efficacy outcomes
+
+forest.mvnma(mvmodel)
+
+# get all estimates
+
+league <- league(mvmodel)
+
+# print results for Early Response
+
+league$Early_Response
+
+# Generate outcome specific ranking using SUCRA
+
+ranks_sucra <- mvrank(mvmodel,method = "sucra",small.values = c("undesirable","undesirable",
+                                                                "desirable","desirable","desirable"))
+                     
+
+# or since SUCRA is the default the argument 'method' can be avoided for SUCRAs
+
+ranks_sucra <- mvrank(mvmodel,small.values = c("undesirable","undesirable",
+                                                     "desirable","desirable","desirable"))
+
+# get amalgamated ranking (equal weights)
+
+vikor <- vikor.mvnma(ranks_sucra)
+
+vikor
+
+# evaluate the conditions and get the compromise solution
+interpret.vikor(vikor)
+
+# plot rankings for outcomes 1 and 5
+
+plot.mvrank(ranks_sucra,outcome = c(1,5))
+
+# generate hasse diagram 
+
+hasse.mvrank(ranks_sucra)
+
+# repeat for pBV
+
+ranks_pBV <- mvrank(mvmodel,method = "pBV",small.values = c("undesirable","undesirable",
+                                                                "desirable","desirable","desirable"))
+
+# plot rankings
+
+plot.mvrank(ranks_pBV,outcome = c(1,5))
