@@ -1,0 +1,144 @@
+#' Scatter plot to visualize the ranking lists in terms of two outcomes.
+#' 
+#' @description
+#' Draw a scatter plot (using grid graphics system) in the active graphics window or store the forest plot in a file.
+#' 
+#' @param x An object of class \code{\link{mvrank}}.
+#' @param outcome A mandatory numeric vector of length 2 specifying which outcomes should be plotted. For example, setting "outcome=c(2,3)" implies that a scatter plot will be generated plotting the rankings of outcomes 2 and 3.
+#' @param ... Additional arguments for \code{\link{plot}} function.
+
+#' @examples
+#' library(netmeta)
+#' 
+#' data("Linde2015")
+#' 
+#' # use 'pairwise' to obtain contrast based data for each one of the five available outcomes 
+#'
+#'   # Early response
+#'
+#' p1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+#'              event = list(resp1, resp2, resp3), 
+#'               n = list(n1, n2, n3),
+#'               studlab = id,
+#'               data = dat.linde2015,
+#'               sm = "OR")
+#'
+#'
+#' # Early remissions
+#'
+#' p2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+#'               event = list(remi1, remi2, remi3),
+#'               n = list(n1, n2, n3),
+#'               studlab = id,
+#'               data = dat.linde2015,
+#'               sm = "OR")
+#'
+
+#' # Perform analysis in terms of the Efficacy outcomes
+#'
+#' p_effic <- list(p1,p2)
+#'
+#' # Use 'mvdata()' to transform the data in suitable JAGS format
+#'
+#' data_effic <- mvdata(p_effic)
+#'
+#' # Define outcome labels
+#' 
+#' outlab <- c("Early_Response","Early_Remission")
+#'             
+#' # Fit the model combining only the two efficacy outcomes
+#' 
+#' mvmodel_effic <- mvnma(data = data_effic,
+#'                 reference.group = "Placebo",
+#'                 outlab = outlab,
+#'                 n.iter = 1000,
+#'                 n.burnin = 100)
+#'                 
+#'                 
+#'                 
+#'                 
+#' ranks_sucra <- mvrank(mvmodel_effic,small.values = c("undesirable","undesirable"), method = "sucra")
+#'                     
+#' ranks_sucra      
+#' 
+#' # Visualize SUCRAs in a scatter plot with outcome 1 (as specified in the mvdata() function) in the x-axis and outcome 2 (as specified in the mvdata() function) in the y-axis
+#' 
+#' plot.mvrank(ranks_sucra, outcome = c(1,2))
+#' 
+#' #' # Visualize SUCRAs in a scatter plot with outcome 2 (as specified in the mvdata() function) in the x-axis and outcome 1 (as specified in the mvdata() function) in the y-axis
+#' 
+#' plot.mvrank(ranks_sucra, outcome = c(2,1))
+#' 
+#' @export plot.mvrank          
+
+plot.mvrank <- function(x,outcome=NULL,pos=1,cex.point=1,cex.label=0.7,pch=19,...){
+  
+  if(inherits(x,"mvrank")){
+  
+    if(is.null(outcome)){
+      
+      stop("Argument 'outcome' is mandatory. Please provide the combination of outcomes to be plotted.")
+    }
+    
+    if(length(outcome)<2){
+      
+      stop("Argument  'outcome' should be of length 2.")
+      
+    }else if(length(outcome)>2){
+      
+      outcome <- c(1,2)  
+      
+      warning("Argument 'outcome' should be of length 2. The produced scatter plot now refers to outcomes 1 and 2.")  
+      
+    }  
+    
+    outlab <- names(x)[c(outcome[1],outcome[2])]
+    
+    common_trts <- attributes(x)$common_trts
+    
+    r1 <- x[[outcome[1]]]
+    
+    names(r1)[1] <- "treat1"
+    
+    names(r1)[2] <- (paste(names(r1)[2],"1",sep = ""))
+    
+    r1$out1 <- outlab[1]
+    
+    r1 <- r1 %>%
+      filter(treat1%in% common_trts) %>% 
+      arrange(treat1)
+  
+    r2 <- x[[outcome[2]]]
+    
+    names(r2)[1] <- "treat2"
+    
+    names(r2)[2] <- (paste(names(r2)[2],"2",sep = ""))
+    
+    r2$out2 <- outlab[2]
+    
+    r2 <- r2 %>%
+      filter(treat2 %in% common_trts) %>% 
+      arrange(treat2)
+    
+    ranking <- cbind.data.frame(r1,r2)  
+    
+    plot(ranking[,2], ranking[,5], main = "",
+         cex = cex.point,
+         xlab = outlab[1], ylab = outlab[2],
+         pch = pch,...
+         )
+    
+    text(ranking[,2], ranking[,5],labels = ranking$treat1,
+         cex = cex.label, pos = pos,col = "black"
+         )
+    
+    
+  }else{
+    
+    stop("Argument 'x' must be a 'mvrank' object.")
+  }
+  
+  
+  invisible(NULL)  
+}
+
