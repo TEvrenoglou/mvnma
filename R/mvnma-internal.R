@@ -221,7 +221,7 @@ multi_arm <- function(dat){
   }
   #### df harmonized in terms of treat2 
   
-  df <- list_rbind(r)
+  df <- list.rbind(r)
   
   return(df)
 }
@@ -290,7 +290,7 @@ create_data <- function(p,...){
     
     ## combine all p's
     
-    comb_p <- list_rbind(p)
+    comb_p <- list.rbind(p)
     
     for(i in 1:n_outcomes){
       
@@ -325,7 +325,7 @@ create_data <- function(p,...){
     
     if(length(dat2)!=0){
       
-      dat2 <- list_rbind(dat2)
+      dat2 <- list.rbind(dat2)
       
       comb_p <- rbind.data.frame(comb_p,dat2)
       
@@ -381,7 +381,7 @@ add_arms <- function(dat,...){
     
   }
   
-  dat1 <- list_rbind(dat1)  
+  dat1 <- list.rbind(dat1)  
   
   return(dat1)
 }
