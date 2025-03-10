@@ -60,79 +60,47 @@ p2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
                data = dat.linde2015,
                sm = "OR")
 
-
-## Adverse events
-
-p3 <- pairwise(treat = list(treatment1, treatment2,treatment3),
-               event = list(ae1, ae2, ae3), 
-               n = list(n1, n2, n3),
-               studlab = id,
-               data = dat.linde2015,
-               sm = "OR")
-
-
-
-## Loss to follow-up
-
-p4 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-               event = list(loss1, loss2, loss3), 
-               n = list(n1, n2, n3),
-               studlab = id,
-               data = dat.linde2015,
-               sm = "OR")
-
-
-## Loss_to_follow_up_(AE)
-
-p5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-               event = list(loss.ae1, loss.ae2, loss.ae3),
-               n = list(n1, n2, n3),
-               studlab = id,
-               data = dat.linde2015,
-               sm = "OR")
-
 # Define outcome labels
 
-outlab <- c("Early_Response",
-            "Early_Remission",
-            "Adverse_events",
-            "Loss_to_follow_up",
-            "Loss_to_follow_up_AE")
+outlab <- c("Early_Response","Early_Remission")
 
 
 # Perform analysis in terms of the Efficacy outcomes
 
-p <- list(p1,p2,p3,p4,p5)
+p_effic <- list(p1,p2)
 
-# Use 'mvdata()' to transform the data in suitable JAGS format
+ # Use 'mvdata()' to transform the data in suitable JAGS format
 
-data <- mvdata(p)
+data_effic <- mvdata(p_effic)
 
-# Fit the model combining only the two efficacy outcomes
+ # Fit the model combining only the two efficacy outcomes
 
-mvmodel <- mvnma(data = data,
-                       reference.group = "Placebo",
-                       outlab = outlab,
-                       n.iter = 1000,
-                       n.burnin = 100)
+mvmodel_effic <- mvnma(data = data_effic,
+                  reference.group = "Placebo",
+                  outlab = outlab[1:2],
+                  n.iter = 1000,
+                  n.burnin = 100)
+
+
+
 
 ## get estimates for Early Response
 
-mvmodel$Early_Response$basic_estimates
+mvmodel_effic$Early_Response$basic_estimates
 
-mvmodel$Early_Response$heterogeneity
+mvmodel_effic$Early_Response$heterogeneity
 
 # get outcome correlation
 
-mvmodel$outcome_correlation
+mvmodel_effic$outcome_correlation
 
 # Plot the results for efficacy outcomes
 
-forest.mvnma(mvmodel)
+forest.mvnma(mvmodel_effic)
 
 # get all estimates
 
-league <- league(mvmodel)
+league <- league(mvmodel_effic)
 
 # print results for Early Response
 
@@ -140,14 +108,11 @@ league$Early_Response
 
 # Generate outcome specific ranking using SUCRA
 
-ranks_sucra <- mvrank(mvmodel,method = "sucra",small.values = c("undesirable","undesirable",
-                                                                "desirable","desirable","desirable"))
-                     
+ranks_sucra <- mvrank(mvmodel_effic,method = "sucra",small.values = c("undesirable","undesirable"))
 
 # or since SUCRA is the default the argument 'method' can be avoided for SUCRAs
 
-ranks_sucra <- mvrank(mvmodel,small.values = c("undesirable","undesirable",
-                                                     "desirable","desirable","desirable"))
+ranks_sucra <- mvrank(mvmodel_effic,small.values = c("undesirable","undesirable"))
 
 # get amalgamated ranking (equal weights)
 
@@ -158,9 +123,9 @@ vikor
 # evaluate the conditions and get the compromise solution
 interpret.vikor(vikor)
 
-# plot rankings for outcomes 1 and 5
+# plot rankings
 
-plot.mvrank(ranks_sucra,outcome = c(1,5))
+plot.mvrank(ranks_sucra,outcome = c(1,2))
 
 # generate hasse diagram 
 
@@ -168,9 +133,8 @@ hasse.mvrank(ranks_sucra)
 
 # repeat for pBV
 
-ranks_pBV <- mvrank(mvmodel,method = "pBV",small.values = c("undesirable","undesirable",
-                                                                "desirable","desirable","desirable"))
+ranks_pBV <- mvrank(mvmodel_effic,method = "pBV",small.values = c("undesirable","undesirable"))
 
 # plot rankings
 
-plot.mvrank(ranks_pBV,outcome = c(1,5))
+plot.mvrank(ranks_pBV,outcome = c(1,2))
