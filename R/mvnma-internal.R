@@ -1,5 +1,7 @@
+
 catch <- function(argname, matchcall, data, encl)
   eval(matchcall[[match(argname, names(matchcall))]], data, enclos = encl)
+
 
 multi_arm <- function(dat){
   
@@ -29,7 +31,7 @@ multi_arm <- function(dat){
   }
   #### df harmonized in terms of treat2 
   
-  df <- list.rbind(r)
+  df <- list_rbind(r)
   
   return(df)
 }
@@ -52,8 +54,6 @@ create_T <- function(data1,max_arms){
     
     
     treats[[i]] <- c(unique(r[[i]]$label2),unique(r[[i]]$label1))
-    
-    #treats[[i]] <- ifelse(length(treats[[i]])==max_arms,treats[[i]],c(treats[[i]],NA))
     
     mat[i,][1:length(treats[[i]])] <- treats[[i]]
     
@@ -98,7 +98,7 @@ create_data <- function(p,...){
     
     ## combine all p's
     
-    comb_p <- list.rbind(p)
+    comb_p <- list_rbind(p)
     
     for(i in 1:n_outcomes){
       
@@ -133,7 +133,7 @@ create_data <- function(p,...){
     
     if(length(dat2)!=0){
       
-      dat2 <- list.rbind(dat2)
+      dat2 <- list_rbind(dat2)
       
       comb_p <- rbind.data.frame(comb_p,dat2)
       
@@ -189,7 +189,7 @@ add_arms <- function(dat,...){
     
   }
   
-  dat1 <- list.rbind(dat1)  
+  dat1 <- list_rbind(dat1)  
   
   return(dat1)
 }
@@ -308,7 +308,6 @@ make_jags_data <- function(dat){
   
   names(var_f) <- names_vec
   
-  # attach(var_f)
   
   dat_f <- list("y"=y,
                 "var" = var_f,
@@ -387,7 +386,10 @@ gather_results <- function(res,n.out,labtreat,ref,reference.group,
     ## psi's (similar to tau)
     
     psi[[i]] <- res %>%
-      filter(grepl(c("psi"), ind))
+      filter(grepl(c("psi"), ind)) %>% 
+      dplyr::select(mean,sd,`2.5%`,`97.5%`,Rhat)
+    
+    names(psi[[i]]) <- c("psi","sd","lb.ci","ub.ci","Rhat")
     
     ## rho
     rho[[i]] <- res %>% 
@@ -406,6 +408,10 @@ gather_results <- function(res,n.out,labtreat,ref,reference.group,
   ## prepare output
   
   outcome_correlation <- rho[[1]]
+  
+  psi <- psi[[1]]
+  
+  row.names(psi) <- paste(outlab)
   
   outcome_correlation <- outcome_correlation %>% 
     dplyr::select(mean,sd,`2.5%`,`97.5%`,Rhat)
@@ -433,12 +439,12 @@ gather_results <- function(res,n.out,labtreat,ref,reference.group,
   if(n.out==2){
     
     out1 <- list("basic_estimates"=basic_comp[[1]],
-                 "heterogeneity"=psi[[1]][1,1],
+                 "heterogeneity"=psi[1,],
                  "samples"=d[[1]]
     )
     
     out2 <- list("basic_estimates"=basic_comp[[2]],
-                 "heterogeneity"=psi[[1]][2,1],
+                 "heterogeneity"=psi[2,],
                  "samples"=d[[2]]
     )
     
@@ -453,17 +459,17 @@ gather_results <- function(res,n.out,labtreat,ref,reference.group,
   if(n.out==3){
     
     out1 <- list("basic_estimates"=basic_comp[[1]],
-                 "heterogeneity"=psi[[1]][1,1],
+                 "heterogeneity"=psi[1,],
                  "samples"=d[[1]]
     )
     
     out2 <- list("basic_estimates"=basic_comp[[2]],
-                 "heterogeneity"=psi[[1]][2,1],
+                 "heterogeneity"=psi[2,],
                  "samples"=d[[2]]
     )
     
     out3 <- list("basic_estimates"=basic_comp[[3]],
-                 "heterogeneity"=psi[[1]][3,1],
+                 "heterogeneity"=psi[3,],
                  "samples"=d[[3]]
     )
     
@@ -476,22 +482,22 @@ gather_results <- function(res,n.out,labtreat,ref,reference.group,
   if(n.out==4){
     
     out1 <- list("basic_estimates"=basic_comp[[1]],
-                 "heterogeneity"=psi[[1]][1,1],
+                 "heterogeneity"=psi[1,],
                  "samples"=d[[1]]
     )
     
     out2 <- list("basic_estimates"=basic_comp[[2]],
-                 "heterogeneity"=psi[[1]][2,1],
+                 "heterogeneity"=psi[2,],
                  "samples"=d[[2]]
     )
     
     out3 <- list("basic_estimates"=basic_comp[[3]],
-                 "heterogeneity"=psi[[1]][3,1],
+                 "heterogeneity"=psi[3,],
                  "samples"=d[[3]]
     )
     
     out4 <- list("basic_estimates"=basic_comp[[4]],
-                 "heterogeneity"=psi[[1]][4,1],
+                 "heterogeneity"=psi[4,],
                  "samples"=d[[4]]
     )
     
@@ -506,27 +512,27 @@ gather_results <- function(res,n.out,labtreat,ref,reference.group,
   if(n.out==5){
     
     out1 <- list("basic_estimates"=basic_comp[[1]],
-                 "heterogeneity"=psi[[1]][1,1],
+                 "heterogeneity"=psi[1,],
                  "samples"=d[[1]]
     )
     
     out2 <- list("basic_estimates"=basic_comp[[2]],
-                 "heterogeneity"=psi[[1]][2,1],
+                 "heterogeneity"=psi[2,],
                  "samples"=d[[2]]
     )
     
     out3 <- list("basic_estimates"=basic_comp[[3]],
-                 "heterogeneity"=psi[[1]][3,1],
+                 "heterogeneity"=psi[3,],
                  "samples"=d[[3]]
     )
     
     out4 <- list("basic_estimates"=basic_comp[[4]],
-                 "heterogeneity"=psi[[1]][4,1],
+                 "heterogeneity"=psi[4,],
                  "samples"=d[[4]]
     )
     
     out5 <- list("basic_estimates"=basic_comp[[5]],
-                 "heterogeneity"=psi[[1]][5,1],
+                 "heterogeneity"=psi[5,],
                  "samples"=d[[5]]
     )
     
