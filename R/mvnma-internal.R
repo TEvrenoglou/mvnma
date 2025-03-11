@@ -2,7 +2,7 @@ catch <- function(argname, matchcall, data, encl)
   eval(matchcall[[match(argname, names(matchcall))]], data, enclos = encl)
 
 multi_arm <- function(data) {
-  
+
   # Get rid of warning "no visible binding for global variable"
   studlab <- treat2 <- NULL
   
@@ -95,7 +95,7 @@ create_data <- function(p, ...) {
       }
       dat2 <- list()
     }
-    
+        
     if (length(dat2) != 0) {
       dat2 <- list.rbind(dat2)
       #
@@ -253,7 +253,6 @@ make_jags_data <- function(dat) {
   
   names(var_f) <- names_vec
   
-  # attach(var_f)
   
   dat_f <- list("y" = y, 
                 "var" = var_f, 
@@ -315,7 +314,7 @@ gather_results <- function(res, n.out, labtreat, ref, reference.group,
     
     # rho
     rho[[i]] <- res %>% filter(grepl("rho", ind))
-    
+
     d[[i]] <- sims_bugs_out[, c(grepl(ds[i], names(sims_bugs_out)))]
     #
     names(d[[i]]) <- labtreat
