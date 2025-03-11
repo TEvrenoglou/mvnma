@@ -1,9 +1,13 @@
-#' Evaluate the conditions of the VIKOR method and return the set of compromise solutions.
+#' Evaluate the conditions of the VIKOR method and return the set of compromise
+#' solutions.
 #' 
 #' @description
-#' This function uses the three ranking matrices Q, S and R obtained by the VIKOR method and evaluates the conditions C1 and C2 the identify the set of compromise solutions.
+#' This function uses the three ranking matrices Q, S and R obtained by the
+#' VIKOR method and evaluates the conditions C1 and C2 the identify the set of
+#' compromise solutions.
 #' 
-#' @param x An object of class \code{\link{vikor.mvnma}}.
+#' @param x An object of class \code{\link{vikor}}.
+#' @param \dots Additional arguments (ignored).
 #' 
 #' @examples
 #' library(netmeta)
@@ -68,70 +72,62 @@
 #' 
 #' # Get the best compromise solution across all Efficacy outcomes
 #' 
-#' vikor.mvnma(ranks_sucra)
-#' 
-#' interpret.vikor(vikor.mvnma(ranks_sucra))
+#' vikor(ranks_sucra)
 #' 
 #' # Add larger weight for Response than Remission
 #' 
-#' vikor.mvnma(ranks_sucra,weights=c(0.6,0.3))
-#' 
-#' interpret.vikor(vikor.mvnma(ranks_sucra,weights=c(0.6,0.3)))
-#' 
+#' vikor(ranks_sucra,weights=c(0.6,0.3))
 #'
-#' @export interpret.vikor
+#' @method print vikor
+#' @export
 
-interpret.vikor <- function(x,...){
+print.vikor <- function(x, ...) {
   
-  if(!inherits(x,"vikor.mvnma")){
-    
-    stop("Argument 'x' should be a 'vikor.mvnma' object.") 
-    
-  }
+  chkclass(x, "vikor")
   
   Q <- x$Q
-  
   S <- x$S
-  
   R <- x$R
   
   trts <- row.names(Q)
   
-  DQ <- 1/(length(trts)-1)
+  DQ <- 1 / (length(trts) - 1)
   
-  cond1 <- Q$Q[2]-Q$Q[1]>= DQ
+  cond1 <- Q$Q[2] - Q$Q[1] >= DQ
   
-  cond2_1 <- isTRUE(row.names(Q)[1]==row.names(S)[1])
+  cond2_1 <- isTRUE(row.names(Q)[1] == row.names(S)[1])
   
-  cond2_2 <- isTRUE(row.names(Q)[1]==row.names(R)[1])
+  cond2_2 <- isTRUE(row.names(Q)[1] == row.names(R)[1])
   
   cond2 <- isTRUE(cond2_1 & cond2_2)
   
-  if((cond1==T) & (cond2==T)){
+  if ((cond1) & (cond2)) {
     
     solution <- row.names(Q)[1]  
     
     res1 <- paste("The compromise treatment across all outcomes is: ", solution)
-  }else if((cond1==T) & (cond2==F)){
-    
-    solution <- paste(row.names(Q)[1:2],collapse = ", ")
-    
-    res1 <- paste("The compromise set of treatments across all outcomes are: ", solution )
-  }else if(cond1==F){
+  }
+  else if ((cond1) & (!cond2)) {
+    solution <- paste(row.names(Q)[1:2], collapse = ", ")
+    res1 <- paste("The compromise set of treatments across all outcomes are: ",
+                  solution )
+  }
+  else if (!cond1) {
     
     compr <- ifelse(Q$Q-Q$Q[1]<DQ,TRUE,FALSE)
     
-    E <- which(compr==TRUE)
+    E <- which(compr)
     
     solution <- paste(c(row.names(Q)[E]), collapse = ", ")
     
     res1 <- paste("The compromise set of treatments across all outcomes are: ", solution)
     
-  }else if((cond1==F) & (cond2==F)){
-    
+  }
+  else if ((!cond1) & (!cond2)) {
     res1 <- paste("No compromise solution was identified. Please consider different outcome weights.")
-    
   }
   
-  return(res1)
+  cat(paste0(res1, "\n"))
+  #
+  invisible(NULL)
 }

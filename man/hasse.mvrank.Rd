@@ -8,14 +8,20 @@
 }
 \arguments{
 \item{x}{An object of class \code{\link{mvrank}}.}
+
+\item{\dots}{Additional arguments passed on to
+\code{\link[netmeta]{hasse.netposet}}.}
 }
 \description{
-This function generates a Hasse diagram for a partial order of treatment ranks in a multivariate network meta-analysis.#'
+This function generates a Hasse diagram for a partial order of treatment
+ranks in a multivariate network meta-analysis.
 }
 \details{
-Generate a Hasse diagram (Carlsen & Bruggemann, 2014) for a partial order of treatment ranks in a network meta-analysis (Rücker & Schwarzer, 2017).
+Generate a Hasse diagram (Carlsen & Bruggemann, 2014) for a partial order of
+treatment ranks in a network meta-analysis (Rücker & Schwarzer, 2017).
 
-This R function is a wrapper function for a modified version of R function \code{hasse} in R package \bold{hasseDiagram} (Krzysztof Ciomek, \url{https://github.com/kciomek/hasseDiagram}) which is available under the MIT license.
+This R function is a wrapper function for
+\code{\link[netmeta]{hasse.netposet}}.
 }
 \examples{
 library(netmeta)
@@ -72,11 +78,16 @@ ranks_sucra
 
 # Get the hasse diagram in terms of the Efficacy outcomes
 
-hasse.mvrank(ranks_sucra)
+hasse(ranks_sucra)
                                                        
 }
 \references{
-Carlsen L, Bruggemann R (2014): Partial order methodology: a valuable tool in chemometrics. \emph{Journal of Chemometrics},\bold{28}, 226--34
+Carlsen L, Bruggemann R (2014):
+Partial order methodology: a valuable tool in chemometrics.
+\emph{Journal of Chemometrics}, \bold{28}, 226--34
 
-Rücker G, Schwarzer G (2017): Resolve conflicting rankings of outcomes in network meta-analysis: Partial ordering of treatments. \emph{Research Synthesis Methods}, \bold{8}, 526--36
+Rücker G, Schwarzer G (2017):
+Resolve conflicting rankings of outcomes in network meta-analysis:
+Partial ordering of treatments.
+\emph{Research Synthesis Methods}, \bold{8}, 526--36
 }

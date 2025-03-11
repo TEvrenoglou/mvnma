@@ -4,7 +4,18 @@
 #' Draws a forest plot in the active graphics window (using grid graphics system).
 #' 
 #' @param x An object of class \code{\link{mvnma}}.
-#' @param ... Additional arguments for \code{\link{forest.meta}} function.
+#' @param backtransf ...
+#' @param leftcols ...
+#' @param leftlabs ...
+#' @param rightcols ...
+#' @param rightlabs ...
+#' @param col.study ...
+#' @param col.square ...
+#' @param col.square.lines ...
+#' @param squaresize ...
+#' @param header.line ...
+#' @param col.subgroup ...
+#' @param \dots Additional arguments for \code{\link[meta]{forest.meta}} function.
 #'
 #' @examples
 #' library(netmeta)
@@ -55,77 +66,71 @@
 #'
 #' # Generate a forest plot with the results 
 #' 
-#' forest.mvnma(mvmodel_effic)                 
-#'                 
-#' @export forest.mvnma                   
+#' forest(mvmodel_effic)                 
+#' 
+#' @method forest mvnma 
+#' @export
 
-forest.mvnma <- function(x, treat = NULL, backtransf = FALSE,
-                       #
-                       leftcols = "studlab", leftlabs = "Comparison",
-                       rightcols = c("effect", "ci"),
-                       rightlabs = c("TE", NA),
-                       col.study = "black",
-                       col.square = "black",
-                       col.square.lines = "black",
-                       squaresize = 0.7,
-                       header.line = TRUE, 
-                       col.subgroup = "black",
-                       ...) {
+forest.mvnma <- function(x, backtransf = FALSE,
+                         #
+                         leftcols = "studlab", leftlabs = "Comparison",
+                         rightcols = c("effect", "ci"),
+                         rightlabs = c("TE", NA),
+                         col.study = "black",
+                         col.square = "black",
+                         col.square.lines = "black",
+                         squaresize = 0.7,
+                         header.line = TRUE, 
+                         col.subgroup = "black",
+                         ...) {
   
-  if(!inherits(x,"mvnma")){
-    stop("Argument x must be of class 'mvnma'.")
-  }
-  
+  chkclass(x, "mvnma")
+  #
   x <- x[names(x) != "outcome_correlation"]
   
   n.out <- length(x)
   
   sm <- attributes(x)$sm
   
-  ests <- list()
+  # Get rid of warning "no visible binding for global variable"
+  treat <- TE <- sd <- lower <- upper <- NULL
   
-  ## get estimates for each outcome
-  for(i in 1:n.out){
-  
+  # Get estimates for each outcome
+  #
+  ests <- vector("list")
+  #
+  for (i in seq_len(n.out)) {
     ests[[i]] <- x[[i]]$basic_estimates
-    
     ests[[i]]$treat <- row.names(ests[[i]])
-    
     row.names(ests[[i]]) <- NULL
-    
-    ests[[i]] <- ests[[i]] %>% 
-      dplyr::select(treat,TE,sd,lb.ci,ub.ci)
-    
+    #
+    ests[[i]] %<>% select(treat, TE, sd, lower, upper)
     ests[[i]]$outcome <- attributes(x)$names[i]
-  
-    
   }
   
- 
-   # ests_1 <- x[[1]]$basic_estimates
-   # 
-   # ests_1 <- ests_1 %>% 
-   #   mutate("treat" = row.names(ests_1)) %>% 
-   #   dplyr::select(treat,mean,sd,`2.5%`,`97.5%`)
-   #   
-   # ests_1$outcome <- attributes(x)$outlab[1]
-   # 
-   # ests_2 <- x[[2]]$basic_estimates
-   # 
-   # ests_2 <- ests_2 %>% 
-   #   mutate("treat" = row.names(ests_2)) %>% 
-   #   dplyr::select(treat,mean,sd,`2.5%`,`97.5%`)
-   # 
-   # ests_2$outcome <- attributes(x)$outlab[2]
-   
-   
-### construct final dataset    '
-   
-  dat <- bind_rows(ests)
   
+  # ests_1 <- x[[1]]$basic_estimates
+  # 
+  # ests_1 <- ests_1 %>% 
+  #   mutate("treat" = row.names(ests_1)) %>% 
+  #   select(treat,mean,sd,`2.5%`,`97.5%`)
+  #   
+  # ests_1$outcome <- attributes(x)$outlab[1]
+  # 
+  # ests_2 <- x[[2]]$basic_estimates
+  # 
+  # ests_2 <- ests_2 %>% 
+  #   mutate("treat" = row.names(ests_2)) %>% 
+  #   select(treat,mean,sd,`2.5%`,`97.5%`)
+  # 
+  # ests_2$outcome <- attributes(x)$outlab[2]
+  
+  
+  ### construct final dataset    '
+  
+  dat <- bind_rows(ests)
   row.names(dat) <- NULL
-   
-  names(dat) <- c("studlab","TE","seTE","lb.ci","ub.ci","outcome")
+  names(dat) <- c("studlab", "TE", "seTE", "lower", "upper", "outcome")
   
   m <- metagen(dat$TE, dat$seTE, sm = NULL,
                subgroup = dat$outcome,
@@ -135,30 +140,22 @@ forest.mvnma <- function(x, treat = NULL, backtransf = FALSE,
                common = FALSE, random = FALSE, hetstat = FALSE,
                method.tau = "DL", method.tau.ci = "")
   #
-  # if (is.null(leftlabs)) {
-  #   if (is.null(m$subgroup))
-  #     "Study"
-  #   else
-  #     "Comparison / Study"
-  # }
+  ret <- forest(m,
+                backtransf = FALSE,
+                header.line = header.line,
+                col.subgroup = "black",
+                leftcols = leftcols, 
+                leftlabs = leftlabs,
+                rightcols = rightcols,
+                rightlabs = rightlabs,
+                weight.study = "same",
+                col.study = col.study,
+                col.square = col.square,
+                col.square.lines = col.square.lines,
+                squaresize = squaresize,
+                #
+                calcwidth.subgroup = TRUE,
+                ...)
   #
-  forest(m,
-         backtransf = FALSE,
-         header.line = header.line,
-         col.subgroup = "black",
-         leftcols = leftcols, 
-         leftlabs = leftlabs,
-         rightcols = rightcols,
-         rightlabs = rightlabs,
-         weight.study = "same",
-         col.study = col.study,
-         col.square = col.square,
-         col.square.lines = col.square.lines,
-         squaresize = squaresize,
-         #
-         calcwidth.subgroup = TRUE,
-         ...
-         )
-  
-  invisible(NULL)
+  invisible(ret)
 }

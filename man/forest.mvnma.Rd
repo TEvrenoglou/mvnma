@@ -6,7 +6,6 @@
 \usage{
 \method{forest}{mvnma}(
   x,
-  treat = NULL,
   backtransf = FALSE,
   leftcols = "studlab",
   leftlabs = "Comparison",
@@ -24,7 +23,29 @@
 \arguments{
 \item{x}{An object of class \code{\link{mvnma}}.}
 
-\item{...}{Additional arguments for \code{\link{forest.meta}} function.}
+\item{backtransf}{...}
+
+\item{leftcols}{...}
+
+\item{leftlabs}{...}
+
+\item{rightcols}{...}
+
+\item{rightlabs}{...}
+
+\item{col.study}{...}
+
+\item{col.square}{...}
+
+\item{col.square.lines}{...}
+
+\item{squaresize}{...}
+
+\item{header.line}{...}
+
+\item{col.subgroup}{...}
+
+\item{\dots}{Additional arguments for \code{\link[meta]{forest.meta}} function.}
 }
 \description{
 Draws a forest plot in the active graphics window (using grid graphics system).
@@ -77,6 +98,6 @@ mvmodel_effic <- mvnma(data = data_effic,
 
 # Generate a forest plot with the results 
 
-forest.mvnma(mvmodel_effic)                 
-                
+forest(mvmodel_effic)                 
+
 }

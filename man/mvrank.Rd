@@ -4,78 +4,65 @@
 \alias{mvrank}
 \title{Outcome-specific treatment rankings in multivariate network meta-analysis.}
 \usage{
-mvrank(x, small.values, method = NULL, digits = 4)
+mvrank(x, small.values, method = "SUCRA")
 }
 \arguments{
 \item{x}{An object of class \code{\link{mvnma}}.}
 
-\item{small.values}{A character vector specifying for each outcome whether small treatment effects indicate a beneficial ("desirable") or harmful ("undesirable") effect, can be abbreviated.}
+\item{small.values}{A character vector specifying for each outcome whether
+small treatment effects indicate a beneficial ("desirable") or harmful
+("undesirable") effect, can be abbreviated.}
 
-\item{method}{The ranking method to be used. Two methods are supported, the SUCRA method (specified as method="sucra") and the probability of best value method (specified as method="pBV"). If NULL then method="sucra".}
-
-\item{digits}{Minimal number of significant digits}
+\item{method}{The ranking method to be used. Two methods are supported,
+the SUCRA method (specified as method = "SUCRA", default) and the
+probability of best value method (specified as method = "pBV").}
 }
 \description{
-This function produces outcome-specific treatment rankings in multivariate network meta-analysis based on the output of the \code{\link{mvnma}} function.
-Two ranking methods are currently supported, these are: (i) the SUCRA method and (ii) the probability of best value (pBV) method.
+This function produces outcome-specific treatment rankings in multivariate
+network meta-analysis based on the output of the \code{\link{mvnma}}
+function. Two ranking methods are currently supported, these are: (i)
+the SUCRA method and (ii) the probability of best value (pBV) method.
 }
 \examples{
-library(netmeta)
+\donttest{
+library("netmeta")
 
 data("Linde2015")
 
-# use 'pairwise' to obtain contrast based data for each one of the five available outcomes 
+# Use 'pairwise' to obtain contrast based data for each one of the five
+# available outcomes 
 
 # Early response
 
 p1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-             event = list(resp1, resp2, resp3), 
-              n = list(n1, n2, n3),
-              studlab = id,
-              data = dat.linde2015,
-              sm = "OR")
-
+  event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
+  studlab = id, data = dat.linde2015, sm = "OR")
 
 # Early remissions
 
 p2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-              event = list(remi1, remi2, remi3),
-              n = list(n1, n2, n3),
-              studlab = id,
-              data = dat.linde2015,
-              sm = "OR")
-
+  event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
+  studlab = id, data = dat.linde2015, sm = "OR")
 
 # Adverse events
 
 p3 <- pairwise(treat = list(treatment1, treatment2,treatment3),
-              event = list(ae1, ae2, ae3), 
-              n = list(n1, n2, n3),
-              studlab = id,
-              data = dat.linde2015,
-              sm = "OR")
+  event = list(ae1, ae2, ae3),  n = list(n1, n2, n3),
+  studlab = id, data = dat.linde2015, sm = "OR")
 
 # Loss to follow-up
 
 p4 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-              event = list(loss1, loss2, loss3), 
-              n = list(n1, n2, n3),
-              studlab = id,
-              data = dat.linde2015,
-              sm = "OR")
+  event = list(loss1, loss2, loss3), n = list(n1, n2, n3),
+  studlab = id, data = dat.linde2015, sm = "OR")
 
-## Loss_to_follow_up_(AE)
+# Loss_to_follow_up_(AE)
 
 p5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-              event = list(loss.ae1, loss.ae2, loss.ae3),
-              n = list(n1, n2, n3),
-              studlab = id,
-              data = dat.linde2015,
-              sm = "OR")#
+  event = list(loss.ae1, loss.ae2, loss.ae3), n = list(n1, n2, n3),
+  studlab = id, data = dat.linde2015, sm = "OR")
 
-# Perform analysis in terms of the Efficacy outcomes
-
-p_all <- list(p1,p2,p3,p4,p5)
+p_all <- list(p1, p2, p3, p4, p5)
 
 # Use 'mvdata()' to transform the data in suitable JAGS format
 
@@ -83,43 +70,34 @@ data_all <- mvdata(p_all)
 
 # Define outcome labels
 
-outlab <- c("Early_Response",
-             "Early_Remission",
-             "Adverse_events",
-            "Loss_to_follow_up",
-            "Loss_to_follow_up_AE")
-            
+outlab <- c("Early_Response", "Early_Remission",
+  "Adverse_events", "Loss_to_follow_up", "Loss_to_follow_up_AE")
  
-# Perform analysis in terms of the all outcomes
-
-
 # Fit the model combining all five outcomes
 
 mvmodel_all <- mvnma(data = data_all,
-                reference.group = "Placebo",
-                outlab = outlab,
-                n.iter = 1000,
-                n.burnin = 100)
+  reference.group = "Placebo", outlab = outlab,
+  n.iter = 1000, n.burnin = 100)
 
+# Rank treatments using pBV
 
-# Rank treatments using pBv
-
-ranks_pBV <- mvrank(mvmodel_all,small.values = c("undesirable","undesirable","desirable","desirable","desirable"),
-                     method = "pBV")
- 
+ranks_pBV <- mvrank(mvmodel_all,
+  small.values = c("undes", "undes", "des", "des","des"),
+  method = "pBV")
 ranks_pBV                    
-                     
-# Rank treatments using sucra
+   
+# Rank treatments using SUCRAs
 
-ranks_sucra <- mvrank(mvmodel_all,small.values = c("undesirable","undesirable","desirable","desirable","desirable"),
-                     method = "sucra")
-                     
+ranks_sucra <- mvrank(mvmodel_all, 
+  small.values = c("undes", "undes", "des", "des","des"),
+  method = "SUCRA")
 ranks_sucra
                      
-# same results without method = "sucra" 
+# Same results without method = "SUCRA" 
 
-ranks_sucra1 <- mvrank(mvmodel_all,small.values = c("undesirable","undesirable","desirable","desirable","desirable"))
-
+ranks_sucra1 <- mvrank(mvmodel_all, 
+  small.values = c("undes", "undes", "des", "des","des"))
 ranks_sucra1
+}
 
 }

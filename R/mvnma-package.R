@@ -34,7 +34,8 @@
 #' @importFrom netmeta hasse netposet rankogram
 #' @importFrom matrixStats colSds
 #' @importFrom dplyr %>% all_of any_of arrange bind_rows bind_cols desc
-#'   distinct filter group_by
+#'   distinct filter group_by rename select
+#' @importFrom magrittr %<>%
 #' @importFrom rlist list.cbind list.rbind
 #' @importFrom graphics text
 #' @importFrom stats complete.cases

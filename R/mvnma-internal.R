@@ -1,202 +1,149 @@
 catch <- function(argname, matchcall, data, encl)
   eval(matchcall[[match(argname, names(matchcall))]], data, enclos = encl)
 
-multi_arm <- function(dat){
+multi_arm <- function(data) {
   
-  u <- unique(dat$studlab)    
+  # Get rid of warning "no visible binding for global variable"
+  studlab <- treat2 <- NULL
   
-  r <- list()
+  studies <- unique(data$studlab)    
+  #
+  r <- t <- E <- vector("list")
   
-  t <- list()
-  
-  E <- list()
-  
-  for(i in 1:length(u)){
+  for (i in seq_along(studies)) {
     
-    r[[i]] <- dat %>% 
-      filter(studlab == u[i])
+    r[[i]] <- data %>% filter(studlab == studies[i])
     
-    if(nrow(r[[i]])>2){
+    if (nrow(r[[i]]) > 2) {
       
       t[[i]] <- as.data.frame(table(r[[i]]$treat2))
       
-      E[[i]] <- t[[i]]$Var1[which(t[[i]]$Freq==max(t[[i]]$Freq))]
+      E[[i]] <- t[[i]]$Var1[which(t[[i]]$Freq == max(t[[i]]$Freq))]
       
-      r[[i]] <- r[[i]] %>% 
-        filter(treat2 == E[[i]])
+      r[[i]] %<>% filter(treat2 == E[[i]])
     }
-    
   }
-  #### df harmonized in terms of treat2 
-  
-  df <- list.rbind(r)
-  
-  return(df)
+  #
+  # df harmonized in terms of treat2 
+  #
+  res <- list.rbind(r)
+  #
+  res
 }
 
-
-create_T <- function(data1,max_arms){
-  
-  u <- unique(data1$studlab)  
-  
-  mat <- matrix(NA,nrow = length(u),ncol=max_arms)
-  
-  r <- list()
-  
-  treats <- list()
-  
-  for (i in 1:length(u)){
-    
-    r[[i]] <- data1 %>% 
-      filter(studlab==u[i])
-    
-    
-    treats[[i]] <- c(unique(r[[i]]$label2),unique(r[[i]]$label1))
-    
-    #treats[[i]] <- ifelse(length(treats[[i]])==max_arms,treats[[i]],c(treats[[i]],NA))
-    
-    mat[i,][1:length(treats[[i]])] <- treats[[i]]
-    
-    # replace NA's with 0
-    #T[i,] <- ifelse(is.na(T[i,]),0,T[i,])
-    
-    
-  }  
-  
-  return(mat)
-  
+create_T <- function(data, max.arms) {
+  # Get rid of warning "no visible binding for global variable"
+  studlab <- NULL
+  #
+  studies <- unique(data$studlab)  
+  #
+  res <- matrix(NA, nrow = length(studies), ncol = max.arms)
+  #
+  for (i in seq_along(studies)) {
+    dat.i <- data %>% filter(studlab == studies[i])
+    #
+    trts.i <- c(unique(dat.i$label2), unique(dat.i$label1))
+    #
+    res[i, seq_along(trts.i)] <- trts.i
+  }
+  #
+  res
 }
 
+'%!in%' <- function(x, y)
+  !('%in%'(x, y))
 
-'%!in%' <- function(x,y)!('%in%'(x,y))
+#
+# Helpers for new mvdata
+#
 
-###### Helpers for new mvdata
-
-create_data <- function(p,...){
-  
-  if(any(class(p)=="list")){
-    
-    dat1 <- list()
-    
-    dat2 <- list()
-    
-    studies <- list()
-    
+create_data <- function(p, ...) {
+  # Get rid of warning "no visible binding for global variable"
+  studlab <- TE <- seTE <- treat1 <- treat2 <- outcome <- n.arms <- NULL
+  #
+  if (any(class(p) == "list")) {
+    dat1 <- dat2 <- studies <- vector("list")
+    #
     n_outcomes <- length(p)
-    
-    for(i in 1:n_outcomes){
-      
-      p[[i]] <- p[[i]] %>% 
-        dplyr::select(studlab,TE,seTE,treat1,treat2) 
-      
+    #
+    for (i in 1:n_outcomes) {
+      p[[i]] %<>% select(studlab, TE, seTE, treat1, treat2) 
       p[[i]] <- multi_arm(p[[i]])
-      
-      p[[i]]$outcome= i
-      
+      p[[i]]$outcome <- i
       p[[i]] <- add_arms(p[[i]])
     }
     
-    ## combine all p's
+    # combine all p's
     
     comb_p <- list.rbind(p)
     
-    for(i in 1:n_outcomes){
-      
-      dat1[[i]] <- comb_p %>% 
-        filter(outcome==i)
-      
-      dat2[[i]] <- comb_p %>% 
-        filter(outcome!=i) 
-      
-      dat2[[i]]$TE = dat2[[i]]$seTE = NA
-      
-      dat2[[i]]$new_outcome = i
-      
+    for (i in 1:n_outcomes) {
+      dat1[[i]] <- comb_p %>% filter(outcome == i)
+      dat2[[i]] <- comb_p %>% filter(outcome != i) 
+      #
+      dat2[[i]]$TE <- dat2[[i]]$seTE <- NA
+      dat2[[i]]$new_outcome <- i
+      #
       studies[[i]] <- unique(which(dat2[[i]]$studlab %!in% dat1[[i]]$studlab))
-      
-      if(length(studies[[i]])>0){
-        
-        dat2[[i]] <- dat2[[i]][studies[[i]],]
-        
+      #
+      if (length(studies[[i]]) > 0) {
+        dat2[[i]] <- dat2[[i]][studies[[i]], ]
         dat2[[i]]$outcome <- dat2[[i]]$new_outcome
-        
         dat2[[i]]$new_outcome <- NULL
-        
+        #
         row.names(dat2[[i]]) <- NULL
-        
-      }else{
-        
-        dat2 <- list()
       }
-      
+      dat2 <- list()
     }
     
-    if(length(dat2)!=0){
-      
+    if (length(dat2) != 0) {
       dat2 <- list.rbind(dat2)
-      
-      comb_p <- rbind.data.frame(comb_p,dat2)
-      
-      comb_p <- comb_p %>% 
-        arrange(outcome)
-      
-      row.names(comb_p) = NULL
-      
-    }else{
-      
-      comb_p <- comb_p %>% 
-        arrange(outcome)
-      
+      #
+      comb_p <- rbind.data.frame(comb_p, dat2)
+      comb_p %<>%  arrange(outcome)
+      #
+      row.names(comb_p) <- NULL
     }
-    
-    data_final<- comb_p %>%
+    else
+      comb_p %<>% arrange(outcome)
+    #
+    res <- comb_p %>%
       group_by(studlab) %>%
-      arrange(desc(treat1),.by_group = T) %>% 
-      arrange(n_arms)
-    
-    #data_final$n_arms <- NULL
-    
-    data_final <- add_labels(data_final)
-    
-  }else{
-    
-    stop("Argument 'p' must be a list of pairwise objects.",
+      arrange(desc(treat1), .by_group = TRUE) %>% 
+      arrange(n.arms)
+    #res$n.arms <- NULL
+    #
+    res <- add_labels(res)
+  }
+  else
+    stop("Argument 'p' must be a list of pairwise objects.", 
          call. = FALSE)
-    
-  }
-  
-  return(data_final)
-  
+  #
+  res
 }
 
-add_arms <- function(dat,...){
-  
-  u <- unique(dat$studlab)
-  
-  dat1 <- list()
-  
-  arms <- list()
-  
-  for(i in 1:length(u)){
-    
-    dat1[[i]] <- dat %>% 
-      filter(studlab == u[i])
-    
-    arms[[i]] <- length(unique(c(dat1[[i]]$treat1,dat1[[i]]$treat2)))
-    
-    
-    dat1[[i]]$n_arms <- arms[[i]]
-    
+add_arms <- function(x, ...) {
+  # Get rid of warning "no visible binding for global variable"
+  studlab <- NULL
+  #
+  studies <- unique(x$studlab)
+  #
+  res <- vector("list")
+  #
+  for (i in seq_along(studies)) {
+    res[[i]] <- x %>% filter(studlab == studies[i])
+    #
+    res[[i]]$n.arms <- length(unique(c(res[[i]]$treat1, res[[i]]$treat2)))
   }
-  
-  dat1 <- list.rbind(dat1)  
-  
-  return(dat1)
+  #
+  res <- list.rbind(res)  
+  #
+  res
 }
 
-add_labels <- function(data){
+add_labels <- function(data) {
   
-  all_treats <- unique(c(data$treat1,data$treat2))  
+  all_treats <- unique(c(data$treat1, data$treat2))  
   
   levels_treats <- as.data.frame(levels(as.factor(all_treats)))
   
@@ -208,17 +155,17 @@ add_labels <- function(data){
   
   data$label2 <- NA
   
-  for(i in 1:nrow(data)){
+  for (i in 1:nrow(data)) {
     
-    for(j in 1:nrow(levels_treats)){
+    for (j in 1:nrow(levels_treats)) {
       
-      if(data$treat1[i]==levels_treats$treat[j]){
+      if (data$treat1[i] == levels_treats$treat[j]) {
         
         data$label1[i] = levels_treats$level[j]
         
       }
       
-      if(data$treat2[i]==levels_treats$treat[j]){
+      if (data$treat2[i] == levels_treats$treat[j]) {
         
         data$label2[i] = levels_treats$level[j]
         
@@ -228,55 +175,53 @@ add_labels <- function(data){
     
   }  
   
-  return(data)
-  
+  data
 }
 
-make_jags_data <- function(dat){
+make_jags_data <- function(dat) {
   
-  ## number of studies  
+  # Get rid of warning "no visible binding for global variable"
+  label <- NULL
+  
+  # number of studies  
   
   Ns <- length(unique(dat$studlab))    
   
-  ## labtreat 
+  # labtreat 
   
-  labtreat1 <- cbind.data.frame(dat$treat1,dat$label1)
+  labtreat1 <- cbind.data.frame(dat$treat1, dat$label1)
   
-  labtreat2 <- cbind.data.frame(dat$treat2,dat$label2)
+  labtreat2 <- cbind.data.frame(dat$treat2, dat$label2)
   
-  names(labtreat1) <- names(labtreat2) <- c("treat","label")
+  names(labtreat1) <- names(labtreat2) <- c("treat", "label")
   
-  labtreat <- rbind.data.frame(labtreat1,labtreat2)
+  labtreat <- rbind.data.frame(labtreat1, labtreat2)
   
-  labtreat <- labtreat %>% 
-    distinct() %>% 
-    arrange(label)
+  labtreat %<>% distinct() %>% arrange(label)
   
-  #NT 
+  # NT 
   
   NT <- length(labtreat$treat)
   
-  ## number of outcomes
+  # number of outcomes
   
   n_outcomes <- length(unique(dat$outcome))
   
-  ## arms per study
+  # arms per study
   arm_data <- dat[!duplicated(dat$studlab), ]
   
-  max_arms <- max(arm_data$n_arms)
+  # number of 2 arms studies
   
-  ## number of 2 arms studies
+  two_arm <- length(which(arm_data$n.arms == 2))
   
-  two_arm <- length(which(arm_data$n_arms==2))
-  
-  treat_data <- create_T(dat,max_arms=max_arms)
+  treat_data <- create_T(dat, max.arms = max(arm_data$n.arms))
   
   
-  ## extract vector with treatment effects
+  # extract vector with treatment effects
   
   y <- dat$TE
   
-  y <- ifelse(is.na(y),0,y)
+  y <- ifelse(is.na(y), 0, y)
   
   dat_out <- list()
   
@@ -286,19 +231,19 @@ make_jags_data <- function(dat){
   
   names_vec <- c()
   
-  for(i in 1:n_outcomes){
+  for (i in 1:n_outcomes) {
     
-    dat_out[[i]] <- dat[dat$outcome==i,]
+    dat_out[[i]] <- dat[dat$outcome == i, ]
     
     var[[i]] <- dat_out[[i]]$seTE^2
     
-    var[[i]] <- ifelse(is.na(var[[i]]),10000,var[[i]])
+    var[[i]] <- ifelse(is.na(var[[i]]), 10000, var[[i]])
     
-    names_vec[i] <- paste("var",i,sep = "")
+    names_vec[i] <- paste("var", i, sep = "")
     
-    dat_out[[i]] <- dat_out[[i]][complete.cases(dat_out[[i]]$TE),]
+    dat_out[[i]] <- dat_out[[i]][complete.cases(dat_out[[i]]$TE), ]
     
-    treat_out[[i]] <- unique(c(dat_out[[i]]$treat1,dat_out[[i]]$treat2))
+    treat_out[[i]] <- unique(c(dat_out[[i]]$treat1, dat_out[[i]]$treat2))
     
   }
   
@@ -310,268 +255,153 @@ make_jags_data <- function(dat){
   
   # attach(var_f)
   
-  dat_f <- list("y"=y,
-                "var" = var_f,
-                "T" = treat_data,
-                "Ns" = Ns,
-                "N2h" = two_arm,
-                #"na" = arms,
-                "labtreat" = labtreat,
-                "treat_out" = treat_out,
+  dat_f <- list("y" = y, 
+                "var" = var_f, 
+                "T" = treat_data, 
+                "Ns" = Ns, 
+                "N2h" = two_arm, 
+                #"na" = arms, 
+                "labtreat" = labtreat, 
+                "treat_out" = treat_out, 
                 "NT" = NT
   )
   
-  return(dat_f)
-  
+  dat_f
 }
 
-is.list.pairwise <- function(p,...){
+is.list.pairwise <- function(p, ...) {
   
-  all_class <- sapply(p,class)   
+  all_class <- sapply(p, class)   
   
   check <- c()
   
-  for(i in 1:ncol(all_class)){
+  for (i in 1:ncol(all_class)) {
     
-    check[i] <- isTRUE("pairwise" %in% all_class[,i])  
+    check[i] <- isTRUE("pairwise" %in% all_class[, i])  
     
   }
   
-  pair <- ifelse(sum(check)>=2,"pairwise",NA)
+  pair <- ifelse(sum(check)>=2, "pairwise", NA)
   
-  return(pair)
-  
+  pair
 }
 
-
-
-gather_results <- function(res,n.out,labtreat,ref,reference.group,
-                           data,sims_bugs_out,outlab,
-                           
-                           ...){
+gather_results <- function(res, n.out, labtreat, ref, reference.group, 
+                           data, sims_bugs_out, outlab, 
+                           ...) {
+  # Get rid of warning "no visible binding for global variable"
+  ind <- sd <- Rhat <- n.eff <- NULL
   
-  reference <- c()
+  reference <- ds <- vector("character")
+  basic_comp <- dat_treat <- psi <- rho <- d <- vector("list")
   
-  ds <- c()
-  
-  basic_comp <- list()
-  
-  dat_treat <- list()
-  
-  psi <- list()
-  
-  rho <- list()
-  
-  d <- list()
-  
-  for(i in 1:n.out){
-    
-    reference[i] <- paste("ref",i,sep = "")
-    
-    ds[i] <- paste("d",i,sep = "")
-    
-    basic_comp[[i]] <- res %>% 
-      filter(grepl(reference[i], ind))
-    
+  for (i in seq_len(n.out)) {
+    reference[i] <- paste("ref", i, sep = "")
+    ds[i] <- paste("d", i, sep = "")
+    #
+    basic_comp[[i]] <- res %>% filter(grepl(reference[i], ind))
     row.names(basic_comp[[i]]) <- labtreat[-ref]
+    #
+    dat_treat[[i]] <-
+      data$treat_out[[i]][-which(data$treat_out[[i]] == reference.group)]
+    #
+    basic_comp[[i]] <-
+      basic_comp[[i]][which(row.names(basic_comp[[i]]) %in% dat_treat[[i]]), ]
+    basic_comp[[i]] %<>% select(mean, sd, "2.5%", "97.5%", Rhat, n.eff) %>%
+      rename(TE = mean, lower = "2.5%", upper = "97.5%")
     
-    dat_treat[[i]] <- data$treat_out[[i]][-which(data$treat_out[[i]]==reference.group)]
+    # psi's (similar to tau)
+    psi[[i]] <- res %>% filter(grepl("psi", ind))
     
-    basic_comp[[i]] <- basic_comp[[i]][which(row.names(basic_comp[[i]]) %in% dat_treat[[i]]),]
+    # rho
+    rho[[i]] <- res %>% filter(grepl("rho", ind))
     
-    basic_comp[[i]] <- basic_comp[[i]] %>% 
-      dplyr::select(mean,sd,`2.5%`,`97.5%`,Rhat)
-    
-    names(basic_comp[[i]]) <- c("TE","sd","lb.ci","ub.ci","Rhat")
-    
-    ## psi's (similar to tau)
-    
-    psi[[i]] <- res %>%
-      filter(grepl(c("psi"), ind))
-    
-    ## rho
-    rho[[i]] <- res %>% 
-      filter(grepl("rho",ind))
-    
-    d[[i]] <- sims_bugs_out[,c(grepl(ds[i], names(sims_bugs_out)))]
-    
+    d[[i]] <- sims_bugs_out[, c(grepl(ds[i], names(sims_bugs_out)))]
+    #
     names(d[[i]]) <- labtreat
-    
-    d[[i]] <- d[[i]] %>% 
-      dplyr::select(all_of(data$treat_out[[i]]))
-    
-    
+    #
+    d[[i]] %<>% select(all_of(data$treat_out[[i]]))
   }
   
-  ## prepare output
-  
+  # prepare output
   outcome_correlation <- rho[[1]]
+  #
+  outcome_correlation %<>% select(mean, sd, "2.5%", "97.5%", Rhat, n.eff) %>%
+    rename(corr_coef = mean, lower = "2.5%", upper = "97.5%")
   
-  outcome_correlation <- outcome_correlation %>% 
-    dplyr::select(mean,sd,`2.5%`,`97.5%`,Rhat)
+  # create row.names for outcome_correlation
+  r1 <- t(combn(seq_along(outlab), 2))
   
-  names(outcome_correlation) <- c("corr_coef","sd","lb.ci","ub.ci","Rhat")
+  r.names <- vector("numeric", nrow(outcome_correlation))
   
-  ## create row.names for outcome_correlation
-  r1 <- seq(1:length(outlab))
-  
-  r1 <- t(combn(r1,2))
-  
-  r.names <- matrix(ncol=1,nrow=nrow(outcome_correlation))
-  
-  for(i in 1:nrow(r.names)){
-    
-    for(j in 1:ncol(r1)){
-      
-      r.names[i,] <- paste(outlab[r1[i,1]],outlab[r1[i,2]],sep = "/")    
+  for (i in seq_along(r.names)) {
+    for (j in seq_len(ncol(r1))) {
+      r.names[i] <- paste(outlab[r1[i, 1]], outlab[r1[i, 2]], sep = "/")    
     }
-    
   }
-  
+  #
   row.names(outcome_correlation) <- r.names
   
-  if(n.out==2){
-    
-    out1 <- list("basic_estimates"=basic_comp[[1]],
-                 "heterogeneity"=psi[[1]][1,1],
-                 "samples"=d[[1]]
-    )
-    
-    out2 <- list("basic_estimates"=basic_comp[[2]],
-                 "heterogeneity"=psi[[1]][2,1],
-                 "samples"=d[[2]]
-    )
-    
-    res.final <- list(out1,out2,outcome_correlation)
-    
-    names(res.final) <- c(paste(outlab[1]),paste(outlab[2]),"outcome_correlation")
-    
-    
-    
+  out1 <- list(basic_estimates = basic_comp[[1]], 
+               heterogeneity = psi[[1]][1, 1], 
+               samples = d[[1]])
+  #
+  out2 <- list(basic_estimates = basic_comp[[2]], 
+               heterogeneity = psi[[1]][2, 1], 
+               samples = d[[2]])
+  #
+  res <- list(out1, out2)
+  names(res) <- c(outlab[1], outlab[2])
+  #
+  if (n.out >= 3) {
+    out3 <- list(basic_estimates = basic_comp[[3]], 
+                 heterogeneity = psi[[1]][3, 1], 
+                 samples = d[[3]])
+    #
+    res[[3]] <- out3
+    names(res)[3] <- outlab[3]
   }
-  
-  if(n.out==3){
-    
-    out1 <- list("basic_estimates"=basic_comp[[1]],
-                 "heterogeneity"=psi[[1]][1,1],
-                 "samples"=d[[1]]
-    )
-    
-    out2 <- list("basic_estimates"=basic_comp[[2]],
-                 "heterogeneity"=psi[[1]][2,1],
-                 "samples"=d[[2]]
-    )
-    
-    out3 <- list("basic_estimates"=basic_comp[[3]],
-                 "heterogeneity"=psi[[1]][3,1],
-                 "samples"=d[[3]]
-    )
-    
-    res.final <- list(out1,out2,out3,outcome_correlation)
-    
-    names(res.final) <- c(paste(outlab[1]),paste(outlab[2]),paste(outlab[3]),"outcome_correlation")
-    
+  #
+  if (n.out >= 4) {
+    out4 <- list(basic_estimates = basic_comp[[4]], 
+                 heterogeneity = psi[[1]][4, 1], 
+                 samples = d[[4]])
+    #
+    res[[4]] <- out4
+    names(res)[4] <- outlab[4]
   }
-  
-  if(n.out==4){
-    
-    out1 <- list("basic_estimates"=basic_comp[[1]],
-                 "heterogeneity"=psi[[1]][1,1],
-                 "samples"=d[[1]]
-    )
-    
-    out2 <- list("basic_estimates"=basic_comp[[2]],
-                 "heterogeneity"=psi[[1]][2,1],
-                 "samples"=d[[2]]
-    )
-    
-    out3 <- list("basic_estimates"=basic_comp[[3]],
-                 "heterogeneity"=psi[[1]][3,1],
-                 "samples"=d[[3]]
-    )
-    
-    out4 <- list("basic_estimates"=basic_comp[[4]],
-                 "heterogeneity"=psi[[1]][4,1],
-                 "samples"=d[[4]]
-    )
-    
-    res.final <- list(out1,out2,out3,out4,outcome_correlation)
-    
-    names(res.final) <- c(paste(outlab[1]),paste(outlab[2]),
-                          paste(outlab[3]),paste(outlab[4]),
-                          "outcome_correlation")
-    
+  #
+  if (n.out >= 5) {
+    out5 <- list(basic_estimates = basic_comp[[5]], 
+                 heterogeneity = psi[[1]][5, 1], 
+                 samples = d[[5]])
+    #
+    res[[5]] <- out5
+    names(res)[5] <- outlab[5]
   }
-  
-  if(n.out==5){
-    
-    out1 <- list("basic_estimates"=basic_comp[[1]],
-                 "heterogeneity"=psi[[1]][1,1],
-                 "samples"=d[[1]]
-    )
-    
-    out2 <- list("basic_estimates"=basic_comp[[2]],
-                 "heterogeneity"=psi[[1]][2,1],
-                 "samples"=d[[2]]
-    )
-    
-    out3 <- list("basic_estimates"=basic_comp[[3]],
-                 "heterogeneity"=psi[[1]][3,1],
-                 "samples"=d[[3]]
-    )
-    
-    out4 <- list("basic_estimates"=basic_comp[[4]],
-                 "heterogeneity"=psi[[1]][4,1],
-                 "samples"=d[[4]]
-    )
-    
-    out5 <- list("basic_estimates"=basic_comp[[5]],
-                 "heterogeneity"=psi[[1]][5,1],
-                 "samples"=d[[5]]
-    )
-    
-    res.final <- list(out1,out2,out3,out4,out5,outcome_correlation)
-    
-    names(res.final) <- c(paste(outlab[1]),paste(outlab[2]),
-                          paste(outlab[3]),paste(outlab[4]),
-                          paste(outlab[5]),
-                          "outcome_correlation")
-    
-  }
-  
-  return(res.final)
+  #
+  res[[length(res) + 1]] <- outcome_correlation
+  names(res)[length(res)] <- "outcome_correlation"
+  #
+  res
 }
 
-
-get_all_estimates <- function(x){
-  
+get_all_estimates <- function(x) {
   x <- x[names(x) != "outcome_correlation"]  
-  
-  all <- list()
-  
-  all_TE <- list()
-  
-  all_sd <- list()
-  
-  for(i in 1:length(x)){
-    
+  #
+  all <- all_TE <- all_sd <- vector("list")
+  #
+  for (i in seq_along(x)) {
     all[[i]] <- get_diff(x[[i]]$samples)
-    
     all_TE[[i]] <- all[[i]]$TE.random
-    
     all_sd[[i]] <- all[[i]]$sd.random
-    
   }
-  
-  res <- list("TE.random"=all_TE,
-              "sd.random" = all_sd
-  )
-  
-  return(res)
+  #
+  res <- list(TE.random = all_TE, sd.random = all_sd)
+  res
 }
 
-
-get_diff <- function(samples){
+get_diff <- function(samples) {
   
   diff <- list()
   
@@ -583,54 +413,212 @@ get_diff <- function(samples){
   
   sds <- list()
   
-  for(i in 1:ncol(samples)){
+  for (i in 1:ncol(samples)) {
     
-    diff[[i]] <- samples %>% 
-      dplyr::select(any_of(E[i]))
+    diff[[i]] <- samples %>% select(any_of(E[i]))
     
-    ests[[i]] <- samples[,E[i]]-samples
+    ests[[i]] <- samples[, E[i]] - samples
     
     ests[[i]][E[[i]]] <- 0
-    
-    
   }
   
-  for(k in 1:length(ests)){
-    
+  for (k in seq_along(ests)) {
     means[[k]] <- colMeans(ests[[k]])
-    
     sds[[k]] <- colSds(as.matrix(ests[[k]]))
-    
   }
   
-  TE <- matrix(NA,ncol = ncol(samples),nrow=ncol(samples))
-  
-  sd <- matrix(NA,ncol = ncol(samples),nrow=ncol(samples))
-  
+  TE <- matrix(NA, ncol = ncol(samples), nrow = ncol(samples))
+  sd <- matrix(NA, ncol = ncol(samples), nrow = ncol(samples))
+  #
   row.names(TE) <- colnames(TE) <- names(TE)
-  
   row.names(sd) <- colnames(sd) <- names(sd)
-  
-  for(j in 1:nrow(TE)){
-    
-    TE[j,] <- means[[j]]
-    
-    sd[j,] <- sds[[j]]
-    
+  #
+  for (j in 1:nrow(TE)) {
+    TE[j, ] <- means[[j]]
+    sd[j, ] <- sds[[j]]
   }
-  
+  #
   TE <- as.data.frame(TE)
-  
   sd <- as.data.frame(sd)
-  
+  #
   row.names(TE) <- row.names(sd) <- names(TE) <- names(sd) <- E
   
-  
-  res_f <- list("TE.random"=TE,
-                "sd.random"=sd
-  )
-  
-  
-  return(res_f) 
-  
-}   
+  res <- list(TE.random = TE, sd.random = sd)
+  res
+}
+
+setchar <- function(x, val, text, list = FALSE, name = NULL,
+                    stop.at.error = TRUE, addtext = "",
+                    return.NULL = TRUE, nchar.equal = FALSE,
+                    setNA = FALSE, pre = "") {
+  val <- unique(val)
+  #
+  if (is.null(name))
+    name <- deparse(substitute(x))
+  nval <- length(val)
+  #
+  if (is.numeric(x)) {
+    numeric.x <- TRUE
+    idx <- x
+    idx[idx < 1] <- NA
+    idx[idx >= nval + 1] <- NA
+  }
+  else {
+    numeric.x <- FALSE
+    #
+    if (length(unique(tolower(x))) != length(unique(x)) |
+        length(unique(tolower(val))) != length(unique(val)))
+      idx <- charmatch(x, val, nomatch = NA)
+    else
+      idx <- charmatch(tolower(x), tolower(val), nomatch = NA)
+  }
+  #
+  if ((anyNA(idx) || any(idx == 0)) && !setNA) {
+    if (list)
+      first <- "List element '"
+    else
+      first <- "Argument '"
+    #
+    if (missing(text)) {
+      if (numeric.x) {
+        if (nval == 1)
+          vlist <- "1"
+        else if (nval == 2)
+          vlist <- "1 or 2"
+        else
+          vlist <- paste("between 1 and", nval)
+      }
+      else {
+        if (nval == 1)
+          vlist <- paste0('"', val, '"')
+        else if (nval == 2)
+          vlist <- paste0('"', val, '"', collapse = " or ")
+        else
+          vlist <- paste0(paste0('"', val[-nval], '"', collapse = ", "),
+                          ', or ', '"', val[nval], '"')
+      }
+      #
+      if (stop.at.error)
+        stop(first, name, "' must be ", pre,
+             vlist, addtext, ".", call. = FALSE)
+      else {
+        if (return.NULL)
+          return(NULL)
+        else
+          return(x)
+      }
+    }
+    else {
+      if (stop.at.error)
+        stop(first, name, "' ", text, ".", call. = FALSE)
+      else {
+        if (return.NULL)
+          return(NULL)
+        else
+          return(x)
+      }
+    }
+  }
+  #
+  if (is.null(x))
+    return(NULL)
+  else
+    res <- val[idx]
+  #
+  if (nchar.equal && nchar(res) != nchar(x))
+    res <- x
+  #
+  res
+}
+
+chkclass <- function(x, class, name = NULL) {
+  #
+  # Check class of R object
+  #
+  if (is.null(name))
+    name <- deparse(substitute(x))
+  #
+  n.class <- length(class)
+  if (n.class == 1)
+    text.class <- paste0('"', class, '"')
+  else if (n.class == 2)
+    text.class <- paste0('"', class, '"', collapse = " or ")
+  else
+    text.class <- paste0(paste0('"', class[-n.class], '"', collapse = ", "),
+                         ', or ', '"', class[n.class], '"')
+  #
+  if (!inherits(x, class))
+    stop("Argument '", name, "' must be an object of class ", text.class, ".",
+         call. = FALSE)
+  #
+  invisible(NULL)
+}
+
+chkchar <- function(x, length = 0, name = NULL, nchar = NULL, single = FALSE,
+                    NULL.ok = FALSE) {
+  if (is.null(x) & NULL.ok)
+    return(invisible(NULL))
+  #
+  if (!missing(single) && single)
+    length <- 1
+  if (is.null(name))
+    name <- deparse(substitute(x))
+  #
+  if (length && length(x) != length) {
+    if (length == 1)
+      stop("Argument '", name, "' must be a character string.",
+           call. = FALSE)
+    else
+      stop("Argument '", name, "' must be a character vector of length ",
+           length, ".",
+           call. = FALSE)
+  }
+  #
+  if (length == 1) {
+    if (!is.null(nchar) && !(nchar(x) %in% nchar))
+      if (length(nchar) == 1 && nchar == 1)
+        stop("Argument '", name, "' must be a single character.",
+             call. = FALSE)
+    else
+      stop("Argument '", name, "' must be a character string of length ",
+           if (length(nchar) == 2)
+             paste0(nchar, collapse = " or ")
+           else
+             paste0(nchar, collapse = ", "),
+           ".",
+           call. = FALSE)
+  }
+  #
+  if (!is.character(x) & !is.numeric(x))
+    stop("Argument '", name, "' must be a character vector.")
+  else {
+    if (!is.null(nchar) & any(!(nchar(x) %in% nchar)))
+      if (length(nchar) == 1 && nchar == 1)
+        stop("Argument '", name, "' must be a vector of single characters.",
+             call. = FALSE)
+    else
+      stop("Argument '", name, "' must be a character vector where ",
+           "each element has ",
+           if (length(nchar) == 2)
+             paste0(nchar, collapse = " or ")
+           else
+             paste0(nchar, collapse = ", "),
+           " characters.",
+           call. = FALSE)
+  }
+  #
+  invisible(NULL)
+}
+
+chknull <- function(x, name = NULL) {
+  #
+  # Check whether argument is NULL
+  #
+  if (is.null(name))
+    name <- deparse(substitute(x))
+  #
+  if (is.null(x))
+    stop("Argument '", name, "' is NULL.", call. = FALSE)
+  #
+  invisible(NULL)
+}

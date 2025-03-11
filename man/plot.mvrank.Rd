@@ -9,12 +9,24 @@
 \arguments{
 \item{x}{An object of class \code{\link{mvrank}}.}
 
-\item{outcome}{A mandatory numeric vector of length 2 specifying which outcomes should be plotted. For example, setting "outcome=c(2,3)" implies that a scatter plot will be generated plotting the rankings of outcomes 2 and 3.}
+\item{outcome}{A mandatory numeric vector of length 2 specifying which
+outcomes should be plotted. For example, setting "outcome=c(2,3)" implies
+that a scatter plot will be generated plotting the rankings of outcomes 2
+and 3.}
+
+\item{pos}{...}
+
+\item{cex.point}{...}
+
+\item{cex.label}{...}
+
+\item{pch}{...}
 
 \item{...}{Additional arguments for \code{\link{plot}} function.}
 }
 \description{
-Draw a scatter plot (using grid graphics system) in the active graphics window or store the forest plot in a file.
+Draw a scatter plot (using grid graphics system) in the active graphics
+window or store the forest plot in a file.
 }
 \examples{
 library(netmeta)
@@ -69,11 +81,15 @@ ranks_sucra <- mvrank(mvmodel_effic,small.values = c("undesirable","undesirable"
                     
 ranks_sucra      
 
-# Visualize SUCRAs in a scatter plot with outcome 1 (as specified in the mvdata() function) in the x-axis and outcome 2 (as specified in the mvdata() function) in the y-axis
+# Visualize SUCRAs in a scatter plot with outcome 1
+# (as specified in the mvdata() function) in the x-axis and outcome 2
+# (as specified in the mvdata() function) in the y-axis
 
 plot.mvrank(ranks_sucra, outcome = c(1,2))
 
-#' # Visualize SUCRAs in a scatter plot with outcome 2 (as specified in the mvdata() function) in the x-axis and outcome 1 (as specified in the mvdata() function) in the y-axis
+# Visualize SUCRAs in a scatter plot with outcome 2
+# (as specified in the mvdata() function) in the x-axis and outcome 1
+# (as specified in the mvdata() function) in the y-axis
 
 plot.mvrank(ranks_sucra, outcome = c(2,1))
 

@@ -4,7 +4,7 @@
 \alias{mvdata}
 \title{Transform contrast based data into JAGS format.}
 \usage{
-mvdata(p, ...)
+mvdata(p)
 }
 \arguments{
 \item{p}{A list of pairwise objects.}
@@ -13,7 +13,9 @@ mvdata(p, ...)
 The function returns a list of vectors and matrices to be used as in input to the \code{\link{mvnma}} function.
 }
 \description{
-This function transforms contrast-based data obtained from the \code{\link{netmeta}} or \code{\link{pairwise}} functions into a format suitable for the multivariate model in JAGS.
+This function transforms contrast-based data obtained from the
+\code{\link[netmeta]{netmeta}} or \code{\link[meta]{pairwise}} function
+into a format suitable for the multivariate model in JAGS.
 }
 \examples{
 library(netmeta)
@@ -65,6 +67,6 @@ mvmodel_effic <- mvnma(data = data_effic,
                 
 # Plot the results for efficacy outcomes
 
-forest.mvnma(mvmodel_effic)
+forest(mvmodel_effic)
 
 }
