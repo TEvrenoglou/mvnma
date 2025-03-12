@@ -81,7 +81,8 @@
 #' 
 #' plot.mvrank(ranks_sucra, outcome = c(2,1))
 #' 
-#' @export plot.mvrank          
+#' @method plot mvrank 
+#' @export  
 
 plot.mvrank <- function(x, outcome = NULL, pos = 1,
                         cex.point = 1, cex.label = 0.7, pch = 19,
