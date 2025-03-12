@@ -7,129 +7,114 @@
 #' compromise solutions.
 #' 
 #' @param x An object of class \code{\link{vikor}}.
+#' @param digits A numeric specifying the number of digits to print the
+#'   ranking matrix Q.
 #' @param \dots Additional arguments (ignored).
 #' 
 #' @examples
-#' library(netmeta)
+#' \donttest{
+#' library("netmeta")
 #' 
+#' # Use 'pairwise' to obtain contrast based data for the first two outcomes
 #' data("Linde2015")
-#' 
-#' # use 'pairwise' to obtain contrast based data for each one of the five available outcomes 
-#'
-#'   # Early response
-#'
+#' # Early response
 #' p1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-#'              event = list(resp1, resp2, resp3), 
-#'               n = list(n1, n2, n3),
-#'               studlab = id,
-#'               data = dat.linde2015,
-#'               sm = "OR")
-#'
-#'
+#'   event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
+#'   studlab = id, data = dat.linde2015, sm = "OR")
 #' # Early remissions
-#'
 #' p2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-#'               event = list(remi1, remi2, remi3),
-#'               n = list(n1, n2, n3),
-#'               studlab = id,
-#'               data = dat.linde2015,
-#'               sm = "OR")
-#'
-
-#' # Perform analysis in terms of the Efficacy outcomes
-#'
-#' p_effic <- list(p1,p2)
-#'
+#'   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
+#'   studlab = id, data = dat.linde2015, sm = "OR")
+#' 
+#' # Perform analysis considering the efficacy outcomes
+#' p12 <- list(p1, p2)
+#' 
 #' # Use 'mvdata()' to transform the data in suitable JAGS format
-#'
-#' data_effic <- mvdata(p_effic)
-#'
+#' data12 <- mvdata(p12)
+#' 
 #' # Define outcome labels
+#' outlab <- c("Early_Response", "Early_Remission")
 #' 
-#' outlab <- c("Early_Response","Early_Remission")
-#'             
 #' # Fit the model combining only the two efficacy outcomes
-#' 
-#' mvmodel_effic <- mvnma(data = data_effic,
-#'                 reference.group = "Placebo",
-#'                 outlab = outlab,
-#'                 n.iter = 1000,
-#'                 n.burnin = 100)
+#' set.seed(1909)
+#' mvnma12 <- mvnma(data = data12,
+#'   reference.group = "Placebo", outlab = outlab[1:2],
+#'   n.iter = 1000, n.burnin = 100)
+#'            
+#' # Extract treatment effect estimates and heterogeneity for Early_Response 
+#' mvnma12$Early_Response$basic_estimates
 #'                 
 #' # Extract treatment effect estimates and heterogeneity for Early_Response 
+#' mvnma12$Early_Response$basic_estimates
 #' 
-#' mvmodel_effic$Early_Response$basic_estimates
+#' # Get all estimates
+#' league12 <- league(mvnma12)
+#' league12
 #' 
-#' # Get all estimates                 
-#' 
-#' league.effic <- league(mvmodel_effic)
-
 #' # Rank treatments using sucra
-#' 
-#' ranks_sucra <- mvrank(mvmodel_effic,small.values = c("undesirable","undesirable"), method = "sucra")
-#'                     
-#' ranks_sucra
+#' ranks12 <- mvrank(mvnma12, small.values = c("und","und"), method = "sucra")
+#' ranks12
 #' 
 #' # Get the best compromise solution across all Efficacy outcomes
+#' vikor(ranks12)
 #' 
-#' vikor(ranks_sucra)
-#' 
-#' # Add larger weight for Response than Remission
-#' 
-#' vikor(ranks_sucra,weights=c(0.6,0.3))
+#' # Use larger weight for Response than Remission
+#' vikor(ranks12, weights = c(0.6, 0.3))
+#' }
 #'
 #' @method print vikor
 #' @export
 
-print.vikor <- function(x,digits=4,...) {
+print.vikor <- function(x, digits = 4, ...) {
   
   chkclass(x, "vikor")
+  #
+  chknumeric(digits, min = 0, length = 1)
   
-  Q <- x$Q
-  S <- x$S
-  R <- x$R
-  
+  Q <- x %>% select(Q)
+  S <- x %>% select(S)
+  R <- x %>% select(R)
+  #
   trts <- row.names(Q)
-  
+  #
   DQ <- 1 / (length(trts) - 1)
   
   cond1 <- Q$Q[2] - Q$Q[1] >= DQ
-  
+  #
   cond2_1 <- isTRUE(row.names(Q)[1] == row.names(S)[1])
-  
   cond2_2 <- isTRUE(row.names(Q)[1] == row.names(R)[1])
-  
+  #
   cond2 <- isTRUE(cond2_1 & cond2_2)
-  
-  if ((cond1) & (cond2)) {
-    
-    solution <- row.names(Q)[1]  
-    
-    res1 <- paste0("The compromise treatment across all outcomes is: ", solution)
+  #
+  if (cond1 & cond2) {
+    solution <- row.names(Q)[1]
+    #
+    txt <- paste("The compromise treatment across all outcomes is:", solution)
   }
   else if ((cond1) & (!cond2)) {
     solution <- paste(row.names(Q)[1:2], collapse = ", ")
-    res1 <- paste0("The compromise set of treatments across all outcomes are: ",
-                  solution )
+    #
+    txt <-paste("The compromise set of treatments across all outcomes are:",
+                solution)
   }
   else if (!cond1) {
-    
-    compr <- ifelse(Q$Q-Q$Q[1]<DQ,TRUE,FALSE)
-    
+    compr <- Q$Q - Q$Q[1] < DQ
+    #
     E <- which(compr)
-    
-    solution <- paste(c(row.names(Q)[E]), collapse = ", ")
-    
-    res1 <- paste0("The compromise set of treatments across all outcomes are: ", solution)
-    
+    #
+    solution <- paste(row.names(Q)[E], collapse = ", ")
+    #
+    txt <- paste("The compromise set of treatments across all outcomes are:",
+                 solution)
   }
-  else if ((!cond1) & (!cond2)) {
-    res1 <- paste0("No compromise solution was identified. Please consider different outcome weights.")
+  else if (!cond1 & !cond2) {
+    txt <- paste("No compromise solution was identified. Please consider",
+                 "different outcome weights.")
   }
   
-  prmatrix(round(Q,digits = digits),quote = FALSE,right = TRUE)
-  
-  cat(paste0("\n",res1,"\n"))
+  prmatrix(round(Q, digits = digits), quote = FALSE, right = TRUE)
+  #
+  cat(paste0("\n", txt, "\n"))
   #
   invisible(NULL)
 }

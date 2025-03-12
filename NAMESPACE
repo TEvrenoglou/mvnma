@@ -3,6 +3,7 @@
 S3method(forest,mvnma)
 S3method(hasse,mvrank)
 S3method(plot,mvrank)
+S3method(print,mvnma)
 S3method(print,vikor)
 S3method(vikor,matrix)
 S3method(vikor,mvrank)

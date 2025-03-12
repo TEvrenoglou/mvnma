@@ -1,4 +1,4 @@
-#' Scatter plot to visualize the ranking lists in terms of two outcomes.
+#' Scatter plot to visualize the ranking lists for two outcomes.
 #' 
 #' @description
 #' Draw a scatter plot (using grid graphics system) in the active graphics
@@ -16,70 +16,61 @@
 #' @param ... Additional arguments for \code{\link{plot}} function.
 #' 
 #' @examples
-#' library(netmeta)
+#' \donttest{
+#' library("netmeta")
 #' 
+#' # Use 'pairwise' to obtain contrast based data for the first two outcomes
 #' data("Linde2015")
-#' 
-#' # use 'pairwise' to obtain contrast based data for each one of the five available outcomes 
-#'
-#'   # Early response
-#'
+#' # Early response
 #' p1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-#'              event = list(resp1, resp2, resp3), 
-#'               n = list(n1, n2, n3),
-#'               studlab = id,
-#'               data = dat.linde2015,
-#'               sm = "OR")
-#'
-#'
+#'   event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
+#'   studlab = id, data = dat.linde2015, sm = "OR")
 #' # Early remissions
-#'
 #' p2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-#'               event = list(remi1, remi2, remi3),
-#'               n = list(n1, n2, n3),
-#'               studlab = id,
-#'               data = dat.linde2015,
-#'               sm = "OR")
-#'
-
-#' # Perform analysis in terms of the Efficacy outcomes
-#'
-#' p_effic <- list(p1,p2)
-#'
+#'   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
+#'   studlab = id, data = dat.linde2015, sm = "OR")
+#' 
+#' # Perform analysis considering the efficacy outcomes
+#' p12 <- list(p1, p2)
+#' 
 #' # Use 'mvdata()' to transform the data in suitable JAGS format
-#'
-#' data_effic <- mvdata(p_effic)
-#'
+#' data12 <- mvdata(p12)
+#' 
 #' # Define outcome labels
+#' outlab <- c("Early_Response", "Early_Remission")
 #' 
-#' outlab <- c("Early_Response","Early_Remission")
-#'             
 #' # Fit the model combining only the two efficacy outcomes
+#' set.seed(1909)
+#' mvnma12 <- mvnma(data = data12,
+#'   reference.group = "Placebo", outlab = outlab[1:2],
+#'   n.iter = 1000, n.burnin = 100)
+#'            
+#' # Extract treatment effect estimates and heterogeneity for Early_Response 
+#' mvnma12$Early_Response$basic_estimates
+#'                 
+#' # Extract treatment effect estimates and heterogeneity for Early_Response 
+#' mvnma12$Early_Response$basic_estimates
 #' 
-#' mvmodel_effic <- mvnma(data = data_effic,
-#'                 reference.group = "Placebo",
-#'                 outlab = outlab,
-#'                 n.iter = 1000,
-#'                 n.burnin = 100)
-#'                 
-#'                 
-#'                 
-#'                 
-#' ranks_sucra <- mvrank(mvmodel_effic,small.values = c("undesirable","undesirable"), method = "sucra")
-#'                     
-#' ranks_sucra      
+#' # Get all estimates
+#' league12 <- league(mvnma12)
+#' league12
+#' 
+#' # Rank treatments using sucra
+#' ranks12 <- mvrank(mvnma12, small.values = c("und","und"), method = "sucra")
+#' ranks12
 #' 
 #' # Visualize SUCRAs in a scatter plot with outcome 1
 #' # (as specified in the mvdata() function) in the x-axis and outcome 2
 #' # (as specified in the mvdata() function) in the y-axis
 #' 
-#' plot.mvrank(ranks_sucra, outcome = c(1,2))
+#' plot(ranks12, outcome = c(1, 2))
 #' 
 #' # Visualize SUCRAs in a scatter plot with outcome 2
 #' # (as specified in the mvdata() function) in the x-axis and outcome 1
 #' # (as specified in the mvdata() function) in the y-axis
 #' 
-#' plot.mvrank(ranks_sucra, outcome = c(2,1))
+#' plot(ranks12, outcome = c(2, 1))
+#' }
 #' 
 #' @method plot mvrank 
 #' @export  

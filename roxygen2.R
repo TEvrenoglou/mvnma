@@ -29,5 +29,9 @@ build_manual()
 install()
 #install(build_vignettes = TRUE)
 
-check()
 
+#
+# (5) Check R package
+#
+
+check()

@@ -33,69 +33,58 @@ data("Linde2015")
 # available outcomes 
 
 # Early response
-
 p1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
   studlab = id, data = dat.linde2015, sm = "OR")
 
 # Early remissions
-
 p2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
   studlab = id, data = dat.linde2015, sm = "OR")
 
 # Adverse events
-
 p3 <- pairwise(treat = list(treatment1, treatment2,treatment3),
   event = list(ae1, ae2, ae3),  n = list(n1, n2, n3),
   studlab = id, data = dat.linde2015, sm = "OR")
 
 # Loss to follow-up
-
 p4 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(loss1, loss2, loss3), n = list(n1, n2, n3),
   studlab = id, data = dat.linde2015, sm = "OR")
 
 # Loss_to_follow_up_(AE)
-
 p5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(loss.ae1, loss.ae2, loss.ae3), n = list(n1, n2, n3),
   studlab = id, data = dat.linde2015, sm = "OR")
 
-p_all <- list(p1, p2, p3, p4, p5)
-
-# Use 'mvdata()' to transform the data in suitable JAGS format
-
-data_all <- mvdata(p_all)
-
 # Define outcome labels
-
 outlab <- c("Early_Response", "Early_Remission",
   "Adverse_events", "Loss_to_follow_up", "Loss_to_follow_up_AE")
- 
-# Fit the model combining all five outcomes
 
-mvmodel_all <- mvnma(data = data_all,
+# Perform analysis considering all outcomes
+p_all <- list(p1, p2, p3, p4, p5)
+data_all <- mvdata(p_all)
+ 
+# Fit the model combining only the two efficacy outcomes
+set.seed(1909)
+mvnma_all <- mvnma(data = data_all,
   reference.group = "Placebo", outlab = outlab,
   n.iter = 1000, n.burnin = 100)
 
 # Rank treatments using pBV
-
-ranks_pBV <- mvrank(mvmodel_all,
+ranks_pBV <- mvrank(mvnma_all,
   small.values = c("undes", "undes", "des", "des","des"),
   method = "pBV")
 ranks_pBV                    
    
 # Rank treatments using SUCRAs
-
-ranks_sucra <- mvrank(mvmodel_all, 
+ranks_sucra <- mvrank(mvnma_all, 
   small.values = c("undes", "undes", "des", "des","des"),
   method = "SUCRA")
 ranks_sucra
                      
 # Same results without method = "SUCRA" 
-
-ranks_sucra1 <- mvrank(mvmodel_all, 
+ranks_sucra1 <- mvrank(mvnma_all, 
   small.values = c("undes", "undes", "des", "des","des"))
 ranks_sucra1
 }

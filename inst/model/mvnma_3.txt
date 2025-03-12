@@ -28,15 +28,15 @@ model{
   
    ## off diagonal
   
-  s[i,1,2] <- control12[i]*rho12*sqrt(var1[i]+psi1.sq)*sqrt(var2[i]+psi2.sq)
+  s[i,1,2] <- control12[i]*rho1*sqrt(var1[i]+psi1.sq)*sqrt(var2[i]+psi2.sq)
   
   s[i,2,1] <- s[i,1,2]
   
-  s[i,1,3] <- control13[i]*rho13*sqrt(var1[i]+psi1.sq)*sqrt(var3[i]+psi3.sq)
+  s[i,1,3] <- control13[i]*rho2*sqrt(var1[i]+psi1.sq)*sqrt(var3[i]+psi3.sq)
     
   s[i,3,1] <- s[i,1,3]
   
-  s[i,2,3] <- control23[i]*rho23*sqrt(var2[i]+psi2.sq)*sqrt(var3[i]+psi3.sq)
+  s[i,2,3] <- control23[i]*rho3*sqrt(var2[i]+psi2.sq)*sqrt(var3[i]+psi3.sq)
   
   s[i,3,2] <- s[i,2,3]
   
@@ -70,11 +70,11 @@ model{
     
 ### off-diagonal elements
 
-    S[i,1,2] <- control12[i]*rho12*sqrt(S[i,1,1])*sqrt(S[i,2,2])
+    S[i,1,2] <- control12[i]*rho1*sqrt(S[i,1,1])*sqrt(S[i,2,2])
 
     S[i,2,1] <- S[i,1,2]
 
-    S[i,1,3] <- control13[i]*rho13*sqrt(S[i,1,1])*sqrt(S[i,3,3])
+    S[i,1,3] <- control13[i]*rho2*sqrt(S[i,1,1])*sqrt(S[i,3,3])
 
     S[i,3,1] <- S[i,1,3]
 
@@ -84,19 +84,19 @@ model{
 
     S[i,4,1] <- S[i,1,4]
     
-    S[i,1,5] <- control12[i]*rho12*sqrt(S[i,1,1])*sqrt(S[i,5,5])/2
+    S[i,1,5] <- control12[i]*rho1*sqrt(S[i,1,1])*sqrt(S[i,5,5])/2
 
     S[i,5,1] <- S[i,1,5]
     
-    S[i,1,6] <- control13[i]*rho13*sqrt(S[i,1,1])*sqrt(S[i,6,6])/2
+    S[i,1,6] <- control13[i]*rho2*sqrt(S[i,1,1])*sqrt(S[i,6,6])/2
 
     S[i,6,1] <- S[i,1,6]
     
-    S[i,2,3] <- control23[i]*rho23*sqrt(S[i,2,2])*sqrt(S[i,3,3])
+    S[i,2,3] <- control23[i]*rho3*sqrt(S[i,2,2])*sqrt(S[i,3,3])
 
     S[i,3,2] <- S[i,2,3]
     
-    S[i,2,4] <- control12[i]*rho12*sqrt(S[i,2,2])*sqrt(S[i,4,4])/2
+    S[i,2,4] <- control12[i]*rho1*sqrt(S[i,2,2])*sqrt(S[i,4,4])/2
     
     S[i,4,2] <- S[i,2,4]
 
@@ -106,15 +106,15 @@ model{
 
     S[i,5,2] <- S[i,2,5]
     
-    S[i,2,6] <- control23[i]*rho23*sqrt(S[i,2,2])*sqrt(S[i,6,6])/2
+    S[i,2,6] <- control23[i]*rho3*sqrt(S[i,2,2])*sqrt(S[i,6,6])/2
 
     S[i,6,2] <- S[i,2,6]
     
-    S[i,3,4] <- control13[i]*rho13*sqrt(S[i,3,3])*sqrt(S[i,4,4])/2
+    S[i,3,4] <- control13[i]*rho2*sqrt(S[i,3,3])*sqrt(S[i,4,4])/2
     
     S[i,4,3] <- S[i,3,4]
     
-    S[i,3,5] <- control23[i]*rho23*sqrt(S[i,3,3])*sqrt(S[i,5,5])/2
+    S[i,3,5] <- control23[i]*rho3*sqrt(S[i,3,3])*sqrt(S[i,5,5])/2
     
     S[i,5,3] <- S[i,3,5]
     
@@ -124,15 +124,15 @@ model{
     
     S[i,6,3] <- S[i,3,6]
     
-   S[i,4,5] <- control12[i]*rho12*sqrt(S[i,4,4])*sqrt(S[i,5,5])
+   S[i,4,5] <- control12[i]*rho1*sqrt(S[i,4,4])*sqrt(S[i,5,5])
    
    S[i,5,4] <- S[i,4,5]
    
-   S[i,4,6] <- control13[i]*rho13*sqrt(S[i,4,4])*sqrt(S[i,6,6])
+   S[i,4,6] <- control13[i]*rho2*sqrt(S[i,4,4])*sqrt(S[i,6,6])
    
    S[i,6,4] <- S[i,4,6]
    
-   S[i,5,6] <- control23[i]*rho23*sqrt(S[i,5,5])*sqrt(S[i,6,6])
+   S[i,5,6] <- control23[i]*rho3*sqrt(S[i,5,5])*sqrt(S[i,6,6])
    
    S[i,6,5] <- S[i,5,6]
 
@@ -199,25 +199,16 @@ model{
   }
 
   psi1.sq <- psi1*psi1
-
   psi2.sq <- psi2*psi2
-
   psi3.sq <- psi3*psi3
 
-  #psi1 ~ dunif(0,1)
-  
   psi1 ~ dnorm(0,1)T(0,)
-
   psi2 ~ dnorm(0,1)T(0,)
-
   psi3 ~ dnorm(0,1)T(0,)
 
-
-  rho12 ~ dunif(lower.rho1, upper.rho1)
-
-  rho13 ~ dunif(lower.rho2, upper.rho2)
-
-  rho23 ~ dunif(lower.rho3, upper.rho3)
+  rho1 ~ dunif(lower.rho1, upper.rho1)
+  rho2 ~ dunif(lower.rho2, upper.rho2)
+  rho3 ~ dunif(lower.rho3, upper.rho3)
   
 
   #Estimated  Effect Sizes

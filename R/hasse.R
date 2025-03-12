@@ -14,65 +14,55 @@
 #' 
 #' This R function is a wrapper function for
 #' \code{\link[netmeta]{hasse.netposet}}.
-#'                                                       
+#'                                             
 #' @examples
-#' library(netmeta)
+#' \donttest{
+#' library("netmeta")
 #' 
+#' # Use 'pairwise' to obtain contrast based data for the first two outcomes
 #' data("Linde2015")
-#' 
-#' # use 'pairwise' to obtain contrast based data for each one of the five available outcomes 
-#'
 #' # Early response
-#'
 #' p1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-#'              event = list(resp1, resp2, resp3), 
-#'               n = list(n1, n2, n3),
-#'               studlab = id,
-#'               data = dat.linde2015,
-#'               sm = "OR")
-#'
-#'
+#'   event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
+#'   studlab = id, data = dat.linde2015, sm = "OR")
 #' # Early remissions
-#'
 #' p2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-#'               event = list(remi1, remi2, remi3),
-#'               n = list(n1, n2, n3),
-#'               studlab = id,
-#'               data = dat.linde2015,
-#'               sm = "OR")
+#'   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
+#'   studlab = id, data = dat.linde2015, sm = "OR")
 #'
-
-#' # Perform analysis in terms of the Efficacy outcomes
-#'
-#' p_effic <- list(p1,p2)
+#' # Perform analysis considering the efficacy outcomes
+#' p12 <- list(p1, p2)
 #'
 #' # Use 'mvdata()' to transform the data in suitable JAGS format
-#'
-#' data_effic <- mvdata(p_effic)
+#' data12 <- mvdata(p12)
 #'
 #' # Define outcome labels
-#' 
-#' outlab <- c("Early_Response","Early_Remission")
-#'             
+#' outcomes <- c("Early_Response", "Early_Remission")
+#'  
 #' # Fit the model combining only the two efficacy outcomes
+#' set.seed(1909)
+#' mvnma12 <- mvnma(data = data12, 
+#'   reference.group = "Placebo", outlab = outcomes,
+#'   n.iter = 1000, n.burnin = 100)
 #' 
-#' mvmodel_effic <- mvnma(data = data_effic,
-#'                 reference.group = "Placebo",
-#'                 outlab = outlab,
-#'                 n.iter = 1000,
-#'                 n.burnin = 100)
-#'                
-#'
+#' # Extract treatment effect estimates and heterogeneity for Early_Response 
+#' mvnma12$Early_Response$basic_estimates
+#'                 
+#' # Extract treatment effect estimates and heterogeneity for Early_Response 
+#' mvnma12$Early_Response$basic_estimates
+#' 
+#' # Get all estimates
+#' league12 <- league(mvnma12)
+#' league12
+#' 
 #' # Rank treatments using sucra
+#' ranks12 <- mvrank(mvnma12, small.values = c("und","und"), method = "sucra")
+#' ranks12
 #' 
-#' ranks_sucra <- mvrank(mvmodel_effic,small.values = c("undesirable","undesirable"), method = "sucra")
-#'                     
-#' ranks_sucra
+#' # Get the Hasse diagram for the efficacy outcomes
+#' hasse(ranks12)
+#' }
 #' 
-#' # Get the hasse diagram in terms of the Efficacy outcomes
-#' 
-#' hasse(ranks_sucra)
-#'                                                        
 #' @references
 #' Carlsen L, Bruggemann R (2014):
 #' Partial order methodology: a valuable tool in chemometrics.

@@ -11,8 +11,8 @@ mvnma(
   outlab = NULL,
   n.iter = 10000,
   n.burnin = 2000,
-  lower.rho = NULL,
-  upper.rho = NULL
+  lower.rho,
+  upper.rho
 )
 }
 \arguments{
@@ -62,13 +62,13 @@ The Bayesian multivariate network meta-analysis model fitted in the
 correlation coefficients. The lower and upper bounds of these priors can be
 defined using the arguments `lower.rho` and `upper.rho`. If not set, the
 model will assume a `Unif (-1, 1)` prior for all correlation coefficients.
-In cases with cases with two outcomes a single value should be provided for
-`lower.rho` and for `upper.rho`. For example when \(rho_{12} ~ Unif (0.5,1)/)
-then `lower.rho` = 0.5 and `upper.rho` = 1.
-In cases with more than two outcomes, the order in which the bounds are
-provided matters. For example, when pooling four outcomes, the lower and
+For two outcomes, a single value can be provided for `lower.rho` and
+`upper.rho`. For example, `lower.rho` = 0.5 and `upper.rho` = 1 for
+rho12 ~ Unif (0.5,1)).
+For more than two outcomes, the order in which the bounds are provided
+matters. For example, when pooling four outcomes, the lower and
 upper bounds correspond to the following order of correlation coefficients:
-(rho_{12}, rho_{13}, rho_{14}, rho_{23}, rho_{24}, rho_{34}).
+(rho12, rho13, rho14, rho23, rho24, rho34).
 }
 \examples{
 \donttest{
@@ -80,101 +80,80 @@ data("Linde2015")
 # available outcomes 
 
 # Early response
-
 p1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
   studlab = id, data = dat.linde2015, sm = "OR")
 
 # Early remissions
-
 p2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
   studlab = id, data = dat.linde2015, sm = "OR")
 
 # Adverse events
-
 p3 <- pairwise(treat = list(treatment1, treatment2,treatment3),
   event = list(ae1, ae2, ae3),  n = list(n1, n2, n3),
   studlab = id, data = dat.linde2015, sm = "OR")
 
 # Loss to follow-up
-
 p4 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(loss1, loss2, loss3), n = list(n1, n2, n3),
   studlab = id, data = dat.linde2015, sm = "OR")
 
 # Loss_to_follow_up_(AE)
-
 p5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(loss.ae1, loss.ae2, loss.ae3), n = list(n1, n2, n3),
   studlab = id, data = dat.linde2015, sm = "OR")
 
-# Perform analysis in terms of the efficacy outcomes
-
-p_effic <- list(p1, p2)
+# Perform analysis considering efficacy outcomes
+p12 <- list(p1, p2)
 
 # Use 'mvdata()' to transform the data in suitable JAGS format
-
-data_effic <- mvdata(p_effic)
+data12 <- mvdata(p12)
 
 # Define outcome labels
-
 outlab <- c("Early_Response", "Early_Remission",
   "Adverse_events", "Loss_to_follow_up", "Loss_to_follow_up_AE")
  
 # Fit the model combining only the two efficacy outcomes
 set.seed(1909)
-mvmodel_effic <- mvnma(data = data_effic,
+mvnma12 <- mvnma(data = data12,
   reference.group = "Placebo", outlab = outlab[1:2],
   n.iter = 1000, n.burnin = 100)
               
 # Extract treatment effect estimates and heterogeneity for Early_Response 
+mvnma12$Early_Response$basic_estimates
+mvnma12$Early_Response$heterogeneity      
 
-mvmodel_effic$Early_Response$basic_estimates
-
-mvmodel_effic$Early_Response$heterogeneity      
-     
-# Extract outcome correlation 
-
-mvmodel_effic$outcome_correlation
+# Extract outcome correlation
+mvnma12$outcome_correlation
              
 # Plot the results for efficacy outcomes
+forest(mvnma12)
 
-forest(mvmodel_effic)
+# Get all estimates
+league12 <- league(mvnma12)
 
-# Get all estimates                 
-
-league.effic <- league(mvmodel_effic)
-
-# Perform analysis in terms of the all outcomes
-
+# Perform analysis considering all outcomes
 p_all <- list(p1, p2, p3, p4, p5)
-
 data_all <- mvdata(p_all)
 
 # Fit the model combining all five outcomes
-
-mvmodel_all <- mvnma(data = data_all,
+mvnma_all <- mvnma(data = data_all,
   reference.group = "Placebo", outlab = outlab,
   n.iter = 1000, n.burnin = 100)
 
 # Extract treatment effect estimates and heterogeneity for Early_Response 
+mvnma_all$Early_Response$basic_estimates
+mvnma_all$Early_Response$heterogeneity      
 
-mvmodel_all$Early_Response$basic_estimates
-
-mvmodel_all$Early_Response$heterogeneity      
-     
 # Extract outcome correlation 
-
-mvmodel_all$outcome_correlation
+mvnma_all$outcome_correlation
 
 # Plot the results for all outcomes
+forest(mvnma_all)
 
-forest(mvmodel_all)
-
-# Get all estimates                 
-
-league.all <- league(mvmodel_all)
+# Get all estimates 
+league_all <- league(mvnma_all)
 }
 
 }

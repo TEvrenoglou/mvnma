@@ -51,53 +51,39 @@
 Draws a forest plot in the active graphics window (using grid graphics system).
 }
 \examples{
-library(netmeta)
+\donttest{
+library("netmeta")
 
+# Use 'pairwise' to obtain contrast based data for the first two outcomes
 data("Linde2015")
-
-# use 'pairwise' to obtain contrast based data for each one of the five available outcomes 
-
 # Early response
-
 p1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-             event = list(resp1, resp2, resp3), 
-              n = list(n1, n2, n3),
-              studlab = id,
-              data = dat.linde2015,
-              sm = "OR")
-
-
+  event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
+  studlab = id, data = dat.linde2015, sm = "OR")
 # Early remissions
-
 p2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-              event = list(remi1, remi2, remi3),
-              n = list(n1, n2, n3),
-              studlab = id,
-              data = dat.linde2015,
-              sm = "OR")
+  event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
+  studlab = id, data = dat.linde2015, sm = "OR")
 
-# Perform analysis in terms of the Efficacy outcomes
-
-p_effic <- list(p1,p2)
+# Perform analysis considering the efficacy outcomes
+p12 <- list(p1, p2)
 
 # Use 'mvdata()' to transform the data in suitable JAGS format
-
-data_effic <- mvdata(p_effic)
+data12 <- mvdata(p12)
 
 # Define outcome labels
-
-outlab <- c("Early_Response","Early_Remission")
-            
+outcomes <- c("Early_Response", "Early_Remission")
+ 
 # Fit the model combining only the two efficacy outcomes
-
-mvmodel_effic <- mvnma(data = data_effic,
-                reference.group = "Placebo",
-                outlab = outlab,
-                n.iter = 1000,
-                n.burnin = 100)
+set.seed(1909)
+mvnma12 <- mvnma(data = data12, 
+  reference.group = "Placebo", outlab = outcomes,
+  n.iter = 1000, n.burnin = 100)
+mvnma12
 
 # Generate a forest plot with the results 
+forest(mvnma12)                 
+}
 
-forest(mvmodel_effic)                 
 
 }

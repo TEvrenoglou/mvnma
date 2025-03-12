@@ -307,17 +307,16 @@ gather_results <- function(res, n.out, labtreat, ref, reference.group,
     basic_comp[[i]] <-
       basic_comp[[i]][which(row.names(basic_comp[[i]]) %in% dat_treat[[i]]), ]
     basic_comp[[i]] %<>% select(mean, sd, "2.5%", "97.5%", Rhat, n.eff) %>%
-      rename(TE = mean, lower = "2.5%", upper = "97.5%")
+      rename(lower = "2.5%", upper = "97.5%")
     
-    ## psi's (similar to tau)
-    
-    psi[[i]] <- res %>%
-      filter(grepl(c("psi"), ind)) %>% 
-      select(mean,sd,`2.5%`,`97.5%`,Rhat)
-    
-    names(psi[[i]]) <- c("psi","sd","lb.ci","ub.ci","Rhat")
+    # psi's (similar to tau)
+    #
+    psi[[i]] <- res %>% filter(grepl("psi", ind)) %>%
+      select(mean, sd, "2.5%", "97.5%", Rhat, n.eff) %>%
+      rename(psi = mean, lower = "2.5%", upper = "97.5%")
     
     # rho
+    #
     rho[[i]] <- res %>% filter(grepl("rho", ind))
 
     d[[i]] <- sims_bugs_out[, c(grepl(ds[i], names(sims_bugs_out)))]
@@ -629,4 +628,76 @@ chknull <- function(x, name = NULL) {
     stop("Argument '", name, "' is NULL.", call. = FALSE)
   #
   invisible(NULL)
+}
+
+chknumeric <- function(x, min, max, zero = FALSE, length = 0,
+                       name = NULL, single = FALSE, integer = FALSE,
+                       NA.ok = TRUE) {
+  if (!missing(single) && single)
+    length <- 1
+  #
+  # Check numeric variable
+  #
+  if (is.null(name))
+    name <- deparse(substitute(x))
+  #
+  if (NA.ok)
+    x <- x[!is.na(x)]
+  else if (anyNA(x))
+    stop("Missing values not allowed in argument '", name, "'.",
+         call. = FALSE)
+  #
+  if (length(x) == 0)
+    return(NULL)
+  #
+  if (!is.numeric(x))
+    stop("Non-numeric value for argument '", name, "'.",
+         call. = FALSE)
+  #
+  if (length && length(x) != length)
+    stop("Argument '", name, "' must be a numeric of length ", length, ".",
+         call. = FALSE)
+  #
+  if (!missing(min) & missing(max)) {
+    if (zero & min == 0 & any(x <= min, na.rm = TRUE))
+      stop("Argument '", name, "' must be positive.",
+           call. = FALSE)
+    else if (any(x < min, na.rm = TRUE))
+      stop("Argument '", name, "' must be larger equal ",
+           min, ".", call. = FALSE)
+  }
+  #
+  if (missing(min) & !missing(max)) {
+    if (zero & max == 0 & any(x >= max, na.rm = TRUE))
+      stop("Argument '", name, "' must be negative.",
+           call. = FALSE)
+    else if (any(x > max, na.rm = TRUE))
+      stop("Argument '", name, "' must be smaller equal ",
+           min, ".", call. = FALSE)
+  }
+  #
+  if ((!missing(min) & !missing(max)) &&
+      (any(x < min, na.rm = TRUE) | any(x > max, na.rm = TRUE)))
+    stop("Argument '", name, "' must be between ",
+         min, " and ", max, ".", call. = FALSE)
+  #
+  if (integer && any(!is_wholenumber(x))) {
+    if (length(x) == 1)
+      stop("Argument '", name, "' must be an integer.",
+           call. = FALSE)
+    else
+      stop("Argument '", name, "' may only contain integers.",
+           call. = FALSE)
+  }
+  #
+  invisible(NULL)
+}
+
+is_wholenumber <- function(x, tol = .Machine$double.eps^0.5) {
+  if (is.numeric(x))
+    res <- abs(x - round(x)) < tol
+  else
+    res <- NA
+  ##
+  res
 }
