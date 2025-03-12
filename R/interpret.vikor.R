@@ -81,7 +81,7 @@
 #' @method print vikor
 #' @export
 
-print.vikor <- function(x, ...) {
+print.vikor <- function(x,digits=4,...) {
   
   chkclass(x, "vikor")
   
@@ -105,11 +105,11 @@ print.vikor <- function(x, ...) {
     
     solution <- row.names(Q)[1]  
     
-    res1 <- paste("The compromise treatment across all outcomes is: ", solution)
+    res1 <- paste0("The compromise treatment across all outcomes is: ", solution)
   }
   else if ((cond1) & (!cond2)) {
     solution <- paste(row.names(Q)[1:2], collapse = ", ")
-    res1 <- paste("The compromise set of treatments across all outcomes are: ",
+    res1 <- paste0("The compromise set of treatments across all outcomes are: ",
                   solution )
   }
   else if (!cond1) {
@@ -120,14 +120,16 @@ print.vikor <- function(x, ...) {
     
     solution <- paste(c(row.names(Q)[E]), collapse = ", ")
     
-    res1 <- paste("The compromise set of treatments across all outcomes are: ", solution)
+    res1 <- paste0("The compromise set of treatments across all outcomes are: ", solution)
     
   }
   else if ((!cond1) & (!cond2)) {
-    res1 <- paste("No compromise solution was identified. Please consider different outcome weights.")
+    res1 <- paste0("No compromise solution was identified. Please consider different outcome weights.")
   }
   
-  cat(paste0(res1, "\n"))
+  prmatrix(round(Q,digits = digits),quote = FALSE,right = TRUE)
+  
+  cat(paste0("\n",res1,"\n"))
   #
   invisible(NULL)
 }
