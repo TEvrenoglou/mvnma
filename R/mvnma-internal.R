@@ -309,8 +309,13 @@ gather_results <- function(res, n.out, labtreat, ref, reference.group,
     basic_comp[[i]] %<>% select(mean, sd, "2.5%", "97.5%", Rhat, n.eff) %>%
       rename(TE = mean, lower = "2.5%", upper = "97.5%")
     
-    # psi's (similar to tau)
-    psi[[i]] <- res %>% filter(grepl("psi", ind))
+    ## psi's (similar to tau)
+    
+    psi[[i]] <- res %>%
+      filter(grepl(c("psi"), ind)) %>% 
+      select(mean,sd,`2.5%`,`97.5%`,Rhat)
+    
+    names(psi[[i]]) <- c("psi","sd","lb.ci","ub.ci","Rhat")
     
     # rho
     rho[[i]] <- res %>% filter(grepl("rho", ind))
@@ -328,6 +333,10 @@ gather_results <- function(res, n.out, labtreat, ref, reference.group,
   outcome_correlation %<>% select(mean, sd, "2.5%", "97.5%", Rhat, n.eff) %>%
     rename(corr_coef = mean, lower = "2.5%", upper = "97.5%")
   
+  psi <- psi[[1]]
+  
+  row.names(psi) <- paste(outlab)
+  
   # create row.names for outcome_correlation
   r1 <- t(combn(seq_along(outlab), 2))
   
@@ -342,11 +351,11 @@ gather_results <- function(res, n.out, labtreat, ref, reference.group,
   row.names(outcome_correlation) <- r.names
   
   out1 <- list(basic_estimates = basic_comp[[1]], 
-               heterogeneity = psi[[1]][1, 1], 
+               heterogeneity = psi[1,], 
                samples = d[[1]])
   #
   out2 <- list(basic_estimates = basic_comp[[2]], 
-               heterogeneity = psi[[1]][2, 1], 
+               heterogeneity = psi[2,], 
                samples = d[[2]])
   #
   res <- list(out1, out2)
@@ -354,7 +363,7 @@ gather_results <- function(res, n.out, labtreat, ref, reference.group,
   #
   if (n.out >= 3) {
     out3 <- list(basic_estimates = basic_comp[[3]], 
-                 heterogeneity = psi[[1]][3, 1], 
+                 heterogeneity = psi[3,], 
                  samples = d[[3]])
     #
     res[[3]] <- out3
@@ -363,7 +372,7 @@ gather_results <- function(res, n.out, labtreat, ref, reference.group,
   #
   if (n.out >= 4) {
     out4 <- list(basic_estimates = basic_comp[[4]], 
-                 heterogeneity = psi[[1]][4, 1], 
+                 heterogeneity = psi[4,], 
                  samples = d[[4]])
     #
     res[[4]] <- out4
@@ -372,7 +381,7 @@ gather_results <- function(res, n.out, labtreat, ref, reference.group,
   #
   if (n.out >= 5) {
     out5 <- list(basic_estimates = basic_comp[[5]], 
-                 heterogeneity = psi[[1]][5, 1], 
+                 heterogeneity = psi[5,], 
                  samples = d[[5]])
     #
     res[[5]] <- out5

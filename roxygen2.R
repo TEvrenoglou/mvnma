@@ -28,3 +28,6 @@ build_manual()
 
 install()
 #install(build_vignettes = TRUE)
+
+check()
+
