@@ -6,7 +6,7 @@
 single-correlation coefficient model}
 \usage{
 mvnma(
-  data,
+  ...,
   reference.group = NULL,
   outclab = NULL,
   n.iter = 10000,
@@ -18,7 +18,8 @@ mvnma(
 )
 }
 \arguments{
-\item{data}{An object of class \code{\link{mvdata}}.}
+\item{\dots}{Either two to five pairwise objects or a single list with
+two to five pairwise objects.}
 
 \item{reference.group}{A common reference treatment across all outcomes.}
 
@@ -32,11 +33,11 @@ the each outcome is labelled as 'outcome_1', 'outcome_2' etc.}
 \item{level}{The level used to calculate confidence intervals
 for network estimates.}
 
-\item{lower.rho}{Lower bounds for the Uniform prior(s) used for the correlation
-coefficient. If NULL all bounds are set to -1.}
+\item{lower.rho}{Lower bounds for the Uniform prior(s) used for the
+correlation coefficient. If NULL all bounds are set to -1.}
 
-\item{upper.rho}{Upper bounds for the Uniform prior(s) used for the correlation
-coefficient. If NULL all bounds are set to 1.}
+\item{upper.rho}{Upper bounds for the Uniform prior(s) used for the
+correlation coefficient. If NULL all bounds are set to 1.}
 
 \item{quiet}{A logical indicating whether to print information on the
 progress of the JAGS model fitting.}
@@ -59,11 +60,11 @@ Currently, the function can simultaneously pool up to five outcomes.
 Additionally, the studies to be included should be of maximum three arms.
 }
 \details{
-The function \code{\link{mvnma}} expects data in the format of a "mvdata"
-object. This function transforms the data into a suitable format for JAGS.
-A common reference treatment across all outcomes is required. However, this
-requirement is only for enabling the calculations, as the function 
-\code{\link{league}} generates all possible comparisons.
+The function \code{\link{mvnma}} expects two to five outcomes /
+\code{\link[meta]{pairwise}} objects. A common reference treatment across
+all outcomes is required. However, this requirement is only for enabling
+the calculations, as the function  \code{\link{league}} extracts all
+possible comparisons.
 
 The Bayesian multivariate network meta-analysis model fitted in the
 \bold{mvnma} package assumes uniform priors for the between-outcome
@@ -112,41 +113,32 @@ p5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(loss.ae1, loss.ae2, loss.ae3), n = list(n1, n2, n3),
   studlab = id, data = dat.linde2015, sm = "OR")
 
-# Perform analysis considering efficacy outcomes
-p12 <- list(p1, p2)
-
-# Use 'mvdata()' to transform the data in suitable JAGS format
-data12 <- mvdata(p12)
-
 # Define outcome labels
 outcomes <- c("Early_Response", "Early_Remission",
   "Adverse_events", "Loss_to_follow_up", "Loss_to_follow_up_AE")
  
 # Fit the model combining only the two efficacy outcomes
 set.seed(1909)
-mvnma12 <- mvnma(data = data12,
+mvnma12 <- mvnma(p1, p2,
   reference.group = "Placebo", outclab = outcomes[1:2],
   n.iter = 1000, n.burnin = 100)
-              
+mvnma12
+       
 # Extract treatment effect estimates and heterogeneity for Early_Response 
 mvnma12$Early_Response$basic_estimates
-mvnma12$Early_Response$heterogeneity      
+mvnma12$Early_Response$heterogeneity
 
 # Extract outcome correlation
 mvnma12$cor
-             
+
 # Plot the results for efficacy outcomes
 forest(mvnma12)
 
 # Get all estimates
 league12 <- league(mvnma12)
 
-# Perform analysis considering all outcomes
-p_all <- list(p1, p2, p3, p4, p5)
-data_all <- mvdata(p_all)
-
 # Fit the model combining all five outcomes
-mvnma_all <- mvnma(data = data_all,
+mvnma_all <- mvnma(p1, p2, p3, p4, p5,
   reference.group = "Placebo", outclab = outcomes,
   n.iter = 1000, n.burnin = 100)
 
@@ -164,4 +156,7 @@ forest(mvnma_all)
 league_all <- league(mvnma_all)
 }
 
+}
+\seealso{
+\code{\link[meta]{pairwise}}
 }

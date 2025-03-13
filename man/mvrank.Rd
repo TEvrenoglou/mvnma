@@ -61,13 +61,9 @@ p5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
 outcomes <- c("Early_Response", "Early_Remission",
   "Adverse_events", "Loss_to_follow_up", "Loss_to_follow_up_AE")
 
-# Perform analysis considering all outcomes
-p_all <- list(p1, p2, p3, p4, p5)
-data_all <- mvdata(p_all)
- 
-# Fit the model combining only the two efficacy outcomes
+# Fit the model combining all five outcomes
 set.seed(1909)
-mvnma_all <- mvnma(data = data_all,
+mvnma_all <- mvnma(p1, p2, p3, p4, p5,
   reference.group = "Placebo", outclab = outcomes,
   n.iter = 1000, n.burnin = 100)
 

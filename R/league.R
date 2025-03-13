@@ -28,18 +28,12 @@
 #'   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
 #'   studlab = id, data = dat.linde2015, sm = "OR")
 #'
-#' # Perform analysis considering the efficacy outcomes
-#' p12 <- list(p1, p2)
-#'
-#' # Use 'mvdata()' to transform the data in suitable JAGS format
-#' data12 <- mvdata(p12)
-#'
 #' # Define outcome labels
 #' outcomes <- c("Early Response", "Early Remission")
 #'  
-#' # Fit the model combining only the two efficacy outcomes
+#' # Fit the model combining the two efficacy outcomes
 #' set.seed(1909)
-#' mvnma12 <- mvnma(data = data12, 
+#' mvnma12 <- mvnma(p1, p2,
 #'   reference.group = "Placebo", outclab = outcomes,
 #'   n.iter = 1000, n.burnin = 100)
 #' mvnma12
