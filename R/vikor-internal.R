@@ -52,12 +52,16 @@ vikor_internal <- function(x, weights, v, pos.sol, neg.sol) {
   for (i in seq_len(altno)) {
     R[i] <- max(wnm[i, ])
     S[i] <- sum(wnm[i, ])
-    #
+    
+  }
+  
+  for (i in seq_len(altno)) {
     Q[i] <- (v * (S[i] - min(S)) / (max(S) - min(S))) + 
       ((1 - v) * (R[i] - min(R)) / (max(R) - min(R)))
   }
   #
   res <- data.frame(Q, S, R, row.names = row.names(x)) %>% arrange(Q)
+  
   #
   class(res) <- c("vikor", class(res))
   attr(res, "performance.table") <- x
