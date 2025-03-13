@@ -150,6 +150,10 @@ mvnma <- function(...,
   n.i <- seq_len(n.out)
   #
   if (n.out == 1) {
+    if (is_pairwise(args[[1]]))
+      stop("Provide between two and five pairwise objects.",
+           call. = FALSE)
+    #
     if (!is.list(args[[1]]))
       stop("All elements of argument '...' must be of classes ",
            "'netmeta', 'netcomb', or 'discomb'.",
