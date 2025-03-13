@@ -57,36 +57,6 @@ model{
   psi2 ~ dnorm(0, 1)T(0, )
   #
   rho1 ~ dunif(lower.rho1, upper.rho1)
-  #
-  # Estimated effect sizes
-  #
-  for (c in 1:(ref - 1)) {
-    res.ref1[c] <- d1[c] - d1[ref] 
-  } 
-  #
-  for (c in (ref + 1):NT) {
-    res.ref1[c] <- d1[c] - d1[ref]	
-  } 
-  #
-  for (c in 1:(NT - 1)) {
-    for (k in (c + 1):NT) { 
-     res.1[c, k] <- d1[k] - d1[c]
-    }
-  }
-  #
-  for (c in 1:(ref - 1)) {
-    res.ref2[c] <- d2[c] - d2[ref]
-  }
-  #
-  for (c in (ref + 1):NT) { 
-    res.ref2[c] <- d2[c] - d2[ref]
-  }
-  #
-  for (c in 1:(NT - 1)) {
-    for (k in (c + 1):NT) {
-      res.2[c, k] <- d2[k] - d2[c] 
-    }
-  }	
 }
 
 # # SUCRA rankings

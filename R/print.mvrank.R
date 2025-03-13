@@ -1,15 +1,11 @@
-#' Print results of multivariate network meta-analysis
+#' Print results for treatment ranking in multivariate network meta-analysis
 #' 
 #' @description
-#' Print results of multivariate network meta-analysis
+#' Print results for treatment ranking in multivariate network meta-analysis
 #' 
-#' @param x An object of class \code{\link{mvnma}}.
+#' @param x An object of class \code{\link{mvrank}}.
 #' @param digits Minimal number of significant digits, see
 #'   \code{print.default}.
-#' @param digits.sd Minimal number of significant digits for standard
-#'   deviations
-#' @param print.sd A logical specifying whether standard deviations should be
-#'   printed.
 #' @param \dots Additional arguments (ignored)
 #'
 #' @examples
@@ -41,57 +37,38 @@
 #' mvnma12 <- mvnma(data = data12, 
 #'   reference.group = "Placebo", outclab = outcomes,
 #'   n.iter = 10, n.burnin = 1)
-#' mvnma12
+#' 
+#' mvrank(mvnma12, small = c("und", "und"))
 #' }
 #'
 #' 
-#' @method print mvnma 
+#' @method print mvrank 
 #' @export
 
-print.mvnma <- function(x,
-                        digits = gs("digits"),
-                        digits.sd = gs("digits.sd"),
-                        print.sd = FALSE,
-                        ...) {
+print.mvrank <- function(x,
+                         digits = gs("digits"),
+                         ...) {
   
-  chkclass(x, "mvnma")
+  chkclass(x, "mvrank")
   #
   chknumeric(digits, min = 0, length = 1)
-  chknumeric(digits.sd, min = 0, length = 1)
-  chklogical(print.sd)
   #
-  level <- attr(x, "level")
-  reference.group <- attr(x, "reference.group")
-  #
-  ci.lab <- paste0(round(100 * level, 1), "%-CI")
-  #
-  x <- x[names(x) != "cor"]
   nam <- names(x)
   
   # Get rid of warning "no visible binding for global variable"
-  lower <- upper <- psi <- NULL
+  treatment <- NULL
   #
   for (i in seq_along(nam)) {
     cat(paste0(if (i > 1) "\n" else "", "Outcome: ", nam[i], "\n\n"))
     #
-    dat.i <- x[[i]]$basic_estimates
-    dat.i <- dat.i[rownames(dat.i) != reference.group, ]
+    dat.i <- x[[i]]
+    rownames(dat.i) <- dat.i$treatment
+    dat.i %<>% select(-treatment)
     #
-    dat.i$mean <- formatN(dat.i$mean, digits = digits)
+    nam.i <- names(dat.i)
     #
-    if (!print.sd)
-      dat.i$sd <- NULL
-    else
-      dat.i$sd <- formatN(dat.i$sd, digits = digits.sd)
-    #
-    dat.i$lower <- formatCI(formatN(dat.i$lower, digits = digits),
-                            formatN(dat.i$upper, digits = digits))
-    dat.i %<>% select(-upper)
-    names(dat.i)[names(dat.i) == "lower"] <- ci.lab
-    #
-    dat.i$Rhat <- formatN(dat.i$Rhat, digits = 4)
-    #
-    rownames(dat.i) <- paste0("d[", rownames(dat.i), "]")
+    for (j in nam.i)
+      dat.i[[j]] <- formatN(dat.i[[j]], digits = digits)
     #
     prmatrix(dat.i, quote = FALSE, right = TRUE)
   }

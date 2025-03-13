@@ -37,19 +37,14 @@
 #' data12 <- mvdata(p12)
 #'
 #' # Define outcome labels
-#' outcomes <- c("Early_Response", "Early_Remission")
+#' outcomes <- c("Early Response", "Early Remission")
 #'  
 #' # Fit the model combining only the two efficacy outcomes
 #' set.seed(1909)
 #' mvnma12 <- mvnma(data = data12, 
-#'   reference.group = "Placebo", outlab = outcomes,
+#'   reference.group = "Placebo", outclab = outcomes,
 #'   n.iter = 1000, n.burnin = 100)
-#' 
-#' # Extract treatment effect estimates and heterogeneity for Early_Response 
-#' mvnma12$Early_Response$basic_estimates
-#'                 
-#' # Extract treatment effect estimates and heterogeneity for Early_Response 
-#' mvnma12$Early_Response$basic_estimates
+#' mvnma12
 #' 
 #' # Get all estimates
 #' league12 <- league(mvnma12)

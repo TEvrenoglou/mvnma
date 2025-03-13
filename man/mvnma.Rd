@@ -8,11 +8,13 @@ single-correlation coefficient model}
 mvnma(
   data,
   reference.group = NULL,
-  outlab = NULL,
+  outclab = NULL,
   n.iter = 10000,
   n.burnin = 2000,
+  level = gs("level.ma"),
   lower.rho,
-  upper.rho
+  upper.rho,
+  quiet = FALSE
 )
 }
 \arguments{
@@ -20,18 +22,24 @@ mvnma(
 
 \item{reference.group}{A common reference treatment across all outcomes.}
 
-\item{outlab}{An optional argument with labels for each outcome. If NULL,
+\item{outclab}{An optional argument with labels for each outcome. If NULL,
 the each outcome is labelled as 'outcome_1', 'outcome_2' etc.}
 
 \item{n.iter}{Number of iterations.}
 
-\item{n.burnin}{Number of iterations for burnin.}
+\item{n.burnin}{Number of iterations for burn-in.}
+
+\item{level}{The level used to calculate confidence intervals
+for network estimates.}
 
 \item{lower.rho}{Lower bounds for the Uniform prior(s) used for the correlation
 coefficient. If NULL all bounds are set to -1.}
 
 \item{upper.rho}{Upper bounds for the Uniform prior(s) used for the correlation
 coefficient. If NULL all bounds are set to 1.}
+
+\item{quiet}{A logical indicating whether to print information on the
+progress of the JAGS model fitting.}
 }
 \value{
 The function return an 'mvnma' object. This consists of the results for each
@@ -111,13 +119,13 @@ p12 <- list(p1, p2)
 data12 <- mvdata(p12)
 
 # Define outcome labels
-outlab <- c("Early_Response", "Early_Remission",
+outcomes <- c("Early_Response", "Early_Remission",
   "Adverse_events", "Loss_to_follow_up", "Loss_to_follow_up_AE")
  
 # Fit the model combining only the two efficacy outcomes
 set.seed(1909)
 mvnma12 <- mvnma(data = data12,
-  reference.group = "Placebo", outlab = outlab[1:2],
+  reference.group = "Placebo", outclab = outcomes[1:2],
   n.iter = 1000, n.burnin = 100)
               
 # Extract treatment effect estimates and heterogeneity for Early_Response 
@@ -125,7 +133,7 @@ mvnma12$Early_Response$basic_estimates
 mvnma12$Early_Response$heterogeneity      
 
 # Extract outcome correlation
-mvnma12$outcome_correlation
+mvnma12$cor
              
 # Plot the results for efficacy outcomes
 forest(mvnma12)
@@ -139,7 +147,7 @@ data_all <- mvdata(p_all)
 
 # Fit the model combining all five outcomes
 mvnma_all <- mvnma(data = data_all,
-  reference.group = "Placebo", outlab = outlab,
+  reference.group = "Placebo", outclab = outcomes,
   n.iter = 1000, n.burnin = 100)
 
 # Extract treatment effect estimates and heterogeneity for Early_Response 
@@ -147,7 +155,7 @@ mvnma_all$Early_Response$basic_estimates
 mvnma_all$Early_Response$heterogeneity      
 
 # Extract outcome correlation 
-mvnma_all$outcome_correlation
+mvnma_all$cor
 
 # Plot the results for all outcomes
 forest(mvnma_all)

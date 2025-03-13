@@ -30,15 +30,15 @@
 #' @keywords package
 #'
 #' @importFrom R2jags jags
-#' @importFrom meta forest metagen pairwise
+#' @importFrom meta forest gs metagen pairwise
 #' @importFrom netmeta hasse netposet rankogram
 #' @importFrom matrixStats colSds
 #' @importFrom dplyr %>% all_of any_of arrange bind_rows bind_cols desc
-#'   distinct filter group_by rename select
+#'   distinct filter group_by mutate rename select
 #' @importFrom magrittr %<>%
 #' @importFrom rlist list.cbind list.rbind
 #' @importFrom graphics text
-#' @importFrom stats complete.cases
+#' @importFrom stats complete.cases quantile
 #' @importFrom utils combn packageVersion
 
 "_PACKAGE"

@@ -58,7 +58,7 @@ p5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   studlab = id, data = dat.linde2015, sm = "OR")
 
 # Define outcome labels
-outlab <- c("Early_Response", "Early_Remission",
+outcomes <- c("Early_Response", "Early_Remission",
   "Adverse_events", "Loss_to_follow_up", "Loss_to_follow_up_AE")
 
 # Perform analysis considering all outcomes
@@ -68,7 +68,7 @@ data_all <- mvdata(p_all)
 # Fit the model combining only the two efficacy outcomes
 set.seed(1909)
 mvnma_all <- mvnma(data = data_all,
-  reference.group = "Placebo", outlab = outlab,
+  reference.group = "Placebo", outclab = outcomes,
   n.iter = 1000, n.burnin = 100)
 
 # Rank treatments using pBV

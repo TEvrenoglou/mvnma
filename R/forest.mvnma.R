@@ -39,12 +39,12 @@
 #' data12 <- mvdata(p12)
 #'
 #' # Define outcome labels
-#' outcomes <- c("Early_Response", "Early_Remission")
+#' outcomes <- c("Early Response", "Early Remission")
 #'  
 #' # Fit the model combining only the two efficacy outcomes
 #' set.seed(1909)
 #' mvnma12 <- mvnma(data = data12, 
-#'   reference.group = "Placebo", outlab = outcomes,
+#'   reference.group = "Placebo", outclab = outcomes,
 #'   n.iter = 1000, n.burnin = 100)
 #' mvnma12
 #' 
@@ -71,7 +71,7 @@ forest.mvnma <- function(x, backtransf = FALSE,
   
   chkclass(x, "mvnma")
   #
-  x <- x[names(x) != "outcome_correlation"]
+  x <- x[names(x) != "cor"]
   
   n.out <- length(x)
   
@@ -100,7 +100,7 @@ forest.mvnma <- function(x, backtransf = FALSE,
   #   mutate("treat" = row.names(ests_1)) %>% 
   #   select(treat,mean,sd,`2.5%`,`97.5%`)
   #   
-  # ests_1$outcome <- attributes(x)$outlab[1]
+  # ests_1$outcome <- attributes(x)$outcomes[1]
   # 
   # ests_2 <- x[[2]]$basic_estimates
   # 
@@ -108,7 +108,7 @@ forest.mvnma <- function(x, backtransf = FALSE,
   #   mutate("treat" = row.names(ests_2)) %>% 
   #   select(treat,mean,sd,`2.5%`,`97.5%`)
   # 
-  # ests_2$outcome <- attributes(x)$outlab[2]
+  # ests_2$outcome <- attributes(x)$outcomes[2]
   
   
   ### construct final dataset    '

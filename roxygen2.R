@@ -34,4 +34,4 @@ install()
 # (5) Check R package
 #
 
-check()
+#check()

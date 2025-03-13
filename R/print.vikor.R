@@ -33,12 +33,12 @@
 #' data12 <- mvdata(p12)
 #' 
 #' # Define outcome labels
-#' outlab <- c("Early_Response", "Early_Remission")
+#' outcomes <- c("Early_Response", "Early_Remission")
 #' 
 #' # Fit the model combining only the two efficacy outcomes
 #' set.seed(1909)
 #' mvnma12 <- mvnma(data = data12,
-#'   reference.group = "Placebo", outlab = outlab[1:2],
+#'   reference.group = "Placebo", outclab = outcomes[1:2],
 #'   n.iter = 1000, n.burnin = 100)
 #'            
 #' # Extract treatment effect estimates and heterogeneity for Early_Response 

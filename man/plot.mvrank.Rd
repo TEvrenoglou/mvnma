@@ -4,23 +4,37 @@
 \alias{plot.mvrank}
 \title{Scatter plot to visualize the ranking lists for two outcomes.}
 \usage{
-\method{plot}{mvrank}(x, outcome = NULL, pos = 1, cex.point = 1, cex.label = 0.7, pch = 19, ...)
+\method{plot}{mvrank}(
+  x,
+  which = 1:2,
+  pos = 1,
+  cex.point = 1,
+  cex.label = 0.7,
+  pch = 19,
+  xlim = c(0, 1),
+  ylim = c(0, 1),
+  ...
+)
 }
 \arguments{
 \item{x}{An object of class \code{\link{mvrank}}.}
 
-\item{outcome}{A mandatory numeric vector of length 2 specifying which
-outcomes should be plotted. For example, setting "outcome=c(2,3)" implies
-that a scatter plot will be generated plotting the rankings of outcomes 2
-and 3.}
+\item{which}{A mandatory numeric vector of length 2 specifying which
+outcomes should be plotted. For example, setting "outcome = c(2,3)"
+implies that a scatter plot will be generated plotting the rankings
+of outcomes 2 and 3.}
 
-\item{pos}{...}
+\item{pos}{Position of treatment labels.}
 
 \item{cex.point}{...}
 
 \item{cex.label}{...}
 
 \item{pch}{...}
+
+\item{xlim}{...}
+
+\item{ylim}{...}
 
 \item{...}{Additional arguments for \code{\link{plot}} function.}
 }
@@ -50,12 +64,12 @@ p12 <- list(p1, p2)
 data12 <- mvdata(p12)
 
 # Define outcome labels
-outlab <- c("Early_Response", "Early_Remission")
+outcomes <- c("Early_Response", "Early_Remission")
 
 # Fit the model combining only the two efficacy outcomes
 set.seed(1909)
 mvnma12 <- mvnma(data = data12,
-  reference.group = "Placebo", outlab = outlab[1:2],
+  reference.group = "Placebo", outclab = outcomes[1:2],
   n.iter = 1000, n.burnin = 100)
            
 # Extract treatment effect estimates and heterogeneity for Early_Response 

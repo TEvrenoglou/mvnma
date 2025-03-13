@@ -1,7 +1,7 @@
 Package: mvnma
 Title: Multivariate Network Meta-Analysis
 Version: 0.1-0
-Date: 2025-03-12
+Date: 2025-03-13
 Depends: R (>= 4.0.0), meta (>= 8.0-2), netmeta (>= 3.0-2), R2jags
 Imports: dplyr, magrittr, matrixStats, rlist
 Authors@R: c(person("Theodoros", "Evrenoglou",

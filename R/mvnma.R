@@ -8,14 +8,18 @@
 #' 
 #' @param data An object of class \code{\link{mvdata}}.
 #' @param reference.group A common reference treatment across all outcomes.
-#' @param outlab An optional argument with labels for each outcome. If NULL,
+#' @param outclab An optional argument with labels for each outcome. If NULL,
 #'   the each outcome is labelled as 'outcome_1', 'outcome_2' etc.
 #' @param n.iter Number of iterations.
-#' @param n.burnin Number of iterations for burnin.
+#' @param n.burnin Number of iterations for burn-in.
+#' @param level The level used to calculate confidence intervals
+#'   for network estimates.
 #' @param lower.rho Lower bounds for the Uniform prior(s) used for the correlation
 #'   coefficient. If NULL all bounds are set to -1.
 #' @param upper.rho Upper bounds for the Uniform prior(s) used for the correlation
 #'   coefficient. If NULL all bounds are set to 1.
+#' @param quiet A logical indicating whether to print information on the
+#'   progress of the JAGS model fitting.
 #' 
 #' @details
 #' The function \code{\link{mvnma}} expects data in the format of a "mvdata"
@@ -90,13 +94,13 @@
 #' data12 <- mvdata(p12)
 #'
 #' # Define outcome labels
-#' outlab <- c("Early_Response", "Early_Remission",
+#' outcomes <- c("Early_Response", "Early_Remission",
 #'   "Adverse_events", "Loss_to_follow_up", "Loss_to_follow_up_AE")
 #'  
 #' # Fit the model combining only the two efficacy outcomes
 #' set.seed(1909)
 #' mvnma12 <- mvnma(data = data12,
-#'   reference.group = "Placebo", outlab = outlab[1:2],
+#'   reference.group = "Placebo", outclab = outcomes[1:2],
 #'   n.iter = 1000, n.burnin = 100)
 #'               
 #' # Extract treatment effect estimates and heterogeneity for Early_Response 
@@ -104,7 +108,7 @@
 #' mvnma12$Early_Response$heterogeneity      
 #' 
 #' # Extract outcome correlation
-#' mvnma12$outcome_correlation
+#' mvnma12$cor
 #'              
 #' # Plot the results for efficacy outcomes
 #' forest(mvnma12)
@@ -118,7 +122,7 @@
 #' 
 #' # Fit the model combining all five outcomes
 #' mvnma_all <- mvnma(data = data_all,
-#'   reference.group = "Placebo", outlab = outlab,
+#'   reference.group = "Placebo", outclab = outcomes,
 #'   n.iter = 1000, n.burnin = 100)
 #' 
 #' # Extract treatment effect estimates and heterogeneity for Early_Response 
@@ -126,7 +130,7 @@
 #' mvnma_all$Early_Response$heterogeneity      
 #' 
 #' # Extract outcome correlation 
-#' mvnma_all$outcome_correlation
+#' mvnma_all$cor
 #'
 #' # Plot the results for all outcomes
 #' forest(mvnma_all)
@@ -138,13 +142,17 @@
 #' @export mvnma
 
 mvnma <- function(data,
-                  reference.group = NULL, outlab = NULL,
+                  reference.group = NULL, outclab = NULL,
                   n.iter = 10000, n.burnin = 2000,
-                  lower.rho, upper.rho) {
+                  level = gs("level.ma"),
+                  lower.rho, upper.rho,
+                  quiet = FALSE) {
   
   chkclass(data, "mvdata")
   #
   chknull(reference.group)
+  chklevel(level)
+  chklogical(quiet)
   # extract number of outcomes  
   n.out <- ncol(data$var)
   n.cor <- c(0, 1, 3, 6, 10)[n.out]
@@ -164,7 +172,7 @@ mvnma <- function(data,
            "argument 'upper.rho'.",
            call. = FALSE)
   }
-  
+    
   # Create bounds for correlation prior
   #
   if (miss.lower)
@@ -252,14 +260,14 @@ mvnma <- function(data,
   
   # Create outcome labels if not provided
   #
-  if (is.null(outlab))
-    outlab <- paste("outcome", seq_len(n.out), sep = "_")  
-  else if (length(outlab) != n.out)
+  if (is.null(outclab))
+    outclab <- paste("outcome", seq_len(n.out), sep = "_")  
+  else if (length(outclab) != n.out)
     stop("Please provide labels for all outcomes.")
   
-  labtreat <- data$labtreat$treat
+  trts <- data$labtreat$treat
   #
-  ref <- unname(which(labtreat == reference.group))  
+  ref <- unname(which(trts == reference.group))  
   
   
   multiarm <- ncol(data$T) > 2
@@ -346,10 +354,9 @@ mvnma <- function(data,
       run.data$upper.rho8 <- run.data$upper.rho9 <- run.data$upper.rho10 <-
       NULL
     #
-    params <- c("res.ref1", "res.ref2",
-                "rho1", 
+    params <- c("d1", "d2", 
                 "psi1", "psi2",
-                "d1", "d2")
+                "rho1")
     #
     if (multiarm)
       model.file <- system.file("model", "mvnma_2_3arm.txt", package = "mvnma")
@@ -419,46 +426,36 @@ mvnma <- function(data,
   # Run Bayesian analysis
   #
   
-  run <- jags(
+  fit <- jags(
     data = run.data,
     inits = NULL,
     #
     parameters.to.save = params,
     #
-    n.chains = 2, n.iter = n.iter, n.burnin = n.burnin,
+    n.chains = 2, n.iter = n.iter, n.burnin = n.burnin, n.thin = 1,
     #
     DIC = FALSE,
     #
-    model.file = model.file)
-  
-  
-  results <- as.data.frame(run$BUGSoutput$summary)
-  
-  results$ind <- as.character(rownames(results))
-  
-  sims_bugs_out <- as.data.frame(run$BUGSoutput$sims.matrix)
-  
+    model.file = model.file,
+    quiet = quiet)
+  #
+  samples <- fit$BUGSoutput$sims.list
+  colnames(samples$d1) <- trts
+  colnames(samples$d2) <- trts
   #
   # Manipulate the results and create suitable datasets
   #
-  res <- gather_results(results,
-                        n.out = n.out,
-                        labtreat = labtreat,
+  res <- gather_results(fit,
+                        outcomes = outclab,
+                        trts = trts,
                         reference.group = reference.group,
-                        ref = ref,
-                        data = data,
-                        sims_bugs_out = sims_bugs_out,
-                        outlab = outlab)
+                        level = level)
   #
-  all_res <- get_all_estimates(res)
-  #
-  attr(res,"outlab") <- outlab
-  #
-  sm <- attributes(data)$sm
-  #
-  attr(res, "sm") <- sm
-  #
-  attr(res, "all_res") <- all_res
+  attr(res, "outcomes") <- outclab
+  attr(res, "trts") <- trts
+  attr(res, "reference.group") <- reference.group
+  attr(res, "level") <- level
+  attr(res, "sm") <- attributes(data)$sm
   #
   class(res) <- "mvnma"
   #

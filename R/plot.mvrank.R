@@ -5,14 +5,16 @@
 #' window or store the forest plot in a file.
 #' 
 #' @param x An object of class \code{\link{mvrank}}.
-#' @param outcome A mandatory numeric vector of length 2 specifying which
-#'   outcomes should be plotted. For example, setting "outcome=c(2,3)" implies
-#'   that a scatter plot will be generated plotting the rankings of outcomes 2
-#'   and 3.
-#' @param pos ...
+#' @param which A mandatory numeric vector of length 2 specifying which
+#'   outcomes should be plotted. For example, setting "outcome = c(2,3)"
+#'   implies that a scatter plot will be generated plotting the rankings
+#'   of outcomes 2 and 3.
+#' @param pos Position of treatment labels.
 #' @param cex.point ...
 #' @param cex.label ...
 #' @param pch ...
+#' @param xlim ...
+#' @param ylim ...
 #' @param ... Additional arguments for \code{\link{plot}} function.
 #' 
 #' @examples
@@ -37,12 +39,12 @@
 #' data12 <- mvdata(p12)
 #' 
 #' # Define outcome labels
-#' outlab <- c("Early_Response", "Early_Remission")
+#' outcomes <- c("Early_Response", "Early_Remission")
 #' 
 #' # Fit the model combining only the two efficacy outcomes
 #' set.seed(1909)
 #' mvnma12 <- mvnma(data = data12,
-#'   reference.group = "Placebo", outlab = outlab[1:2],
+#'   reference.group = "Placebo", outclab = outcomes[1:2],
 #'   n.iter = 1000, n.burnin = 100)
 #'            
 #' # Extract treatment effect estimates and heterogeneity for Early_Response 
@@ -75,50 +77,53 @@
 #' @method plot mvrank 
 #' @export  
 
-plot.mvrank <- function(x, outcome = NULL, pos = 1,
+plot.mvrank <- function(x, which = 1:2,
+                        pos = 1,
                         cex.point = 1, cex.label = 0.7, pch = 19,
+                        xlim = c(0, 1), ylim = c(0, 1),
                         ...) {
   
   chkclass(x, "mvrank")
   #
-  # Get rid of warning "no visible binding for global variable"
-  treat1 <- treat2 <- NULL
-  
-  chknull(outcome)
-  #
-  if (length(outcome) < 2)
-    stop("Argument  'outcome' should be of length 2.")
-  else if (length(outcome) > 2) {
-    outcome <- c(1, 2)
-    warning("Argument 'outcome' should be of length 2. The produced scatter ",
-            "plot now refers to outcomes 1 and 2.")
-  }
-  #
-  outlab <- names(x)[c(outcome[1], outcome[2])]
-  
+  n.outcome <- length(names(x))
   common_trts <- attributes(x)$common_trts
+  #
+  chknumeric(which, min = 1, max = n.outcome, length = 2)
+  chknumeric(cex.point, min = 0, zero = TRUE)
+  chknumeric(cex.label, min = 0, zero = TRUE)
+  chknumeric(pch, min = 1, zero = TRUE)
+  chknumeric(xlim, length = 2)
+  chknumeric(ylim, length = 2)
+  #
+  first <- which[1]
+  second <- which[2]
   
-  r1 <- x[[outcome[1]]]
-  names(r1)[1:2] <- c("treat1", paste(names(r1)[2],"1",sep = ""))
-  r1$out1 <- outlab[1]
+  # Get rid of warning "no visible binding for global variable"
+  treat <- NULL
+    
+  outcomes <- names(x)[c(first, second)]
   #
-  r1 %<>% filter(treat1 %in% common_trts) %>% arrange(treat1)
+  dat1 <- x[[first]]
+  names(dat1)[1:2] <- c("treat", "rank1")
+  dat1$out1 <- outcomes[1]
+  #
+  dat1 %<>% filter(treat %in% common_trts)
   
-  r2 <- x[[outcome[2]]]
-  names(r2)[1:2] <- c("treat2", paste(names(r2)[2],"2",sep = ""))
-  r2$out2 <- outlab[2]
+  dat2 <- x[[second]]
+  names(dat2)[1:2] <- c("treat", "rank2")
+  dat2$out2 <- outcomes[2]
   #
-  r2 %<>% filter(treat2 %in% common_trts) %>% arrange(treat2)
+  dat2 %<>% filter(treat %in% common_trts)
   #
-  ranking <- cbind.data.frame(r1, r2)  
+  dat <- merge(dat1, dat2, by = "treat", all.x = TRUE, all.y = TRUE)
   #
-  plot(ranking[, 2], ranking[, 5], main = "",
+  plot(dat$rank1, dat$rank2, main = "",
        cex = cex.point,
-       xlab = outlab[1], ylab = outlab[2],
-       pch = pch, ...)
+       xlab = outcomes[1], ylab = outcomes[2],
+       pch = pch, xlim = xlim, ylim = ylim, ...)
   #
-  text(ranking[,2], ranking[,5],labels = ranking$treat1,
+  text(dat$rank1, dat$rank2, labels = dat$treat,
        cex = cex.label, pos = pos, col = "black")
   #
-  invisible(NULL)  
+  invisible(NULL)
 }

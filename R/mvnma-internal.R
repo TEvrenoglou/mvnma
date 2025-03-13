@@ -239,33 +239,22 @@ make_jags_data <- function(dat) {
     
     var[[i]] <- ifelse(is.na(var[[i]]), 10000, var[[i]])
     
-    names_vec[i] <- paste("var", i, sep = "")
+    names_vec[i] <- paste0("var", i)
     
     dat_out[[i]] <- dat_out[[i]][complete.cases(dat_out[[i]]$TE), ]
     
     treat_out[[i]] <- unique(c(dat_out[[i]]$treat1, dat_out[[i]]$treat2))
-    
   }
   
-  var_f <- list.cbind(var) 
-  
+  var_f <- list.cbind(var)
   var_f <- as.data.frame(var_f)
-  
   names(var_f) <- names_vec
   
+  res <- list(y = y, var = var_f, T = treat_data,
+              Ns = Ns, N2h = two_arm, NT = NT, 
+              labtreat = labtreat, treat_out = treat_out)
   
-  dat_f <- list("y" = y, 
-                "var" = var_f, 
-                "T" = treat_data, 
-                "Ns" = Ns, 
-                "N2h" = two_arm, 
-                #"na" = arms, 
-                "labtreat" = labtreat, 
-                "treat_out" = treat_out, 
-                "NT" = NT
-  )
-  
-  dat_f
+  res
 }
 
 is.list.pairwise <- function(p, ...) {
@@ -285,172 +274,192 @@ is.list.pairwise <- function(p, ...) {
   pair
 }
 
-gather_results <- function(res, n.out, labtreat, ref, reference.group, 
-                           data, sims_bugs_out, outlab, 
-                           ...) {
+gather_results <- function(x, outcomes, trts, reference.group,
+                           level, ...) {
+  
+  res <- as.data.frame(x$BUGSoutput$summary)
+  samples <- x$BUGSoutput$sims.list
+  #
+  n.chain <- x$BUGSoutput$n.chain
+  n.thin <- x$BUGSoutput$n.thin
+  n.burnin <- x$BUGSoutput$n.burnin
+  #
+  ref <- which(trts == reference.group)
+  rnames <- rownames(res)
+  #
+  n.out <- length(outcomes)
+  #
+  lower.level <- (1 - level) / 2
+  upper.level <- 1 - (1 - level) / 2
+  #
+  basic <- dat_treat <- psi <- rho <- d <-
+    TE.random <- seTE.random <- lower.random <- upper.random <-
+    vector("list")
+  
   # Get rid of warning "no visible binding for global variable"
-  ind <- sd <- Rhat <- n.eff <- NULL
-  
-  reference <- ds <- vector("character")
-  basic_comp <- dat_treat <- psi <- rho <- d <- vector("list")
-  
+  sd <- Rhat <- n.eff <- lower <- upper <- NULL
+  #
   for (i in seq_len(n.out)) {
-    reference[i] <- paste("ref", i, sep = "")
-    ds[i] <- paste("d", i, sep = "")
+    d.i <- paste0("d", i)
     #
-    basic_comp[[i]] <- res %>% filter(grepl(reference[i], ind))
-    row.names(basic_comp[[i]]) <- labtreat[-ref]
+    # Samples
     #
-    dat_treat[[i]] <-
-      data$treat_out[[i]][-which(data$treat_out[[i]] == reference.group)]
+    d[[i]] <- samples[[d.i]]
+    colnames(d[[i]]) <- trts
+    rownames(d[[i]]) <- seq_len(nrow(d[[i]]))
     #
-    basic_comp[[i]] <-
-      basic_comp[[i]][which(row.names(basic_comp[[i]]) %in% dat_treat[[i]]), ]
-    basic_comp[[i]] %<>% select(mean, sd, "2.5%", "97.5%", Rhat, n.eff) %>%
-      rename(lower = "2.5%", upper = "97.5%")
-    
+    # Results for basic parameters
+    #
+    basic[[i]] <- res %>%
+      filter(grepl(paste0(d.i, "["), rnames, fixed = TRUE))
+    #
+    row.names(basic[[i]]) <- trts
+    #
+    basic[[i]] %<>%
+      mutate(lower =
+               apply(d[[i]], 2, quantile, probs = lower.level,
+                     na.rm = TRUE),
+             upper =
+               apply(d[[i]], 2, quantile, probs = upper.level,
+                     na.rm = TRUE)) %>%
+      select(mean, sd, lower, upper, Rhat, n.eff)
+    #
+    basic[[i]][reference.group, ] <- NA
+    #
     # psi's (similar to tau)
     #
-    psi[[i]] <- res %>% filter(grepl("psi", ind)) %>%
+    psi[[i]] <- res %>% filter(grepl("psi", rnames)) %>%
       select(mean, sd, "2.5%", "97.5%", Rhat, n.eff) %>%
       rename(psi = mean, lower = "2.5%", upper = "97.5%")
-    
+    #
     # rho
     #
-    rho[[i]] <- res %>% filter(grepl("rho", ind))
-
-    d[[i]] <- sims_bugs_out[, c(grepl(ds[i], names(sims_bugs_out)))]
+    rho[[i]] <- res %>% filter(grepl("rho", rnames))
     #
-    names(d[[i]]) <- labtreat
+    # Matrices with all results
     #
-    d[[i]] %<>% select(all_of(data$treat_out[[i]]))
+    #
+    dmat.i <- d[[i]]
+    #
+    TE.random.i <- seTE.random.i <-
+      lower.random.i <- upper.random.i <-
+      matrix(NA, nrow = ncol(dmat.i), ncol = ncol(dmat.i),
+             dimnames = list(trts, trts))
+    #
+    for (j in seq_len(ncol(dmat.i)))
+      for (k in seq_len(ncol(dmat.i)))
+        if (j != k)
+          TE.random.i[j, k] <- mean(dmat.i[, j] - dmat.i[, k])
+    #
+    for (j in seq_len(ncol(dmat.i)))
+      for (k in seq_len(ncol(dmat.i)))
+        if (j != k)
+          seTE.random.i[j, k] <- sd(dmat.i[, j] - dmat.i[, k])
+    #
+    for (j in seq_len(ncol(dmat.i)))
+      for (k in seq_len(ncol(dmat.i)))
+        if (j != k)
+          lower.random.i[j, k] <- quantile(dmat.i[, j] - dmat.i[, k],
+                                         lower.level)
+    #
+    for (j in seq_len(ncol(dmat.i)))
+      for (k in seq_len(ncol(dmat.i)))
+        if (j != k)
+          upper.random.i[j, k] <- quantile(dmat.i[, j] - dmat.i[, k],
+                                         upper.level)
+    #
+    diag(TE.random.i) <- diag(seTE.random.i) <-
+      diag(lower.random.i) <- diag(upper.random.i) <- 0
+    #
+    TE.random[[i]] <- TE.random.i
+    seTE.random[[i]] <- seTE.random.i
+    lower.random[[i]] <- lower.random.i
+    upper.random[[i]] <- upper.random.i
   }
   
   # prepare output
-  outcome_correlation <- rho[[1]]
+  cor <- rho[[1]]
   #
-  outcome_correlation %<>% select(mean, sd, "2.5%", "97.5%", Rhat, n.eff) %>%
-    rename(corr_coef = mean, lower = "2.5%", upper = "97.5%")
+  cor %<>% select(mean, sd, "2.5%", "97.5%", Rhat, n.eff) %>%
+    rename(lower = "2.5%", upper = "97.5%")
   
   psi <- psi[[1]]
+  row.names(psi) <- outcomes
   
-  row.names(psi) <- paste(outlab)
-  
-  # create row.names for outcome_correlation
-  r1 <- t(combn(seq_along(outlab), 2))
-  
-  r.names <- vector("numeric", nrow(outcome_correlation))
-  
+  # Create row.names for cor
+  #
+  r1 <- t(combn(seq_along(outcomes), 2))
+  r.names <- vector("numeric", nrow(cor))
+  #
   for (i in seq_along(r.names)) {
     for (j in seq_len(ncol(r1))) {
-      r.names[i] <- paste(outlab[r1[i, 1]], outlab[r1[i, 2]], sep = "/")    
+      r.names[i] <- paste(outcomes[r1[i, 1]], outcomes[r1[i, 2]], sep = "/")    
     }
   }
   #
-  row.names(outcome_correlation) <- r.names
+  row.names(cor) <- r.names
   
-  out1 <- list(basic_estimates = basic_comp[[1]], 
-               heterogeneity = psi[1,], 
+  out1 <- list(basic_estimates = basic[[1]],
+               heterogeneity = psi[1, ],
+               TE.random = TE.random[[1]],
+               seTE.random = seTE.random[[1]],
+               lower.random = lower.random[[1]],
+               upper.random = upper.random[[1]],
                samples = d[[1]])
   #
-  out2 <- list(basic_estimates = basic_comp[[2]], 
-               heterogeneity = psi[2,], 
+  out2 <- list(basic_estimates = basic[[2]],
+               heterogeneity = psi[2, ],
+               TE.random = TE.random[[2]],
+               seTE.random = seTE.random[[2]],
+               lower.random = lower.random[[2]],
+               upper.random = upper.random[[2]],
                samples = d[[2]])
   #
   res <- list(out1, out2)
-  names(res) <- c(outlab[1], outlab[2])
+  names(res) <- c(outcomes[1], outcomes[2])
   #
   if (n.out >= 3) {
-    out3 <- list(basic_estimates = basic_comp[[3]], 
-                 heterogeneity = psi[3,], 
+    out3 <- list(basic_estimates = basic[[3]],
+                 heterogeneity = psi[3, ],
+                 TE.random = TE.random[[3]],
+                 seTE.random = seTE.random[[3]],
+                 lower.random = lower.random[[3]],
+                 upper.random = upper.random[[3]],
                  samples = d[[3]])
     #
     res[[3]] <- out3
-    names(res)[3] <- outlab[3]
+    names(res)[3] <- outcomes[3]
   }
   #
   if (n.out >= 4) {
-    out4 <- list(basic_estimates = basic_comp[[4]], 
-                 heterogeneity = psi[4,], 
+    out4 <- list(basic_estimates = basic[[4]],
+                 heterogeneity = psi[4, ],
+                 TE.random = TE.random[[4]],
+                 seTE.random = seTE.random[[4]],
+                 lower.random = lower.random[[4]],
+                 upper.random = upper.random[[4]],
                  samples = d[[4]])
     #
     res[[4]] <- out4
-    names(res)[4] <- outlab[4]
+    names(res)[4] <- outcomes[4]
   }
   #
   if (n.out >= 5) {
-    out5 <- list(basic_estimates = basic_comp[[5]], 
-                 heterogeneity = psi[5,], 
+    out5 <- list(basic_estimates = basic[[5]],
+                 heterogeneity = psi[5, ],
+                 TE.random = TE.random[[5]],
+                 seTE.random = seTE.random[[5]],
+                 lower.random = lower.random[[5]],
+                 upper.random = upper.random[[5]],
                  samples = d[[5]])
     #
     res[[5]] <- out5
-    names(res)[5] <- outlab[5]
+    names(res)[5] <- outcomes[5]
   }
   #
-  res[[length(res) + 1]] <- outcome_correlation
-  names(res)[length(res)] <- "outcome_correlation"
+  res[[length(res) + 1]] <- cor
+  names(res)[length(res)] <- "cor"
   #
-  res
-}
-
-get_all_estimates <- function(x) {
-  x <- x[names(x) != "outcome_correlation"]  
-  #
-  all <- all_TE <- all_sd <- vector("list")
-  #
-  for (i in seq_along(x)) {
-    all[[i]] <- get_diff(x[[i]]$samples)
-    all_TE[[i]] <- all[[i]]$TE.random
-    all_sd[[i]] <- all[[i]]$sd.random
-  }
-  #
-  res <- list(TE.random = all_TE, sd.random = all_sd)
-  res
-}
-
-get_diff <- function(samples) {
-  
-  diff <- list()
-  
-  E <- names(samples)
-  
-  ests <- list()
-  
-  means <- list()
-  
-  sds <- list()
-  
-  for (i in 1:ncol(samples)) {
-    
-    diff[[i]] <- samples %>% select(any_of(E[i]))
-    
-    ests[[i]] <- samples[, E[i]] - samples
-    
-    ests[[i]][E[[i]]] <- 0
-  }
-  
-  for (k in seq_along(ests)) {
-    means[[k]] <- colMeans(ests[[k]])
-    sds[[k]] <- colSds(as.matrix(ests[[k]]))
-  }
-  
-  TE <- matrix(NA, ncol = ncol(samples), nrow = ncol(samples))
-  sd <- matrix(NA, ncol = ncol(samples), nrow = ncol(samples))
-  #
-  row.names(TE) <- colnames(TE) <- names(TE)
-  row.names(sd) <- colnames(sd) <- names(sd)
-  #
-  for (j in 1:nrow(TE)) {
-    TE[j, ] <- means[[j]]
-    sd[j, ] <- sds[[j]]
-  }
-  #
-  TE <- as.data.frame(TE)
-  sd <- as.data.frame(sd)
-  #
-  row.names(TE) <- row.names(sd) <- names(TE) <- names(sd) <- E
-  
-  res <- list(TE.random = TE, sd.random = sd)
   res
 }
 
@@ -617,6 +626,55 @@ chkchar <- function(x, length = 0, name = NULL, nchar = NULL, single = FALSE,
   invisible(NULL)
 }
 
+chklevel <- function(x, length = 0, ci = TRUE, name = NULL, single = FALSE) {
+  if (!missing(single) && single)
+    length <- 1
+  #
+  # Check for levels of confidence interval / contour level
+  #
+  if (is.null(name))
+    name <- deparse(substitute(x))
+  if (ci)
+    "level for confidence interval (range: 0-1)"
+  else
+    "contour levels (range: 0-1)"
+  #
+  if (!is.numeric(x))
+    if (length && length(x) != length)
+      stop("Argument '", name, "' must be a numeric of length ", length, ".",
+           call. = FALSE)
+  else
+    stop("Argument '", name, "' must be numeric.",
+         call. = FALSE)
+  #
+  if (length && length(x) != length)
+    stop("Argument '", name, "' must be a numeric of length ", length, ".",
+         call. = FALSE)
+  #
+  if (any(x <= 0, na.rm = TRUE) | any(x >= 1, na.rm = TRUE))
+    stop("Argument '", name, "' must be a numeric between 0 and 1.",
+         call. = FALSE)
+  #
+  invisible(NULL)
+}
+
+chklogical <- function(x, name = NULL, text = "") {
+  #
+  # Check whether argument is logical
+  #
+  if (is.null(name))
+    name <- deparse(substitute(x))
+  #
+  if (is.numeric(x))
+    x <- as.logical(x)
+  #
+  if (length(x) !=  1 || !is.logical(x) || is.na(x))
+    stop("Argument '", name, "' must be a logical",
+         if (text != "") " ", text, ".", call. = FALSE)
+  #
+  invisible(NULL)
+}
+
 chknull <- function(x, name = NULL) {
   #
   # Check whether argument is NULL
@@ -698,6 +756,136 @@ is_wholenumber <- function(x, tol = .Machine$double.eps^0.5) {
     res <- abs(x - round(x)) < tol
   else
     res <- NA
-  ##
+  #
+  res
+}
+
+formatN <- function(x, digits = 2, text.NA = "--", big.mark = "",
+                    format.whole.numbers = TRUE,
+                    monospaced = FALSE) {
+  
+  outdec <- options()$OutDec
+  
+  if (!monospaced) {
+    if (format.whole.numbers) {
+      res <- format(ifelse(is.na(x),
+                           text.NA,
+                           formatC(x, decimal.mark = outdec,
+                                   format = "f", digits = digits,
+                                   big.mark = big.mark)
+      )
+      )
+    }
+    else {
+      res <- format(ifelse(is.na(x),
+                           text.NA,
+                           ifelse(is_wholenumber(x),
+                                  x,
+                                  formatC(x, decimal.mark = outdec,
+                                          format = "f", digits = digits,
+                                          big.mark = big.mark)
+                           )
+      )
+      )
+    }
+  }
+  else {
+    x <- round(x, digits)
+    res <- ifelse(is.na(x),
+                  text.NA,
+                  format(x, decimal.mark = outdec, big.mark = big.mark))
+  }
+  #
+  res <- rmSpace(res, end = TRUE)
+  #
+  res
+}
+
+rmSpace <- function(x, end = FALSE, pat = " ") {
+  
+  if (!end) {
+    while (any(substring(x, 1, 1) == pat, na.rm = TRUE)) {
+      sel <- substring(x, 1, 1) == pat
+      x[sel] <- substring(x[sel], 2)
+    }
+  }
+  else {
+    last <- nchar(x)
+    
+    while (any(substring(x, last, last) == pat, na.rm = TRUE)) {
+      sel <- substring(x, last, last) == pat
+      x[sel] <- substring(x[sel], 1, last[sel] - 1)
+      last <- nchar(x)
+    }
+  }
+  
+  x
+}
+
+formatCI <- function(lower, upper,
+                     bracket.left = gs("CIbracket"),
+                     separator = gs("CIseparator"),
+                     bracket.right,
+                     justify.lower = "right",
+                     justify.upper = justify.lower,
+                     lower.blank = gs("CIlower.blank"),
+                     upper.blank = gs("CIupper.blank"),
+                     ...
+) {
+  
+  # Change layout of CIs
+  #
+  chkchar(bracket.left, length = 1)
+  chkchar(separator, length = 1)
+  if (!missing(bracket.right))
+    chkchar(bracket.right, length = 1)
+  #
+  if (missing(bracket.left)) {
+    bracktype <- setchar(bracket.left, c("[", "(", "{", ""))
+    #
+    if (bracktype == "[") {
+      bracketLeft <- "["
+      bracketRight <- "]"
+    }
+    else if (bracktype == "(") {
+      bracketLeft <- "("
+      bracketRight <- ")"
+    }
+    else if (bracktype == "{") {
+      bracketLeft <- "{"
+      bracketRight <- "}"
+    }
+    else if (bracktype == "") {
+      bracketLeft <- ""
+      bracketRight <- ""
+    }
+    #
+    bracket.left <- bracketLeft
+  }
+  #
+  if (missing(bracket.right))
+    bracket.right <- bracketRight
+  
+  format.lower <- format(lower, justify = justify.lower)
+  format.upper <- format(upper, justify = justify.upper)
+  #
+  if (!lower.blank)
+    format.lower <- rmSpace(format.lower)
+  if (!upper.blank)
+    format.upper <- rmSpace(format.upper)
+  #
+  if (separator == "-")
+    format.upper <-
+    paste0(ifelse(substring(format.upper, 1, 1) == "-", " ", ""),
+           format.upper)
+  #
+  res <- ifelse(lower != "NA" & upper != "NA",
+                paste0(bracket.left,
+                       format.lower,
+                       separator,
+                       format.upper,
+                       bracket.right),
+                "")
+  #
   res
 }

@@ -72,12 +72,12 @@ p12 <- list(p1, p2)
 data12 <- mvdata(p12)
 
 # Define outcome labels
-outcomes <- c("Early_Response", "Early_Remission")
+outcomes <- c("Early Response", "Early Remission")
  
 # Fit the model combining only the two efficacy outcomes
 set.seed(1909)
 mvnma12 <- mvnma(data = data12, 
-  reference.group = "Placebo", outlab = outcomes,
+  reference.group = "Placebo", outclab = outcomes,
   n.iter = 1000, n.burnin = 100)
 mvnma12
 

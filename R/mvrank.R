@@ -49,7 +49,7 @@
 #'   studlab = id, data = dat.linde2015, sm = "OR")
 #'
 #' # Define outcome labels
-#' outlab <- c("Early_Response", "Early_Remission",
+#' outcomes <- c("Early_Response", "Early_Remission",
 #'   "Adverse_events", "Loss_to_follow_up", "Loss_to_follow_up_AE")
 #' 
 #' # Perform analysis considering all outcomes
@@ -59,7 +59,7 @@
 #' # Fit the model combining only the two efficacy outcomes
 #' set.seed(1909)
 #' mvnma_all <- mvnma(data = data_all,
-#'   reference.group = "Placebo", outlab = outlab,
+#'   reference.group = "Placebo", outclab = outcomes,
 #'   n.iter = 1000, n.burnin = 100)
 #'
 #' # Rank treatments using pBV
@@ -89,22 +89,22 @@ mvrank <- function(x, small.values, method = "SUCRA") {
   method <- setchar(method, c("SUCRA","pBV"))
   chkchar(method, length = 1)
   #
-  x <- x[names(x) != "outcome_correlation"]
+  x <- x[names(x) != "cor"]
   #
-  outlab <- attributes(x)$names
+  outcomes <- attributes(x)$names
   
   # Get rid of warning "no visible binding for global variable"
   treatment <- pBV <- SUCRA <- Freq <- NULL
   
   # Extract samples and create rankograms for each outcome
   #
-  n.out <- length(outlab)
+  n.out <- length(outcomes)
   d <- n.trts <- trts <- rank_out <- ranks <- vector("list")
   
   for (i in seq_len(n.out)) {
     d[[i]] <- x[[i]]$samples
     n.trts[[i]] <- ncol(d[[i]])
-    trts[[i]] <- names(d[[i]])
+    trts[[i]] <- colnames(d[[i]])
     rank_out[[i]] <- rankogram(d[[i]], small.values = small.values[i])
     #
     if (method == "pBV") {
@@ -125,13 +125,14 @@ mvrank <- function(x, small.values, method = "SUCRA") {
     ranks[[i]] <- ranks.i
   }
   #
+  names(ranks) <- outcomes
+  class(ranks) <- "mvrank"
+  #
   common_trts <- as.data.frame(table(unlist(trts))) %>% filter(Freq == n.out)
   common_trts <- common_trts$Var1
   #
-  names(ranks) <- outlab
-  class(ranks) <- "mvrank"
-  #
   attr(ranks, "common_trts") <- common_trts
+  attr(ranks, "method") <- method
   #
   ranks
 }
