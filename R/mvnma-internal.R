@@ -275,7 +275,7 @@ is.list.pairwise <- function(p, ...) {
 }
 
 gather_results <- function(x, outcomes, trts, reference.group,
-                           level, ...) {
+                           level,treat_out, ...) {
   
   res <- as.data.frame(x$BUGSoutput$summary)
   samples <- x$BUGSoutput$sims.list
@@ -307,6 +307,12 @@ gather_results <- function(x, outcomes, trts, reference.group,
     d[[i]] <- samples[[d.i]]
     colnames(d[[i]]) <- trts
     rownames(d[[i]]) <- seq_len(nrow(d[[i]]))
+    
+    d[[i]] <- as.data.frame(d[[i]])
+    
+    d[[i]] <- d[[i]] %>% 
+      select(any_of(treat_out[[i]]))
+    
     #
     # Results for basic parameters
     #
@@ -314,6 +320,7 @@ gather_results <- function(x, outcomes, trts, reference.group,
       filter(grepl(paste0(d.i, "["), rnames, fixed = TRUE))
     #
     row.names(basic[[i]]) <- trts
+    basic[[i]] <- basic[[i]][which(row.names(basic[[i]]) %in% treat_out[[i]]),]
     #
     basic[[i]] %<>%
       mutate(lower =
@@ -344,7 +351,7 @@ gather_results <- function(x, outcomes, trts, reference.group,
     TE.random.i <- seTE.random.i <-
       lower.random.i <- upper.random.i <-
       matrix(NA, nrow = ncol(dmat.i), ncol = ncol(dmat.i),
-             dimnames = list(trts, trts))
+             dimnames = list(treat_out[[i]], treat_out[[i]]))
     #
     for (j in seq_len(ncol(dmat.i)))
       for (k in seq_len(ncol(dmat.i)))

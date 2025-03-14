@@ -182,6 +182,9 @@ mvnma <- function(...,
          call. = FALSE)
   #
   data <- mvdata(args)
+  
+  treat_out <- data$treat_out
+  
   #
   chknull(reference.group)
   chklevel(level)
@@ -481,6 +484,7 @@ mvnma <- function(...,
   res <- gather_results(fit,
                         outcomes = outclab,
                         trts = trts,
+                        treat_out = treat_out,
                         reference.group = reference.group,
                         level = level)
   #
