@@ -425,11 +425,11 @@ mvnma <- function(...,
   else if (n.out == 4) {
     run.data$var5 <- NULL
     #
-    run.data$lower.rho4 <- run.data$lower.rho5 <- run.data$lower.rho6 <-
+    #run.data$lower.rho4 <- run.data$lower.rho5 <- run.data$lower.rho6 <-
       run.data$lower.rho7 <- run.data$lower.rho8 <- run.data$lower.rho9 <-
       run.data$lower.rho10 <- NULL
     #
-    run.data$upper.rho4 <- run.data$upper.rho5 <- run.data$upper.rho6 <-
+    #run.data$upper.rho4 <- run.data$upper.rho5 <- run.data$upper.rho6 <-
       run.data$upper.rho7 <- run.data$upper.rho8 <- run.data$upper.rho9 <-
       run.data$upper.rho10 <- NULL
     #

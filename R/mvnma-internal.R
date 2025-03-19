@@ -93,7 +93,8 @@ create_data <- function(p, ...) {
         #
         row.names(dat2[[i]]) <- NULL
       }
-      dat2 <- list()
+      else
+      dat2[[i]] <- list()
     }
         
     if (length(dat2) != 0) {
