@@ -319,11 +319,11 @@ mvnma <- function(...,
     #
     ref = ref,
     #
-    Ns = data$Ns,
-    N2h = data$N2h,
-    NT = data$NT,
+    k = data$Ns,
+    k2 = data$N2h,
+    n = data$NT,
     #
-    T1 = data$T[, 1], T2 = data$T[, 2], T3 = NA,
+    treat1 = data$T[, 1], treat2 = data$T[, 2], treat3 = NA,
     #
     lower.rho1 = lower.rho1, upper.rho1 = upper.rho1,
     lower.rho2 = NA, upper.rho2 = NA,
@@ -373,9 +373,9 @@ mvnma <- function(...,
   }
   #
   if (multiarm)
-    run.data$T3 <- data$T[, 3]
+    run.data$treat3 <- data$T[, 3]
   else
-    run.data$T3 <- NULL
+    run.data$treat3 <- NULL
   #
   if (n.out == 2) {
     run.data$var3 <- run.data$var4 <- run.data$var5 <- NULL
@@ -396,8 +396,10 @@ mvnma <- function(...,
     #
     if (multiarm)
       model.file <- system.file("model", "mvnma_2_3arm.txt", package = "mvnma")
-    else
+    else {
       model.file <- system.file("model", "mvnma_2_2arm.txt", package = "mvnma")
+      run.data$k2 <- NULL
+    }
   }
   #
   else if (n.out == 3) {
@@ -411,50 +413,47 @@ mvnma <- function(...,
       run.data$upper.rho7 <- run.data$upper.rho8 <- run.data$upper.rho9 <-
       run.data$upper.rho10 <- NULL
     #
-    params <- c("res.ref1", "res.ref2", "res.ref3",
-                "rho1", "rho2", "rho3", 
+    params <- c("d1", "d2", "d3", 
                 "psi1", "psi2", "psi3",
-                "d1", "d2", "d3")
+                "rho1", "rho2", "rho3")
     #
     if (multiarm)
-      model.file <- system.file("model", "mvnma_3.txt", package = "mvnma")
-    else
-      model.file <- system.file("model", "mvnma_3.txt", package = "mvnma")
+      model.file <- system.file("model", "mvnma_3_3arm.txt", package = "mvnma")
+    else {
+      model.file <- system.file("model", "mvnma_3_2arm.txt", package = "mvnma")
+      run.data$k2 <- NULL
+    }
   }
   #
   else if (n.out == 4) {
     run.data$var5 <- NULL
     #
-    #run.data$lower.rho4 <- run.data$lower.rho5 <- run.data$lower.rho6 <-
-      run.data$lower.rho7 <- run.data$lower.rho8 <- run.data$lower.rho9 <-
+    run.data$lower.rho7 <- run.data$lower.rho8 <- run.data$lower.rho9 <-
       run.data$lower.rho10 <- NULL
     #
-    #run.data$upper.rho4 <- run.data$upper.rho5 <- run.data$upper.rho6 <-
-      run.data$upper.rho7 <- run.data$upper.rho8 <- run.data$upper.rho9 <-
+    run.data$upper.rho7 <- run.data$upper.rho8 <- run.data$upper.rho9 <-
       run.data$upper.rho10 <- NULL
     #
-    params <- c("res.ref1", "res.ref2", "res.ref3", "res.ref4",
-                "rho1", "rho2", "rho3", "rho4", "rho5", "rho6", 
+    params <- c("d1", "d2", "d3", "d4", 
                 "psi1", "psi2", "psi3", "psi4",
-                "d1", "d2", "d3", "d4")
+                "rho1", "rho2", "rho3", "rho4", "rho5", "rho6")
     #
     if (multiarm)
-      model.file <- system.file("model", "mvnma_4.txt", package = "mvnma")
+      model.file <- system.file("model", "mvnma_4_3arm.txt", package = "mvnma")
     else
-      model.file <- system.file("model", "mvnma_4.txt", package = "mvnma")
+      model.file <- system.file("model", "mvnma_4_2arm.txt", package = "mvnma")
   }
   #
   else if (n.out == 5) {
-    params <- c("res.ref1", "res.ref2", "res.ref3", "res.ref4", "res.ref5",
-                "rho1", "rho2", "rho3", "rho4", "rho5", "rho6",
-                "rho7", "rho8", "rho9", "rho10",
+    params <- c("d1", "d2", "d3", "d4", "d5",
                 "psi1", "psi2", "psi3", "psi4", "psi5",
-                "d1", "d2", "d3", "d4", "d5")
+                "rho1", "rho2", "rho3", "rho4", "rho5", "rho6",
+                "rho7", "rho8", "rho9", "rho10")
     #
     if (multiarm)
-      model.file <- system.file("model", "mvnma_5.txt", package = "mvnma")
+      model.file <- system.file("model", "mvnma_5_3arm.txt", package = "mvnma")
     else
-      model.file <- system.file("model", "mvnma_5.txt", package = "mvnma")
+      model.file <- system.file("model", "mvnma_5_2arm.txt", package = "mvnma")
   }
   
   

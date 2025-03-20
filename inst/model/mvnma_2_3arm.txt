@@ -1,89 +1,108 @@
 model{
+  # k = number of studies
+  # k2 = number of two-arm studies
+  # n = number of treatments
+  
   # This controls for studies with one outcome not reported by setting the
   # correlation equal to zero
   #
-  for (k in 1:(2 * Ns - N2h)) {
-    control[k] <- step(9999 - var1[k]) * step(9999 - var2[k])
+  for (i in 1:(2 * k - k2)) {
+    control12[i] <- step(9999 - var1[i]) * step(9999 - var2[i])
   }
   
   # Two-arm studies
   #
-  for (i in 1:N2h) {
-    s[i, 1, 1] <- var1[i] + psi1.sq
-    s[i, 2, 2] <- var2[i] + psi2.sq
+  for (i in 1:k2) {
     #
-    s[i, 1, 2] <- control[i] * rho1 *
-      sqrt(var1[i] + psi1.sq) * sqrt(var2[i] + psi2.sq)
-    s[i, 2, 1] <- s[i, 1, 2]
+    # Variances
     #
-    prec2A[i, 1:2, 1:2] <- inverse(s[i, , ])
+    S2[i, 1, 1] <- var1[i] + psi1.sq
+    S2[i, 2, 2] <- var2[i] + psi2.sq
     #
-    y[(2 * i - 1):(2 * i)] ~ dmnorm(mean[(2 * i - 1):(2 * i)], prec2A[i, , ])
+    # Covariances
+    #
+    S2[i, 1, 2] <- sqrt(S2[i, 1, 1]) * sqrt(S2[i, 2, 2]) * control12[i] * rho1
+    #
+    S2[i, 2, 1] <- S2[i, 1, 2]
+    #
+    prec2[i, 1:2, 1:2] <- inverse(S2[i, , ])
+    #
+    # Estimates
+    #
+    y[(2 * i - 1):(2 * i)] ~ dmnorm(mean[(2 * i - 1):(2 * i)], prec2[i, , ])
   }
   
   # Three-arm studies
   #
-  for (i in 1:(Ns - N2h)) {
-    S[i, 1, 1] <- var1[N2h + 2 * i - 1] + psi1.sq
-    S[i, 2, 2] <- var2[N2h + 2 * i - 1] + psi2.sq
-    S[i, 3, 3] <- var1[N2h + 2 * i] + psi1.sq
-    S[i, 4, 4] <- var2[N2h + 2 * i] + psi2.sq
+  for (i in 1:(k - k2)) {
     #
-    S[i, 1, 2] <- control[i] * rho1 * sqrt(S[i, 1, 1]) * sqrt(S[i, 2, 2])
-    S[i, 1, 3] <- control[i] * sqrt(S[i, 1, 1]) * sqrt(S[i, 3, 3]) / 2
-    S[i, 1, 4] <- control[i] * rho1 * sqrt(S[i, 1, 1]) * sqrt(S[i, 4, 4]) / 2
-    S[i, 2, 3] <- control[i] * rho1 * sqrt(S[i, 2, 2]) * sqrt(S[i, 3, 3]) / 2
-    S[i, 2, 4] <- control[i] * sqrt(S[i, 2, 2]) * sqrt(S[i, 4, 4]) / 2
-    S[i, 3, 4] <- control[i] * rho1 * sqrt(S[i, 3, 3]) * sqrt(S[i, 4, 4])
+    # Variances
     #
-    S[i, 2, 1] <- S[i, 1, 2]
-    S[i, 3, 1] <- S[i, 1, 3]
-    S[i, 3, 2] <- S[i, 2, 3]
-    S[i, 4, 1] <- S[i, 1, 4]
-    S[i, 4, 2] <- S[i, 2, 4]
-    S[i, 4, 3] <- S[i, 3, 4]
+    S3[i, 1, 1] <- var1[k2 + 2 * i - 1] + psi1.sq
+    S3[i, 2, 2] <- var2[k2 + 2 * i - 1] + psi2.sq
+    S3[i, 3, 3] <- var1[k2 + 2 * i] + psi1.sq
+    S3[i, 4, 4] <- var2[k2 + 2 * i] + psi2.sq
     #
-    prec3A[i, 1:4, 1:4] <- inverse(S[i, , ])
+    # Covariances
     #
-    y[(2 * N2h + 4 * i - 3):(2 * N2h + 4 * i)] ~
-      dmnorm(mean[(2 * N2h + 4 * i - 3):(2 * N2h + 4 * i)], prec3A[i, , ])
+    S3[i, 1, 2] <-       sqrt(S3[i, 1, 1]) * sqrt(S3[i, 2, 2]) * control12[i] * rho1
+    S3[i, 1, 3] <- 0.5 * sqrt(S3[i, 1, 1]) * sqrt(S3[i, 3, 3]) * control12[i]
+    S3[i, 1, 4] <- 0.5 * sqrt(S3[i, 1, 1]) * sqrt(S3[i, 4, 4]) * control12[i] * rho1
+    S3[i, 2, 3] <- 0.5 * sqrt(S3[i, 2, 2]) * sqrt(S3[i, 3, 3]) * control12[i] * rho1
+    S3[i, 2, 4] <- 0.5 * sqrt(S3[i, 2, 2]) * sqrt(S3[i, 4, 4]) * control12[i]
+    S3[i, 3, 4] <-       sqrt(S3[i, 3, 3]) * sqrt(S3[i, 4, 4]) * control12[i] * rho1
+    #
+    S3[i, 2, 1] <- S3[i, 1, 2]
+    S3[i, 3, 1] <- S3[i, 1, 3]
+    S3[i, 4, 1] <- S3[i, 1, 4]
+    S3[i, 3, 2] <- S3[i, 2, 3]
+    S3[i, 4, 2] <- S3[i, 2, 4]
+    S3[i, 4, 3] <- S3[i, 3, 4]
+    #
+    prec3[i, 1:4, 1:4] <- inverse(S3[i, , ])
+    #
+    # Estimates
+    #
+    y[(2 * k2 + 4 * i - 3):(2 * k2 + 4 * i)] ~
+      dmnorm(mean[(2 * k2 + 4 * i - 3):(2 * k2 + 4 * i)], prec3[i, , ])
   }
   
   # Parameterization of the means
   #
-  for (i in 1:N2h) {
-    mean[2 * i - 1] <- d1[T2[i]] - d1[T1[i]]
-    mean[2 * i    ] <- d2[T2[i]] - d2[T1[i]]
+  for (i in 1:k2) {
+    mean[2 * i - 1] <- d1[treat2[i]] - d1[treat1[i]]
+    mean[2 * i    ] <- d2[treat2[i]] - d2[treat1[i]]
   }
   #
-  for (i in 1:(Ns - N2h)) {
-    mean[2 * N2h + 4 * i - 3] <- d1[T2[N2h + i]] - d1[T1[N2h + i]]
-    mean[2 * N2h + 4 * i - 2] <- d2[T2[N2h + i]] - d2[T1[N2h + i]]
-    mean[2 * N2h + 4 * i - 1] <- d1[T3[N2h + i]] - d1[T1[N2h + i]]
-    mean[2 * N2h + 4 * i    ] <- d2[T3[N2h + i]] - d2[T1[N2h + i]]
+  for (i in 1:(k - k2)) {
+    mean[2 * k2 + 4 * i - 3] <- d1[treat2[k2 + i]] - d1[treat1[k2 + i]]
+    mean[2 * k2 + 4 * i - 2] <- d2[treat2[k2 + i]] - d2[treat1[k2 + i]]
+    #
+    mean[2 * k2 + 4 * i - 1] <- d1[treat3[k2 + i]] - d1[treat1[k2 + i]]
+    mean[2 * k2 + 4 * i    ] <- d2[treat3[k2 + i]] - d2[treat1[k2 + i]]
   }
   
   # Priors
   #
-  for (k in 1:(ref - 1)) {
-    d1[k] ~ dnorm(0, 1e-03)
-  }
-  #
-  for (k in (ref + 1):NT) {
-    d1[k] ~ dnorm(0, 1e-03)
+  for (i in 1:(ref - 1)) {
+    d1[i] ~ dnorm(0, 1e-03)
   }
   #
   d1[ref] <- 0
-  #  
-  for (k in 1:(ref - 1)) {
-    d2[k] ~ dnorm(0, 1e-03)
-  }
   #
-  for (k in (ref + 1):NT) {
-    d2[k] ~ dnorm(0, 1e-03)
+  for (i in (ref + 1):n) {
+    d1[i] ~ dnorm(0, 1e-03)
+  }
+  #  
+  for (i in 1:(ref - 1)) {
+    d2[i] ~ dnorm(0, 1e-03)
   }
   #
   d2[ref] <- 0
+  #
+  for (i in (ref + 1):n) {
+    d2[i] ~ dnorm(0, 1e-03)
+  }
   #
   psi1.sq <- psi1 * psi1
   psi2.sq <- psi2 * psi2
@@ -93,45 +112,3 @@ model{
   #
   rho1 ~ dunif(lower.rho1, upper.rho1)
 }
-
-# # SUCRA rankings
-# 
-# # Ranking of treatments for response. This part of the code is adjusted for the acute mania
-# # dataset 
-# for (k in 1:13){
-# dd1[k] <- d1[k]
-# }
-# 
-# for(k in 1:13) {
-# 
-# order1[k]<- 13- rank(dd1[],k)
-# 
-# most.effective1[k]<-equals(order1[k],1)
-#   
-#   for(j in 1: 13) {
-#     
-#     effectiveness1[k,j]<- equals(order1[k],j)
-#     
-#     cumeffectiveness1[k,j]<- sum(effectiveness1[k,1:j])}}		
-# 
-# for(k in 1:13) {
-# SUCRA2[k] <- sum(cumeffectiveness1[k,1:(13-1)]) /(13-1)
-# }
-# 
-# #Ranking of treatments for dropout
-# 
-# for(k in 1:NT) {
-#   
-#   order2[k]<- rank(d2[],k)		
-#   
-#   most.effective2[k]<-equals(order2[k],1)
-#   
-#   for(j in 1: NT) {
-#     
-#     effectiveness2[k,j]<- equals(order2[k],j)
-#     
-#     cumeffectiveness2[k,j]<- sum(effectiveness2[k,1:j])}}	
-# 
-# for(k in 1:NT) {
-#   
-#   SUCRA2[k]< - sum(cumeffectiveness2[k,1:( NT-1)]) /(NT-1)}}

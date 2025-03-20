@@ -94,9 +94,9 @@ create_data <- function(p, ...) {
         row.names(dat2[[i]]) <- NULL
       }
       else
-      dat2[[i]] <- list()
+        dat2[[i]] <- list()
     }
-        
+    #
     if (length(dat2) != 0) {
       dat2 <- list.rbind(dat2)
       #
@@ -112,7 +112,6 @@ create_data <- function(p, ...) {
       group_by(studlab) %>%
       arrange(desc(treat1), .by_group = TRUE) %>% 
       arrange(n.arms)
-    #res$n.arms <- NULL
     #
     res <- add_labels(res)
   }
