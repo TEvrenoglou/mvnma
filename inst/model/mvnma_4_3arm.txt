@@ -134,7 +134,8 @@ model {
     #
     # Estimates
     #
-    y[(4 * k2 + 8 * i - 7):(4 * k2 + 8 * i)] ~ dmnorm.vcov(mean[(4 * k2 + 8 * i - 7):(4 * k2 + 8 * i)], S3[i, , ])
+    y[(4 * k2 + 8 * i - 7):(4 * k2 + 8 * i)] ~
+      dmnorm.vcov(mean[(4 * k2 + 8 * i - 7):(4 * k2 + 8 * i)], S3[i, , ])
   }
   
   # Parameterization of the means

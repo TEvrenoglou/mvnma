@@ -187,7 +187,8 @@ model {
     #
     # Estimates
     #
-    y[(5 * k2 + 10 * i - 9):(5 * k2 + 10 * i)] ~ dmnorm.vcov(mean[(5 * k2 + 10 * i - 9):(5 * k2 + 10 * i)], S3[i, , ])
+    y[(5 * k2 + 10 * i - 9):(5 * k2 + 10 * i)] ~
+      dmnorm.vcov(mean[(5 * k2 + 10 * i - 9):(5 * k2 + 10 * i)], S3[i, , ])
   }
   
   # Parameterization of the means
