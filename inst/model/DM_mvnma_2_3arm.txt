@@ -1,0 +1,154 @@
+model{
+  # k = number of studies
+  # k2 = number of two-arm studies
+  # n = number of treatments
+  
+  # This controls for studies with one outcome not reported by setting the
+  # correlation equal to zero
+  #
+  for (i in 1:(2 * k - k2)) {
+    control12[i] <- step(9999 - var1[i]) * step(9999 - var2[i])
+  }
+  
+  # Two-arm studies
+  #
+  for (i in 1:k2) {
+    #
+    # Variances
+    #
+    S2[i, 1, 1] <- var1[i] + psi1.sq
+    S2[i, 2, 2] <- var2[i] + psi2.sq
+    #
+    # Covariances
+    #
+    S2[i, 1, 2] <- sqrt(S2[i, 1, 1]) * sqrt(S2[i, 2, 2]) * control12[i] * rho1
+    #
+    S2[i, 2, 1] <- S2[i, 1, 2]
+    #
+    # Estimates
+    #
+    y[(2 * i - 1):(2 * i)] ~ dmnorm.vcov(mean[(2 * i - 1):(2 * i)], S2[i, , ])
+  }
+  
+  # Three-arm studies
+  #
+  for (i in 1:(k - k2)) {
+    #
+    # Variances
+    #
+    S3[i, 1, 1] <- var1[k2 + 2 * i - 1] + psi1.sq
+    S3[i, 2, 2] <- var2[k2 + 2 * i - 1] + psi2.sq
+    #
+    S3[i, 3, 3] <- var1[k2 + 2 * i] + psi1.sq
+    S3[i, 4, 4] <- var2[k2 + 2 * i] + psi2.sq
+    #
+    # Covariances
+    #
+    S3[i, 1, 2] <- sqrt(S3[i, 1, 1]) * sqrt(S3[i, 2, 2]) * control12[i] * rho1
+    #
+    S3[i, 3, 4] <- sqrt(S3[i, 3, 3]) * sqrt(S3[i, 4, 4]) * control12[i] * rho1
+    #
+    S3[i, 1, 3] <- 0.5 * sqrt(S3[i, 1, 1]) * sqrt(S3[i, 3, 3]) 
+    S3[i, 2, 4] <- 0.5 * sqrt(S3[i, 2, 2]) * sqrt(S3[i, 4, 4]) 
+    #
+    S3[i, 1, 4] <- 0.5 * sqrt(S3[i, 1, 1]) * sqrt(S3[i, 4, 4]) * control12[i] * rho1
+    S3[i, 2, 3] <- 0.5 * sqrt(S3[i, 2, 2]) * sqrt(S3[i, 3, 3]) * control12[i] * rho1
+    #
+    S3[i, 2, 1] <- S3[i, 1, 2]
+    S3[i, 3, 1] <- S3[i, 1, 3]
+    S3[i, 4, 1] <- S3[i, 1, 4]
+    S3[i, 3, 2] <- S3[i, 2, 3]
+    S3[i, 4, 2] <- S3[i, 2, 4]
+    S3[i, 4, 3] <- S3[i, 3, 4]
+    #
+    # Estimates
+    #
+    y[(2 * k2 + 4 * i - 3):(2 * k2 + 4 * i)] ~
+      dmnorm.vcov(mean[(2 * k2 + 4 * i - 3):(2 * k2 + 4 * i)], S3[i, , ])
+  }
+  
+  # Parameterization of the means
+  #
+  for (i in 1:k2) {
+    mean[2 * i - 1] <- d1[treat2[i]] - d1[treat1[i]]
+    mean[2 * i    ] <- d2[treat2[i]] - d2[treat1[i]]
+  }
+  #
+  for (i in 1:(k - k2)) {
+    mean[2 * k2 + 4 * i - 3] <- d1[treat2[k2 + i]] - d1[treat1[k2 + i]]
+    mean[2 * k2 + 4 * i - 2] <- d2[treat2[k2 + i]] - d2[treat1[k2 + i]]
+    #
+    mean[2 * k2 + 4 * i - 1] <- d1[treat3[k2 + i]] - d1[treat1[k2 + i]]
+    mean[2 * k2 + 4 * i    ] <- d2[treat3[k2 + i]] - d2[treat1[k2 + i]]
+  }
+  
+  # Priors
+  #
+  
+ d1[ref] <- 0
+
+ d2[ref] <- 0
+
+for(i in 1:(ref-1)){
+  
+  for (m in 1:2){
+    
+    meand[m,i] <- alpha[i] + gamma[m]
+    
+    d[m,i] ~ dnorm(meand[m,i],prec.exp)
+    
+  }
+  
+  d1[i] <- d[1,i]
+  
+  d2[i] <- d[2,i]
+   
+}
+
+for(i in (ref+1):n) {
+  
+  for (m in 1:2){
+    
+    meand[m,i] <- alpha[i] + gamma[m]
+    
+    d[m,i] ~ dnorm(meand[m,i],prec.exp)
+    
+  }
+  
+  d1[i] <- d[1,i]
+  
+  d2[i] <- d[2,i]
+  
+}
+
+ for(m in 1:2) {
+  
+  gamma[m] ~ dnorm(0, 1e-03) 
+  
+ }
+
+
+ for(i in 1:(ref-1)) {
+  
+  alpha[i] ~ dnorm(0,1e-03)
+  
+ }
+
+ for(i in (ref+1):n) {
+  
+  alpha[i] ~ dnorm(0,1e-03)
+  
+ }
+  #
+  prec.exp <- 1/sigma.sq
+  sigma.sq <- sigma * sigma
+  sigma ~ dnorm(0,1)T(0,)
+  #
+  psi1.sq <- psi1 * psi1
+  psi2.sq <- psi2 * psi2
+  #
+  psi1 ~ dnorm(0, prec.psi1)T(0, )
+  psi2 ~ dnorm(0, prec.psi2)T(0, )
+  #
+  rho1 ~ dunif(lower.rho1, upper.rho1)
+}

@@ -22,6 +22,9 @@
 #'   correlation coefficient. If NULL all bounds are set to -1.
 #' @param upper.rho Upper bounds for the Uniform prior(s) used for the
 #'   correlation coefficient. If NULL all bounds are set to 1.
+#' @param method A character string specifying the method to be used for model fitting. This can
+#'   be either "standard" (default), referring to the standard bivariate model, or "DM",
+#'   referring to the bivariate model based on the DuMouchel method. The argument can be abbreviated.
 #' @param quiet A logical indicating whether to print information on the
 #'   progress of the JAGS model fitting.
 #' 
@@ -143,6 +146,7 @@ mvnma <- function(...,
                   level = gs("level.ma"),
                   scale.psi,
                   lower.rho, upper.rho,
+                  method="standard",
                   quiet = FALSE) {
   
   is_pairwise <- function(x)
@@ -193,6 +197,9 @@ mvnma <- function(...,
   chknull(reference.group)
   chklevel(level)
   chklogical(quiet)
+  #
+  method <- setchar(method,c("standard","DM"))
+  #
   # extract number of outcomes  
   n.out <- ncol(data$var)
   n.cor <- c(0, 1, 3, 6, 10)[n.out]
@@ -465,11 +472,22 @@ mvnma <- function(...,
                 "psi1", "psi2",
                 "rho1")
     #
+    if(method=="standard"){
     if (multiarm)
       model.file <- system.file("model", "mvnma_2_3arm.txt", package = "mvnma")
     else {
       model.file <- system.file("model", "mvnma_2_2arm.txt", package = "mvnma")
       run.data$k2 <- NULL
+    }
+    }
+    else if(method=="DM"){
+      if (multiarm)
+        model.file <- system.file("model", "DM_mvnma_2_3arm.txt", package = "mvnma")
+      else {
+        model.file <- system.file("model", "DM_mvnma_2_2arm.txt", package = "mvnma")
+        run.data$k2 <- NULL
+      }
+      
     }
   }
   #
@@ -490,11 +508,22 @@ mvnma <- function(...,
                 "psi1", "psi2", "psi3",
                 "rho1", "rho2", "rho3")
     #
-    if (multiarm)
-      model.file <- system.file("model", "mvnma_3_3arm.txt", package = "mvnma")
-    else {
-      model.file <- system.file("model", "mvnma_3_2arm.txt", package = "mvnma")
-      run.data$k2 <- NULL
+    if(method=="standard"){
+      if (multiarm)
+        model.file <- system.file("model", "mvnma_3_3arm.txt", package = "mvnma")
+      else {
+        model.file <- system.file("model", "mvnma_3_2arm.txt", package = "mvnma")
+        run.data$k2 <- NULL
+      }
+    }
+    else if(method=="DM"){
+      if (multiarm)
+        model.file <- system.file("model", "DM_mvnma_3_3arm.txt", package = "mvnma")
+      else {
+        model.file <- system.file("model", "DM_mvnma_3_2arm.txt", package = "mvnma")
+        run.data$k2 <- NULL
+      }
+      
     }
   }
   #
@@ -513,10 +542,23 @@ mvnma <- function(...,
                 "psi1", "psi2", "psi3", "psi4",
                 "rho1", "rho2", "rho3", "rho4", "rho5", "rho6")
     #
-    if (multiarm)
-      model.file <- system.file("model", "mvnma_4_3arm.txt", package = "mvnma")
-    else
-      model.file <- system.file("model", "mvnma_4_2arm.txt", package = "mvnma")
+    if(method=="standard"){
+      if (multiarm)
+        model.file <- system.file("model", "mvnma_4_3arm.txt", package = "mvnma")
+      else {
+        model.file <- system.file("model", "mvnma_4_2arm.txt", package = "mvnma")
+        run.data$k2 <- NULL
+      }
+    }
+    else if(method=="DM"){
+      if (multiarm)
+        model.file <- system.file("model", "DM_mvnma_4_3arm.txt", package = "mvnma")
+      else {
+        model.file <- system.file("model", "DM_mvnma_4_2arm.txt", package = "mvnma")
+        run.data$k2 <- NULL
+      }
+      
+    }
   }
   #
   else if (n.out == 5) {
@@ -525,12 +567,31 @@ mvnma <- function(...,
                 "rho1", "rho2", "rho3", "rho4", "rho5", "rho6",
                 "rho7", "rho8", "rho9", "rho10")
     #
-    if (multiarm)
-      model.file <- system.file("model", "mvnma_5_3arm.txt", package = "mvnma")
-    else
-      model.file <- system.file("model", "mvnma_5_2arm.txt", package = "mvnma")
+    if(method=="standard"){
+      if (multiarm)
+        model.file <- system.file("model", "mvnma_5_3arm.txt", package = "mvnma")
+      else {
+        model.file <- system.file("model", "mvnma_5_2arm.txt", package = "mvnma")
+        run.data$k2 <- NULL
+      }
+    }
+    else if(method=="DM"){
+      if (multiarm)
+        model.file <- system.file("model", "DM_mvnma_5_3arm.txt", package = "mvnma")
+      else {
+        model.file <- system.file("model", "DM_mvnma_5_2arm.txt", package = "mvnma")
+        run.data$k2 <- NULL
+      }
+      
+    }
   }
   
+  #
+  if(method=="DM"){
+  
+    params <- c(params,"sigma")  
+    
+  }
   
   #
   # Run Bayesian analysis
@@ -560,13 +621,16 @@ mvnma <- function(...,
                         trts = trts,
                         treat_out = treat_out,
                         reference.group = reference.group,
-                        level = level)
+                        level = level,
+                        method=method
+                        )
   #
   attr(res, "outcomes") <- outclab
   attr(res, "trts") <- trts
   attr(res, "reference.group") <- reference.group
   attr(res, "level") <- level
   attr(res, "sm") <- attributes(data)$sm
+  attr(res,"method.model") <- method
   #
   class(res) <- "mvnma"
   #

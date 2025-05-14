@@ -12,6 +12,7 @@ mvnma(
   n.iter = 10000,
   n.burnin = 2000,
   level = gs("level.ma"),
+  scale.psi,
   lower.rho,
   upper.rho,
   quiet = FALSE
@@ -32,6 +33,10 @@ the each outcome is labelled as 'outcome_1', 'outcome_2' etc.}
 
 \item{level}{The level used to calculate confidence intervals
 for network estimates.}
+
+\item{scale.psi}{Values for the scale parameter(s) of the Half-Normal prior used for the
+heterogeneity parameters within each outcome. If NULL, all values are set to 1. If
+specified, it should have a length equal to the number of outcomes.}
 
 \item{lower.rho}{Lower bounds for the Uniform prior(s) used for the
 correlation coefficient. If NULL all bounds are set to -1.}

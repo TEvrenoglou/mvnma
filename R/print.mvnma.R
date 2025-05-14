@@ -55,10 +55,14 @@ print.mvnma <- function(x,
   #
   level <- attr(x, "level")
   reference.group <- attr(x, "reference.group")
+  method <- attr(x,"method")
   #
   ci.lab <- paste0(round(100 * level, 1), "%-CI")
   #
   x <- x[names(x) != "cor"]
+  if(method=="DM"){
+    x <- x[names(x) != "sigma"]
+  }
   nam <- names(x)
   
   # Get rid of warning "no visible binding for global variable"

@@ -65,7 +65,14 @@ forest.mvnma <- function(x, backtransf = FALSE,
   
   chkclass(x, "mvnma")
   #
+  method.model <- attr(x,"method.model")
+  
   x <- x[names(x) != "cor"]
+  
+  if(method.model=="DM"){
+    x <- x[names(x) != "sigma"]
+  }
+  
   
   n.out <- length(x)
   
