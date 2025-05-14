@@ -15,6 +15,7 @@ mvnma(
   scale.psi,
   lower.rho,
   upper.rho,
+  method = "standard",
   quiet = FALSE
 )
 }
@@ -43,6 +44,10 @@ correlation coefficient. If NULL all bounds are set to -1.}
 
 \item{upper.rho}{Upper bounds for the Uniform prior(s) used for the
 correlation coefficient. If NULL all bounds are set to 1.}
+
+\item{method}{A character string specifying the method to be used for model fitting. This can
+be either "standard" (default), referring to the standard bivariate model, or "DM",
+referring to the bivariate model based on the DuMouchel method. The argument can be abbreviated.}
 
 \item{quiet}{A logical indicating whether to print information on the
 progress of the JAGS model fitting.}
