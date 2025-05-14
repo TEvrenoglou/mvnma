@@ -15,6 +15,9 @@
 #' @param n.burnin Number of iterations for burn-in.
 #' @param level The level used to calculate confidence intervals
 #'   for network estimates.
+#' @param scale.psi Values for the scale parameter(s) of the Half-Normal prior used for the
+#'   heterogeneity parameters within each outcome. If NULL, all values are set to 1. If
+#'   specified, it should have a length equal to the number of outcomes.
 #' @param lower.rho Lower bounds for the Uniform prior(s) used for the
 #'   correlation coefficient. If NULL all bounds are set to -1.
 #' @param upper.rho Upper bounds for the Uniform prior(s) used for the
@@ -138,6 +141,7 @@ mvnma <- function(...,
                   reference.group = NULL, outclab = NULL,
                   n.iter = 10000, n.burnin = 2000,
                   level = gs("level.ma"),
+                  scale.psi,
                   lower.rho, upper.rho,
                   quiet = FALSE) {
   
@@ -195,6 +199,8 @@ mvnma <- function(...,
   #
   miss.lower <- missing(lower.rho)
   miss.upper <- missing(upper.rho)
+  miss.scale.psi <- missing(scale.psi)
+  
   #
   if (!miss.lower)
     chknumeric(lower.rho, min = -1, max = 1, length = n.cor, NA.ok = FALSE)
@@ -208,6 +214,10 @@ mvnma <- function(...,
            "argument 'upper.rho'.",
            call. = FALSE)
   }
+  
+  #
+  if (!miss.scale.psi)
+    chknumeric(scale.psi,zero = T, min = 0, length = n.out, NA.ok = FALSE)
     
   # Create bounds for correlation prior
   #
@@ -293,6 +303,56 @@ mvnma <- function(...,
     }
   }
   
+  # Create values for the scale and precision of parameter psi
+  
+  if (miss.scale.psi){
+    scale.psi1 <- 1
+    scale.psi2 <- 1
+  }  
+  else{
+    scale.psi1 <- scale.psi[1]
+    scale.psi2 <- scale.psi[2]
+  }
+  
+  prec.psi1 <- 1/scale.psi1^2
+  
+  prec.psi2 <- 1/scale.psi2^2
+  
+  if (n.out >= 3) {
+    if (miss.scale.psi) {
+      scale.psi3 <- 1
+    }
+    else {
+      scale.psi3 <- scale.psi[3]
+    }
+    
+    prec.psi3 <- 1/scale.psi3^2
+    
+  }
+  
+  if (n.out >= 4) {
+    if (miss.scale.psi) {
+      scale.psi4 <- 1
+    }
+    else {
+      scale.psi4 <- scale.psi[4]
+    }
+    
+    prec.psi4 <- 1/scale.psi4^2
+    
+  }
+  
+  if (n.out >= 5) {
+    if (miss.scale.psi) {
+      scale.psi5 <- 1
+    }
+    else {
+      scale.psi5 <- scale.psi[5]
+    }
+    
+    prec.psi5 <- 1/scale.psi5^2
+    
+  }
   
   # Create outcome labels if not provided
   #
@@ -325,6 +385,9 @@ mvnma <- function(...,
     #
     treat1 = data$T[, 1], treat2 = data$T[, 2], treat3 = NA,
     #
+    prec.psi1 = prec.psi1, prec.psi2=prec.psi2,
+    prec.psi3 = NA, prec.psi4 = NA, prec.psi5 = NA,
+    #
     lower.rho1 = lower.rho1, upper.rho1 = upper.rho1,
     lower.rho2 = NA, upper.rho2 = NA,
     lower.rho3 = NA, upper.rho3 = NA,
@@ -339,6 +402,8 @@ mvnma <- function(...,
   if (n.out >= 3) {
     run.data$var3 <- data$var$var3
     #
+    run.data$prec.psi3 <- prec.psi3
+    #
     run.data$lower.rho2 <- lower.rho2
     run.data$lower.rho3 <- lower.rho3
     #
@@ -348,6 +413,8 @@ mvnma <- function(...,
   #
   if (n.out >= 4) {
     run.data$var4 <- data$var$var4
+    #
+    run.data$prec.psi4 <- prec.psi4
     #
     run.data$lower.rho4 <- lower.rho4
     run.data$lower.rho5 <- lower.rho5
@@ -360,6 +427,8 @@ mvnma <- function(...,
   #
   if (n.out >= 5) {
     run.data$var5 <- data$var$var5
+    #
+    run.data$prec.psi5 <- prec.psi5
     #
     run.data$lower.rho7 <- lower.rho7
     run.data$lower.rho8 <- lower.rho8
@@ -379,6 +448,8 @@ mvnma <- function(...,
   #
   if (n.out == 2) {
     run.data$var3 <- run.data$var4 <- run.data$var5 <- NULL
+    #
+    run.data$prec.psi3 <- run.data$prec.psi4 <- run.data$prec.psi5 <- NULL
     #
     run.data$lower.rho2 <- run.data$lower.rho3 <- run.data$lower.rho4 <-
       run.data$lower.rho5 <- run.data$lower.rho6 <- run.data$lower.rho7 <-
@@ -405,6 +476,8 @@ mvnma <- function(...,
   else if (n.out == 3) {
     run.data$var4 <- run.data$var5 <- NULL
     #
+    run.data$prec.psi4 <- run.data$prec.psi5 <- NULL
+    #
     run.data$lower.rho4 <- run.data$lower.rho5 <- run.data$lower.rho6 <-
       run.data$lower.rho7 <- run.data$lower.rho8 <- run.data$lower.rho9 <-
       run.data$lower.rho10 <- NULL
@@ -427,6 +500,8 @@ mvnma <- function(...,
   #
   else if (n.out == 4) {
     run.data$var5 <- NULL
+    #
+    run.data$prec.psi5 <- NULL
     #
     run.data$lower.rho7 <- run.data$lower.rho8 <- run.data$lower.rho9 <-
       run.data$lower.rho10 <- NULL

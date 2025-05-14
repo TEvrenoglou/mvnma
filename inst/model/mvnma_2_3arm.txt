@@ -107,8 +107,8 @@ model{
   psi1.sq <- psi1 * psi1
   psi2.sq <- psi2 * psi2
   #
-  psi1 ~ dnorm(0, 1)T(0, )
-  psi2 ~ dnorm(0, 1)T(0, )
+  psi1 ~ dnorm(0, prec.psi1)T(0, )
+  psi2 ~ dnorm(0, prec.psi2)T(0, )
   #
   rho1 ~ dunif(lower.rho1, upper.rho1)
 }

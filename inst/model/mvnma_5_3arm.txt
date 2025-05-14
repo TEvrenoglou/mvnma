@@ -245,11 +245,11 @@ model {
   psi4.sq <- psi4 * psi4
   psi5.sq <- psi5 * psi5
   #
-  psi1 ~ dnorm(0, 1)T(0, )
-  psi2 ~ dnorm(0, 1)T(0, )
-  psi3 ~ dnorm(0, 1)T(0, )
-  psi4 ~ dnorm(0, 1)T(0, )
-  psi5 ~ dnorm(0, 1)T(0, )
+  psi1 ~ dnorm(0, prec.psi1)T(0, )
+  psi2 ~ dnorm(0, prec.psi2)T(0, )
+  psi3 ~ dnorm(0, prec.psi3)T(0, )
+  psi4 ~ dnorm(0, prec.psi4)T(0, )
+  psi5 ~ dnorm(0, prec.psi5)T(0, )
   #
   rho1 ~ dunif(lower.rho1, upper.rho1)
   rho2 ~ dunif(lower.rho2, upper.rho2)
