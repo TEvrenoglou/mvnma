@@ -10,9 +10,10 @@
 #' @param small.values A character vector specifying for each outcome whether
 #'   small treatment effects indicate a beneficial ("desirable") or harmful
 #'   ("undesirable") effect, can be abbreviated.
-#' @param method The ranking method to be used. Two methods are supported,
-#'   the SUCRA method (specified as method = "SUCRA", default) and the
-#'   probability of best value method (specified as method = "pBV").
+#' @param method The ranking method to be used. Three methods are currently supported.
+#'   The SUCRA method (specified as method = "SUCRA") is the default approach. The
+#'   probability of best value method (specified as method = "pBV") and the mean and median ranks
+#'   (specified as method == "ranks") are also supported.
 #'
 #' @examples
 #' \donttest{
@@ -64,6 +65,12 @@
 #'   method = "pBV")
 #' ranks_pBV                    
 #'    
+#' # Rank treatments using mean and median ranks
+#' ranks_mean_median <- mvrank(mvnma_all,
+#'   small.values = c("undes", "undes", "des", "des","des"),
+#'   method = "ranks")
+#' ranks_mean_median
+#'    
 #' # Rank treatments using SUCRAs
 #' ranks_sucra <- mvrank(mvnma_all, 
 #'   small.values = c("undes", "undes", "des", "des","des"),
@@ -82,7 +89,8 @@ mvrank <- function(x, small.values, method = "SUCRA") {
   
   chkclass(x, "mvnma")
   #
-  method <- setchar(method, c("SUCRA","pBV"))
+  small.values <- setchar(small.values,c("undesirable","desirable"))
+  method <- setchar(method, c("SUCRA","pBV","ranks"))
   chkchar(method, length = 1)
   method.model <- attr(x,"method.model")
   #
@@ -99,7 +107,7 @@ mvrank <- function(x, small.values, method = "SUCRA") {
   # Extract samples and create rankograms for each outcome
   #
   n.out <- length(outcomes)
-  d <- n.trts <- trts <- rank_out <- ranks <- vector("list")
+  d <- n.trts <- trts <- rank_out <- ranks <- quant <- rnk <-vector("list")
   
   for (i in seq_len(n.out)) {
     d[[i]] <- x[[i]]$samples
@@ -120,6 +128,31 @@ mvrank <- function(x, small.values, method = "SUCRA") {
       ranks.i <- cbind.data.frame(names(ranks.i), unname(ranks.i))
       names(ranks.i) <- c("treatment", "SUCRA")
       ranks.i %<>% arrange(desc(SUCRA))
+    }
+    else if(method == "ranks"){
+      
+    if(small.values[i]=="undesirable"){
+      
+    rnk[[i]] <- apply(-d[[i]], 1, rank, ties.method = "random")
+        
+    }else{
+        
+        rnk[[i]] <- apply(d[[i]], 1, rank, ties.method = "random") 
+      }
+    
+    quant[[i]] <- as.data.frame(t(apply(rnk[[i]], 1, function(row) {
+      quantile(row, probs = c(0.025, 0.5, 0.975), na.rm = TRUE)
+    })))
+    
+    quant[[i]]$treatment <- row.names(quant[[i]])
+
+    quant[[i]]$mean_ranks <- rowMeans(rnk[[i]])
+
+    row.names(quant[[i]]) <- NULL
+
+    names(quant[[i]]) <- c("lower.CrI","median_rank","upper.CrI","treatment","mean_rank")
+
+    ranks.i <- quant[[i]] %<>% select(treatment, median_rank,mean_rank,lower.CrI,upper.CrI) %>% arrange((mean_rank))
     }
     #
     ranks[[i]] <- ranks.i
