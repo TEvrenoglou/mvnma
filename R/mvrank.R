@@ -13,7 +13,7 @@
 #' @param method The ranking method to be used. Three methods are currently supported.
 #'   The SUCRA method (specified as method = "SUCRA") is the default approach. The
 #'   probability of best value method (specified as method = "pBV") and the mean and median ranks
-#'   (specified as method == "ranks") are also supported.
+#'   (specified as method = "ranks") are also supported.
 #'
 #' @examples
 #' \donttest{
