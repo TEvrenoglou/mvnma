@@ -224,7 +224,7 @@ mvnma <- function(...,
   
   #
   if (!miss.scale.psi)
-    chknumeric(scale.psi,zero = T, min = 0, length = n.out, NA.ok = FALSE)
+    chknumeric(scale.psi,zero = TRUE, min = 0, length = n.out, NA.ok = FALSE)
     
   # Create bounds for correlation prior
   #
