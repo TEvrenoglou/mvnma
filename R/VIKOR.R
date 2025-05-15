@@ -157,7 +157,7 @@ vikor.matrix <- function(x, weights = NULL,
   chkclass(x, "matrix")
   #
   res <- vikor_internal(x, weights = weights,
-                        v = v, pos.sol = 1, neg.sol = 0)
+                        v = v)
   #
   res
 }
