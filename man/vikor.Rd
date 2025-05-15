@@ -9,9 +9,9 @@ analysis method.}
 \usage{
 vikor(x, ...)
 
-\method{vikor}{mvrank}(x, weights = NULL, v = 0.5, pos.sol = NULL, neg.sol = NULL, ...)
+\method{vikor}{mvrank}(x, weights = NULL, v = 0.5, ...)
 
-\method{vikor}{matrix}(x, weights = NULL, v = 0.5, pos.sol = NULL, neg.sol = NULL, ...)
+\method{vikor}{matrix}(x, weights = NULL, v = 0.5, ...)
 }
 \arguments{
 \item{x}{An object of class \code{\link{mvrank}} or a matrix.}
@@ -23,14 +23,8 @@ then they are standardized. If NULL, the function will assume equal outcome
 weights.}
 
 \item{v}{A scalar from 0 to 1 interpreted as the weight of the decision
-making process. Following guidance from the multi-criteria decison analysis
+making process. Following guidance from the multi-criteria decision analysis
 field it is set to 0.5.}
-
-\item{pos.sol}{A vector of values containing the positive ideal solution for
-each outcome. If NULL it is always set to 1 for each outcome (see details).}
-
-\item{neg.sol}{A vector of values containing the negative ideal solution for
-each outcome. If NULL it is always set to 0 for each outcome (see details).}
 }
 \value{
 The function returns a 'vikor' object. This consists of three ranking lists
@@ -75,16 +69,6 @@ the treatment's overall performance while values close to 0 will give more
 weight to penalize the treatment's worst performance. The most common
 choice of 'v' is typically 0.5 (default also here), thereby allowing for a
 balanced decision making between treatment's overall and worst performance.
-
-The arguments 'pos.sol' and 'neg.sol' represent the positive and negative
-ideal solutions to be targeted. When synthesizing either SUCRA or pBV
-outputs then in both cases the positive ideal solution is by definition 1
-(the ideal treatment has a SUCRA or a pBV of 1). Similarly the ideal negative
-solution is by definition 0. Therefore, if NULL 'pos.sol = 1' and
-'neg.sol = 0'. However, if users aim at different SUCRA or pBV values for
-each outcome they can still specify 'pos.sol' or 'neg.sol' in terms of a
-vector (one for each argument) with length equal to the number of outcomes
-and values from 0 to 1.
 }
 \examples{
 \donttest{
