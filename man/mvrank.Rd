@@ -13,9 +13,10 @@ mvrank(x, small.values, method = "SUCRA")
 small treatment effects indicate a beneficial ("desirable") or harmful
 ("undesirable") effect, can be abbreviated.}
 
-\item{method}{The ranking method to be used. Two methods are supported,
-the SUCRA method (specified as method = "SUCRA", default) and the
-probability of best value method (specified as method = "pBV").}
+\item{method}{The ranking method to be used. Three methods are currently supported.
+The SUCRA method (specified as method = "SUCRA") is the default approach. The
+probability of best value method (specified as method = "pBV") and the mean and median ranks
+(specified as method == "ranks") are also supported.}
 }
 \description{
 This function produces outcome-specific treatment rankings in multivariate
@@ -72,6 +73,12 @@ ranks_pBV <- mvrank(mvnma_all,
   small.values = c("undes", "undes", "des", "des","des"),
   method = "pBV")
 ranks_pBV                    
+   
+# Rank treatments using mean and median ranks
+ranks_mean_median <- mvrank(mvnma_all,
+  small.values = c("undes", "undes", "des", "des","des"),
+  method = "ranks")
+ranks_mean_median
    
 # Rank treatments using SUCRAs
 ranks_sucra <- mvrank(mvnma_all, 
