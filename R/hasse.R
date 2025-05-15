@@ -67,6 +67,10 @@
 
 hasse.mvrank <- function(x, ...) {
   
+  if(!(attributes(x)$method %in% c("SUCRA","pBV"))){
+    stop("Hasse diagram can only be produced for 'method=SUCRA' and 'method=pBV'.")
+  }
+  
   # Get rid of warning "no visible binding for global variable"
   treatment <- NULL
   
