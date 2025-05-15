@@ -11,12 +11,8 @@
 #'   then they are standardized. If NULL, the function will assume equal outcome
 #'   weights. 
 #' @param v A scalar from 0 to 1 interpreted as the weight of the decision
-#'   making process. Following guidance from the multi-criteria decison analysis
+#'   making process. Following guidance from the multi-criteria decision analysis
 #'   field it is set to 0.5.
-#' @param pos.sol A vector of values containing the positive ideal solution for
-#'   each outcome. If NULL it is always set to 1 for each outcome (see details). 
-#' @param neg.sol A vector of values containing the negative ideal solution for
-#'   each outcome. If NULL it is always set to 0 for each outcome (see details).
 #' @param \dots Additional arguments.
 #'
 #' @details
@@ -45,15 +41,7 @@
 #' choice of 'v' is typically 0.5 (default also here), thereby allowing for a
 #' balanced decision making between treatment's overall and worst performance.
 #' 
-#' The arguments 'pos.sol' and 'neg.sol' represent the positive and negative
-#' ideal solutions to be targeted. When synthesizing either SUCRA or pBV
-#' outputs then in both cases the positive ideal solution is by definition 1
-#' (the ideal treatment has a SUCRA or a pBV of 1). Similarly the ideal negative
-#' solution is by definition 0. Therefore, if NULL 'pos.sol = 1' and
-#' 'neg.sol = 0'. However, if users aim at different SUCRA or pBV values for
-#' each outcome they can still specify 'pos.sol' or 'neg.sol' in terms of a
-#' vector (one for each argument) with length equal to the number of outcomes
-#' and values from 0 to 1.
+#'
 #' 
 #' @return
 #' The function returns a 'vikor' object. This consists of three ranking lists
@@ -114,14 +102,14 @@ vikor <- function(x, ...)
 #' @method vikor mvrank
 #' @export
 
-vikor.mvrank <- function(x, weights = NULL,
-                         v = 0.5, pos.sol = NULL, neg.sol = NULL, ...) {
+vikor.mvrank <- function(x, weights = NULL,v = 0.5, ...) {
   
   chkclass(x, "mvrank")
   #
   trts <- sort(attributes(x)$common_trts)
   outcomes <- names(x)
   
+  if(attributes(x)$method %in% c("SUCRA","pBV")){
   # Get rid of warning "no visible binding for global variable"
   treatment <- NULL
   
@@ -142,9 +130,19 @@ vikor.mvrank <- function(x, weights = NULL,
   row.names(rankings) <- dat.i$treatment
   names(rankings) <- outcomes
   #
-  res <- vikor_internal(rankings, weights = weights,
-                        v = v, pos.sol = pos.sol, neg.sol = neg.sol)
+  res <- vikor_internal(rankings, weights = weights, v = v)
+                     
+  }
+  else{
+    
+    decision <- performance.fuzzy(x,trts)
+    
+    res <- fuzzy_vikor_internal(decision, weights = weights,v = v )
+                              
+  }
   #
+  attr(res,"ranking.method") <- attributes(x)$method
+  
   res
 }
 
@@ -154,12 +152,12 @@ vikor.mvrank <- function(x, weights = NULL,
 #' @export
 
 vikor.matrix <- function(x, weights = NULL,
-                         v = 0.5, pos.sol = NULL, neg.sol = NULL, ...) {
+                         v = 0.5, ...) {
   
   chkclass(x, "matrix")
   #
   res <- vikor_internal(x, weights = weights,
-                        v = v, pos.sol = pos.sol, neg.sol = neg.sol)
+                        v = v, pos.sol = 1, neg.sol = 0)
   #
   res
 }

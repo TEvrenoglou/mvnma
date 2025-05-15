@@ -3,7 +3,7 @@
 #' 
 #' @description
 #' This function uses the three ranking matrices Q, S and R obtained by the
-#' VIKOR method and evaluates the conditions C1 and C2 the identify the set of
+#' VIKOR (or fuzzy VIKOR) method and evaluates the conditions C1 and C2 the identify the set of
 #' compromise solutions.
 #' 
 #' @param x An object of class \code{\link{vikor}}.
@@ -95,6 +95,13 @@ print.vikor <- function(x, digits = 4, ...) {
   else if (!cond1 & !cond2) {
     txt <- paste("No compromise solution was identified. Please consider",
                  "different outcome weights.")
+  }
+  
+  if(attributes(x)$ranking.method %in% c("SUCRA","pBV")){
+    
+    cat("VIKOR results\n\n")
+  }else{
+    cat("Fuzzy VIKOR results\n\n")
   }
   
   prmatrix(round(Q, digits = digits), quote = FALSE, right = TRUE)
