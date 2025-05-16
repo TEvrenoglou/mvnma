@@ -23,8 +23,8 @@ then they are standardized. If NULL, the function will assume equal outcome
 weights.}
 
 \item{v}{A scalar from 0 to 1 interpreted as the weight of the decision
-making process. Following guidance from the multi-criteria decision analysis
-field it is set to 0.5.}
+making process. Following guidance from the multi-criteria decision
+analysis field it is set to 0.5.}
 }
 \value{
 The function returns a 'vikor' object. This consists of three ranking lists
