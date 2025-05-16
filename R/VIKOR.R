@@ -11,8 +11,8 @@
 #'   then they are standardized. If NULL, the function will assume equal outcome
 #'   weights. 
 #' @param v A scalar from 0 to 1 interpreted as the weight of the decision
-#'   making process. Following guidance from the multi-criteria decision analysis
-#'   field it is set to 0.5.
+#'   making process. Following guidance from the multi-criteria decision
+#'   analysis field it is set to 0.5.
 #' @param \dots Additional arguments.
 #'
 #' @details
@@ -102,14 +102,14 @@ vikor <- function(x, ...)
 #' @method vikor mvrank
 #' @export
 
-vikor.mvrank <- function(x, weights = NULL,v = 0.5, ...) {
+vikor.mvrank <- function(x, weights = NULL, v = 0.5, ...) {
   
   chkclass(x, "mvrank")
   #
-  trts <- sort(attributes(x)$common_trts)
+  trts <- sort(attr(x, "common_trts"))
   outcomes <- names(x)
   
-  if(attributes(x)$method %in% c("SUCRA","pBV")){
+  if (attr(x, "method") %in% c("SUCRA", "pBV")) {
   # Get rid of warning "no visible binding for global variable"
   treatment <- NULL
   
@@ -133,16 +133,13 @@ vikor.mvrank <- function(x, weights = NULL,v = 0.5, ...) {
   res <- vikor_internal(rankings, weights = weights, v = v)
                      
   }
-  else{
-    
-    decision <- performance.fuzzy(x,trts)
-    
+  else {
+    decision <- performance_fuzzy(x,trts)
     res <- fuzzy_vikor_internal(decision, weights = weights,v = v )
-                              
   }
   #
-  attr(res,"ranking.method") <- attributes(x)$method
-  
+  attr(res, "ranking.method") <- attr(x, "method")
+  #
   res
 }
 
@@ -151,13 +148,11 @@ vikor.mvrank <- function(x, weights = NULL,v = 0.5, ...) {
 #' @method vikor matrix
 #' @export
 
-vikor.matrix <- function(x, weights = NULL,
-                         v = 0.5, ...) {
+vikor.matrix <- function(x, weights = NULL, v = 0.5, ...) {
   
   chkclass(x, "matrix")
   #
-  res <- vikor_internal(x, weights = weights,
-                        v = v)
+  res <- vikor_internal(x, weights = weights, v = v)
   #
   res
 }

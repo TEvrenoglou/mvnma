@@ -292,11 +292,11 @@ gather_results <- function(x, outcomes, trts, reference.group,
   lower.level <- (1 - level) / 2
   upper.level <- 1 - (1 - level) / 2
   #
-  # make the elements of the list "treat_out" to be every possible treatment if method=="DM"
+  # make the elements of the list "treat_out" to be every possible treatment if method == "DM"
   
-  if(method=="DM"){
+  if (method == "DM") {
     
-  for(i in 1:length(treat_out)){
+  for (i in 1:length(treat_out)) {
     
   treat_out[[i]] <- sort(trts)  
     
@@ -405,7 +405,7 @@ gather_results <- function(x, outcomes, trts, reference.group,
   psi <- psi[[1]]
   row.names(psi) <- outcomes
   
-  if(method=="DM"){
+  if (method == "DM") {
   sigma <- res %>% filter(grepl("sigma", rnames))
   }
   
@@ -483,7 +483,7 @@ gather_results <- function(x, outcomes, trts, reference.group,
   res[[length(res) + 1]] <- cor
   names(res)[length(res)] <- "cor"
   #
-  if(method=="DM"){
+  if (method == "DM") {
     res[[length(res) + 1]] <- sigma
     names(res)[length(res)] <- "sigma"  
   }

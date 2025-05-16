@@ -6,7 +6,7 @@
 #' 
 #' @param x An object of class \code{\link{mvrank}}.
 #' @param which A mandatory numeric vector of length 2 specifying which
-#'   outcomes should be plotted. For example, setting "outcome = c(2,3)"
+#'   outcomes should be plotted. For example, setting "outcome = c(2, 3)"
 #'   implies that a scatter plot will be generated plotting the rankings
 #'   of outcomes 2 and 3.
 #' @param pos Position of treatment labels.
@@ -69,7 +69,7 @@ plot.mvrank <- function(x, which = 1:2,
   chkclass(x, "mvrank")
   #
   n.outcome <- length(names(x))
-  common_trts <- attributes(x)$common_trts
+  common_trts <- attr(x, "common_trts")
   #
   chknumeric(which, min = 1, max = n.outcome, length = 2)
   chknumeric(cex.point, min = 0, zero = TRUE)

@@ -83,7 +83,7 @@ defined using the arguments `lower.rho` and `upper.rho`. If not set, the
 model will assume a `Unif (-1, 1)` prior for all correlation coefficients.
 For two outcomes, a single value can be provided for `lower.rho` and
 `upper.rho`. For example, `lower.rho` = 0.5 and `upper.rho` = 1 for
-rho12 ~ Unif (0.5,1)).
+rho12 ~ Unif (0.5, 1)).
 For more than two outcomes, the order in which the bounds are provided
 matters. For example, when pooling four outcomes, the lower and
 upper bounds correspond to the following order of correlation coefficients:

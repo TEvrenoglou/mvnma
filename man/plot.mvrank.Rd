@@ -20,7 +20,7 @@
 \item{x}{An object of class \code{\link{mvrank}}.}
 
 \item{which}{A mandatory numeric vector of length 2 specifying which
-outcomes should be plotted. For example, setting "outcome = c(2,3)"
+outcomes should be plotted. For example, setting "outcome = c(2, 3)"
 implies that a scatter plot will be generated plotting the rankings
 of outcomes 2 and 3.}
 

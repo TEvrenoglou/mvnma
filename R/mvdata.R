@@ -1,6 +1,6 @@
 mvdata <- function(p) {
   
-  if (is.list.pairwise(p) != "pairwise"){
+  if (is.list.pairwise(p) != "pairwise") {
     
     stop("Argument 'p' must be a list of 'pairwise' objects.")  
     
@@ -16,7 +16,7 @@ mvdata <- function(p) {
   sm <- vector("character")
   #
   for (i in seq_along(p))
-    sm[i] <- attributes(p[[i]])$sm 
+    sm[i] <- attr(p[[i]], "sm") 
   #
   attr(jags_data, "sm") <- sm
   

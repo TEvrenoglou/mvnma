@@ -42,7 +42,7 @@
 #' model will assume a `Unif (-1, 1)` prior for all correlation coefficients.
 #' For two outcomes, a single value can be provided for `lower.rho` and
 #' `upper.rho`. For example, `lower.rho` = 0.5 and `upper.rho` = 1 for
-#' rho12 ~ Unif (0.5,1)).
+#' rho12 ~ Unif (0.5, 1)).
 #' For more than two outcomes, the order in which the bounds are provided
 #' matters. For example, when pooling four outcomes, the lower and
 #' upper bounds correspond to the following order of correlation coefficients:
@@ -198,7 +198,7 @@ mvnma <- function(...,
   chklevel(level)
   chklogical(quiet)
   #
-  method <- setchar(method,c("standard","DM"))
+  method <- setchar(method, c("standard", "DM"))
   #
   # extract number of outcomes  
   n.out <- ncol(data$var)
@@ -312,53 +312,44 @@ mvnma <- function(...,
   
   # Create values for the scale and precision of parameter psi
   
-  if (miss.scale.psi){
+  if (miss.scale.psi) {
     scale.psi1 <- 1
     scale.psi2 <- 1
   }  
-  else{
+  else s{
     scale.psi1 <- scale.psi[1]
     scale.psi2 <- scale.psi[2]
   }
   
-  prec.psi1 <- 1/scale.psi1^2
+  prec.psi1 <- 1 / scale.psi1^2
   
-  prec.psi2 <- 1/scale.psi2^2
+  prec.psi2 <- 1 / scale.psi2^2
   
   if (n.out >= 3) {
-    if (miss.scale.psi) {
+    if (miss.scale.psi)
       scale.psi3 <- 1
-    }
-    else {
+    else
       scale.psi3 <- scale.psi[3]
-    }
-    
-    prec.psi3 <- 1/scale.psi3^2
-    
+    #
+    prec.psi3 <- 1 / scale.psi3^2
   }
   
   if (n.out >= 4) {
-    if (miss.scale.psi) {
+    if (miss.scale.psi)
       scale.psi4 <- 1
-    }
-    else {
+    else
       scale.psi4 <- scale.psi[4]
-    }
-    
-    prec.psi4 <- 1/scale.psi4^2
-    
+    #
+    prec.psi4 <- 1 / scale.psi4^2
   }
   
   if (n.out >= 5) {
-    if (miss.scale.psi) {
+    if (miss.scale.psi)
       scale.psi5 <- 1
-    }
-    else {
+    else
       scale.psi5 <- scale.psi[5]
-    }
-    
-    prec.psi5 <- 1/scale.psi5^2
-    
+    #
+    prec.psi5 <- 1 / scale.psi5^2
   }
   
   # Create outcome labels if not provided
@@ -472,7 +463,7 @@ mvnma <- function(...,
                 "psi1", "psi2",
                 "rho1")
     #
-    if(method=="standard"){
+    if (method == "standard") {
     if (multiarm)
       model.file <- system.file("model", "mvnma_2_3arm.txt", package = "mvnma")
     else {
@@ -480,11 +471,13 @@ mvnma <- function(...,
       run.data$k2 <- NULL
     }
     }
-    else if(method=="DM"){
+    else if (method == "DM") {
       if (multiarm)
-        model.file <- system.file("model", "DM_mvnma_2_3arm.txt", package = "mvnma")
+        model.file <-
+          system.file("model", "DM_mvnma_2_3arm.txt", package = "mvnma")
       else {
-        model.file <- system.file("model", "DM_mvnma_2_2arm.txt", package = "mvnma")
+        model.file <-
+          system.file("model", "DM_mvnma_2_2arm.txt", package = "mvnma")
         run.data$k2 <- NULL
       }
       
@@ -508,19 +501,23 @@ mvnma <- function(...,
                 "psi1", "psi2", "psi3",
                 "rho1", "rho2", "rho3")
     #
-    if(method=="standard"){
+    if (method == "standard") {
       if (multiarm)
-        model.file <- system.file("model", "mvnma_3_3arm.txt", package = "mvnma")
+        model.file <-
+          system.file("model", "mvnma_3_3arm.txt", package = "mvnma")
       else {
-        model.file <- system.file("model", "mvnma_3_2arm.txt", package = "mvnma")
+        model.file <-
+          system.file("model", "mvnma_3_2arm.txt", package = "mvnma")
         run.data$k2 <- NULL
       }
     }
-    else if(method=="DM"){
+    else if (method == "DM") {
       if (multiarm)
-        model.file <- system.file("model", "DM_mvnma_3_3arm.txt", package = "mvnma")
+        model.file <-
+          system.file("model", "DM_mvnma_3_3arm.txt", package = "mvnma")
       else {
-        model.file <- system.file("model", "DM_mvnma_3_2arm.txt", package = "mvnma")
+        model.file <-
+          system.file("model", "DM_mvnma_3_2arm.txt", package = "mvnma")
         run.data$k2 <- NULL
       }
       
@@ -542,19 +539,23 @@ mvnma <- function(...,
                 "psi1", "psi2", "psi3", "psi4",
                 "rho1", "rho2", "rho3", "rho4", "rho5", "rho6")
     #
-    if(method=="standard"){
+    if (method == "standard") {
       if (multiarm)
-        model.file <- system.file("model", "mvnma_4_3arm.txt", package = "mvnma")
+        model.file <-
+          system.file("model", "mvnma_4_3arm.txt", package = "mvnma")
       else {
-        model.file <- system.file("model", "mvnma_4_2arm.txt", package = "mvnma")
+        model.file <-
+          system.file("model", "mvnma_4_2arm.txt", package = "mvnma")
         run.data$k2 <- NULL
       }
     }
-    else if(method=="DM"){
+    else if (method == "DM") {
       if (multiarm)
-        model.file <- system.file("model", "DM_mvnma_4_3arm.txt", package = "mvnma")
+        model.file <-
+          system.file("model", "DM_mvnma_4_3arm.txt", package = "mvnma")
       else {
-        model.file <- system.file("model", "DM_mvnma_4_2arm.txt", package = "mvnma")
+        model.file <-
+          system.file("model", "DM_mvnma_4_2arm.txt", package = "mvnma")
         run.data$k2 <- NULL
       }
       
@@ -567,31 +568,32 @@ mvnma <- function(...,
                 "rho1", "rho2", "rho3", "rho4", "rho5", "rho6",
                 "rho7", "rho8", "rho9", "rho10")
     #
-    if(method=="standard"){
+    if (method == "standard") {
       if (multiarm)
-        model.file <- system.file("model", "mvnma_5_3arm.txt", package = "mvnma")
+        model.file <-
+          system.file("model", "mvnma_5_3arm.txt", package = "mvnma")
       else {
-        model.file <- system.file("model", "mvnma_5_2arm.txt", package = "mvnma")
+        model.file <-
+          system.file("model", "mvnma_5_2arm.txt", package = "mvnma")
         run.data$k2 <- NULL
       }
     }
-    else if(method=="DM"){
+    else if (method == "DM") {
       if (multiarm)
-        model.file <- system.file("model", "DM_mvnma_5_3arm.txt", package = "mvnma")
+        model.file <-
+          system.file("model", "DM_mvnma_5_3arm.txt", package = "mvnma")
       else {
-        model.file <- system.file("model", "DM_mvnma_5_2arm.txt", package = "mvnma")
+        model.file <-
+          system.file("model", "DM_mvnma_5_2arm.txt", package = "mvnma")
         run.data$k2 <- NULL
       }
       
     }
   }
-  
   #
-  if(method=="DM"){
+  if (method == "DM")
+    params <- c(params, "sigma")  
   
-    params <- c(params,"sigma")  
-    
-  }
   
   #
   # Run Bayesian analysis
@@ -629,8 +631,8 @@ mvnma <- function(...,
   attr(res, "trts") <- trts
   attr(res, "reference.group") <- reference.group
   attr(res, "level") <- level
-  attr(res, "sm") <- attributes(data)$sm
-  attr(res,"method.model") <- method
+  attr(res, "sm") <- attr(data, "sm")
+  attr(res, "method.model") <- method
   #
   class(res) <- "mvnma"
   #

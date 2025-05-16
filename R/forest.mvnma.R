@@ -65,18 +65,16 @@ forest.mvnma <- function(x, backtransf = FALSE,
   
   chkclass(x, "mvnma")
   #
-  method.model <- attr(x,"method.model")
+  method.model <- attr(x, "method.model")
   
   x <- x[names(x) != "cor"]
   
-  if(method.model=="DM"){
+  if (method.model == "DM")
     x <- x[names(x) != "sigma"]
-  }
-  
   
   n.out <- length(x)
   
-  sm <- attributes(x)$sm
+  sm <- attr(x, "sm")
   
   # Get rid of warning "no visible binding for global variable"
   treat <- mean <- sd <- lower <- upper <- NULL
@@ -91,25 +89,8 @@ forest.mvnma <- function(x, backtransf = FALSE,
     row.names(ests[[i]]) <- NULL
     #
     ests[[i]] %<>% select(treat, mean, sd, lower, upper)
-    ests[[i]]$outcome <- attributes(x)$names[i]
+    ests[[i]]$outcome <- attr(x, "names")[i]
   }
-  
-  
-  # ests_1 <- x[[1]]$basic_estimates
-  # 
-  # ests_1 <- ests_1 %>% 
-  #   mutate("treat" = row.names(ests_1)) %>% 
-  #   select(treat,mean,sd,`2.5%`,`97.5%`)
-  #   
-  # ests_1$outcome <- attributes(x)$outcomes[1]
-  # 
-  # ests_2 <- x[[2]]$basic_estimates
-  # 
-  # ests_2 <- ests_2 %>% 
-  #   mutate("treat" = row.names(ests_2)) %>% 
-  #   select(treat,mean,sd,`2.5%`,`97.5%`)
-  # 
-  # ests_2$outcome <- attributes(x)$outcomes[2]
   
   
   ### construct final dataset    '

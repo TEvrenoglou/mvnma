@@ -10,10 +10,11 @@
 #' @param small.values A character vector specifying for each outcome whether
 #'   small treatment effects indicate a beneficial ("desirable") or harmful
 #'   ("undesirable") effect, can be abbreviated.
-#' @param method The ranking method to be used. Three methods are currently supported.
-#'   The SUCRA method (specified as method = "SUCRA") is the default approach. The
-#'   probability of best value method (specified as method = "pBV") and the mean and median ranks
-#'   (specified as method = "ranks") are also supported.
+#' @param method The ranking method to be used. Three methods are currently
+#'   supported. The SUCRA method (specified as \code{method = "SUCRA"}) is the
+#'   default approach. The probability of best value method (specified as
+#'   \code{method = "pBV"}) and the mean and median ranks (specified as
+#'   \code{method = "ranks"}) are also supported.
 #'
 #' @examples
 #' \donttest{
@@ -61,25 +62,25 @@
 #'
 #' # Rank treatments using pBV
 #' ranks_pBV <- mvrank(mvnma_all,
-#'   small.values = c("undes", "undes", "des", "des","des"),
+#'   small.values = c("undes", "undes", "des", "des", "des"),
 #'   method = "pBV")
 #' ranks_pBV                    
 #'    
 #' # Rank treatments using mean and median ranks
 #' ranks_mean_median <- mvrank(mvnma_all,
-#'   small.values = c("undes", "undes", "des", "des","des"),
+#'   small.values = c("undes", "undes", "des", "des", "des"),
 #'   method = "ranks")
 #' ranks_mean_median
 #'    
 #' # Rank treatments using SUCRAs
 #' ranks_sucra <- mvrank(mvnma_all, 
-#'   small.values = c("undes", "undes", "des", "des","des"),
+#'   small.values = c("undes", "undes", "des", "des", "des"),
 #'   method = "SUCRA")
 #' ranks_sucra
 #'                      
 #' # Same results without method = "SUCRA" 
 #' ranks_sucra1 <- mvrank(mvnma_all, 
-#'   small.values = c("undes", "undes", "des", "des","des"))
+#'   small.values = c("undes", "undes", "des", "des", "des"))
 #' ranks_sucra1
 #' }
 #' 
@@ -89,20 +90,21 @@ mvrank <- function(x, small.values, method = "SUCRA") {
   
   chkclass(x, "mvnma")
   #
-  small.values <- setchar(small.values,c("undesirable","desirable"))
-  method <- setchar(method, c("SUCRA","pBV","ranks"))
+  small.values <- setchar(small.values,c("undesirable", "desirable"))
+  method <- setchar(method, c("SUCRA", "pBV", "ranks"))
   chkchar(method, length = 1)
-  method.model <- attr(x,"method.model")
+  method.model <- attr(x, "method.model")
   #
   x <- x[names(x) != "cor"]
-  if(method.model=="DM"){
+  if (method.model == "DM") {
     x <- x[names(x) != "sigma"]
   }
   #
-  outcomes <- attributes(x)$names
+  outcomes <- attr(x, "names")
   
   # Get rid of warning "no visible binding for global variable"
-  treatment <- pBV <- SUCRA <- Freq <- NULL
+  treatment <- pBV <- SUCRA <- Freq <-
+    median_rank <- mean_rank <- lower.CrI <- upper.CrI <- NULL
   
   # Extract samples and create rankograms for each outcome
   #
@@ -129,30 +131,29 @@ mvrank <- function(x, small.values, method = "SUCRA") {
       names(ranks.i) <- c("treatment", "SUCRA")
       ranks.i %<>% arrange(desc(SUCRA))
     }
-    else if(method == "ranks"){
-      
-    if(small.values[i]=="undesirable"){
-      
-    rnk[[i]] <- apply(-d[[i]], 1, rank, ties.method = "random")
-        
-    }else{
-        
+    else if (method == "ranks") {
+      if (small.values[i] == "undesirable")
+        rnk[[i]] <- apply(-d[[i]], 1, rank, ties.method = "random")
+      else
         rnk[[i]] <- apply(d[[i]], 1, rank, ties.method = "random") 
-      }
-    
-    quant[[i]] <- as.data.frame(t(apply(rnk[[i]], 1, function(row) {
-      quantile(row, probs = c(0.025, 0.5, 0.975), na.rm = TRUE)
-    })))
-    
-    quant[[i]]$treatment <- row.names(quant[[i]])
-
-    quant[[i]]$mean_ranks <- rowMeans(rnk[[i]])
-
-    row.names(quant[[i]]) <- NULL
-
-    names(quant[[i]]) <- c("lower.CrI","median_rank","upper.CrI","treatment","mean_rank")
-
-    ranks.i <- quant[[i]] %<>% select(treatment, median_rank,mean_rank,lower.CrI,upper.CrI) %>% arrange((mean_rank))
+      
+      quant[[i]] <-
+        as.data.frame(t(apply(rnk[[i]], 1,
+                              function(row) {
+                                quantile(row, probs = c(0.025, 0.5, 0.975),
+                                         na.rm = TRUE)
+                              })))
+      
+      quant[[i]]$treatment <- row.names(quant[[i]])
+      quant[[i]]$mean_ranks <- rowMeans(rnk[[i]])
+      #
+      row.names(quant[[i]]) <- NULL
+      names(quant[[i]]) <-
+        c("lower.CrI", "median_rank", "upper.CrI", "treatment", "mean_rank")
+      
+      ranks.i <- quant[[i]] %<>%
+        select(treatment, median_rank, mean_rank, lower.CrI, upper.CrI) %>%
+        arrange(mean_rank)
     }
     #
     ranks[[i]] <- ranks.i

@@ -17,8 +17,8 @@ ranking matrix Q.}
 }
 \description{
 This function uses the three ranking matrices Q, S and R obtained by the
-VIKOR (or fuzzy VIKOR) method and evaluates the conditions C1 and C2 the identify the set of
-compromise solutions.
+VIKOR (or fuzzy VIKOR) method and evaluates the conditions C1 and C2 the
+identify the set of compromise solutions.
 }
 \examples{
 \donttest{

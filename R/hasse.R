@@ -45,7 +45,7 @@
 #' league12
 #' 
 #' # Rank treatments using sucra
-#' ranks12 <- mvrank(mvnma12, small.values = c("und","und"), method = "sucra")
+#' ranks12 <- mvrank(mvnma12, small.values = c("und", "und"), method = "sucra")
 #' ranks12
 #' 
 #' # Get the Hasse diagram for the efficacy outcomes
@@ -67,9 +67,10 @@
 
 hasse.mvrank <- function(x, ...) {
   
-  if(!(attributes(x)$method %in% c("SUCRA","pBV"))){
-    stop("Hasse diagram can only be produced for 'method=SUCRA' and 'method=pBV'.")
-  }
+  if (!(attr(x, "method") %in% c("SUCRA", "pBV")))
+    stop("Hasse diagram can only be produced for ",
+         "'method=SUCRA' and 'method=pBV'.",
+         call. = FALSE)
   
   # Get rid of warning "no visible binding for global variable"
   treatment <- NULL

@@ -53,7 +53,7 @@ league12 <- league(mvnma12)
 league12
 
 # Rank treatments using sucra
-ranks12 <- mvrank(mvnma12, small.values = c("und","und"), method = "sucra")
+ranks12 <- mvrank(mvnma12, small.values = c("und", "und"), method = "sucra")
 ranks12
 
 # Get the Hasse diagram for the efficacy outcomes
