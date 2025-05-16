@@ -1,22 +1,13 @@
-model {
-  # k = number of studies
-  # n = number of treatments
-    
-  # This controls for studies with one outcome not reported by setting the
-  # correlation equal to zero
   #
-  for (i in 1:k) {
-    control12[i] <- step(9999 - var1[i]) * step(9999 - var2[i])
-    control13[i] <- step(9999 - var1[i]) * step(9999 - var3[i])
-    control14[i] <- step(9999 - var1[i]) * step(9999 - var4[i])
-    control23[i] <- step(9999 - var2[i]) * step(9999 - var3[i])
-    control24[i] <- step(9999 - var2[i]) * step(9999 - var4[i])
-    control34[i] <- step(9999 - var3[i]) * step(9999 - var4[i])
-  }
+  #
+  # (2) Variances, covariances and estimates
+  #
+  #
   
+  #
   # Two-arm studies
   #
-  for (i in 1:k) {
+  for (i in 1:k2) {
     #
     # Variances
     #
@@ -46,51 +37,3 @@ model {
     #
     y[(4 * i - 3):(4 * i)] ~ dmnorm.vcov(mean[(4 * i - 3):(4 * i)], S2[i, , ])
   }
-  
-  # Parameterization of the means
-  #
-  for (i in 1:k) {
-    mean[4 * i - 3] <- d1[treat2[i]] - d1[treat1[i]]
-    mean[4 * i - 2] <- d2[treat2[i]] - d2[treat1[i]]
-    mean[4 * i - 1] <- d3[treat2[i]] - d3[treat1[i]]
-    mean[4 * i    ] <- d4[treat2[i]] - d4[treat1[i]]
-  }
-  
-  # Priors
-  #
-  for (i in 1:(ref - 1)) {
-    d1[i] ~ dnorm(0, 1e-03)
-    d2[i] ~ dnorm(0, 1e-03)
-    d3[i] ~ dnorm(0, 1e-03)
-    d4[i] ~ dnorm(0, 1e-03)
-  }
-  #
-  d1[ref] <- 0
-  d2[ref] <- 0
-  d3[ref] <- 0
-  d4[ref] <- 0
-  #
-  for (i in (ref + 1):n) {
-    d1[i] ~ dnorm(0, 1e-03)
-    d2[i] ~ dnorm(0, 1e-03)
-    d3[i] ~ dnorm(0, 1e-03)
-    d4[i] ~ dnorm(0, 1e-03)
-  }
-  #
-  psi1.sq <- psi1 * psi1
-  psi2.sq <- psi2 * psi2
-  psi3.sq <- psi3 * psi3
-  psi4.sq <- psi4 * psi4
-  #
-  psi1 ~ dnorm(0, prec.psi1)T(0, )
-  psi2 ~ dnorm(0, prec.psi2)T(0, )
-  psi3 ~ dnorm(0, prec.psi3)T(0, )
-  psi4 ~ dnorm(0, prec.psi4)T(0, )
-  #
-  rho1 ~ dunif(lower.rho1, upper.rho1)
-  rho2 ~ dunif(lower.rho2, upper.rho2)
-  rho3 ~ dunif(lower.rho3, upper.rho3)
-  rho4 ~ dunif(lower.rho4, upper.rho4)
-  rho5 ~ dunif(lower.rho5, upper.rho5)
-  rho6 ~ dunif(lower.rho6, upper.rho6)
-}

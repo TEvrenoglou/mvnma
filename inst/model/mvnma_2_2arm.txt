@@ -1,14 +1,10 @@
-model {
-  # k2 = number of two-arm studies
-  # n = number of treatments
-  
-  # This controls for studies with one outcome not reported by setting the
-  # correlation equal to zero
   #
-  for (i in 1:k2) {
-    control12[i] <- step(9999 - var1[i]) * step(9999 - var2[i])
-  }
+  #
+  # (2) Variances, covariances and estimates
+  #
+  #
   
+  #
   # Two-arm studies
   #
   for (i in 1:k2) {
@@ -28,34 +24,3 @@ model {
     #
     y[(2 * i - 1):(2 * i)] ~ dmnorm.vcov(mean[(2 * i - 1):(2 * i)], S2[i, , ])
   }
-  
-  # Parameterization of the means
-  #
-  for (i in 1:k2) {
-    mean[2 * i - 1] <- d1[treat2[i]] - d1[treat1[i]]
-    mean[2 * i    ] <- d2[treat2[i]] - d2[treat1[i]]
-  }
-  
-  # Priors
-  #
-  for (i in 1:(ref - 1)) {
-    d1[i] ~ dnorm(0, 1e-03)
-    d2[i] ~ dnorm(0, 1e-03)
-  }
-  #
-  d1[ref] <- 0
-  d2[ref] <- 0
-  #
-  for (i in (ref + 1):n) {
-    d1[i] ~ dnorm(0, 1e-03)
-    d2[i] ~ dnorm(0, 1e-03)
-  }
-  #
-  psi1.sq <- psi1 * psi1
-  psi2.sq <- psi2 * psi2
-  #
-  psi1 ~ dnorm(0, prec.psi1)T(0, )
-  psi2 ~ dnorm(0, prec.psi2)T(0, )
-  #
-  rho1 ~ dunif(lower.rho1, upper.rho1)
-}

@@ -463,25 +463,10 @@ mvnma <- function(...,
                 "psi1", "psi2",
                 "rho1")
     #
-    if (method == "standard") {
-      if (multiarm)
-        model.file <- system.file("model", "mvnma_2_3arm.txt", package = "mvnma")
-      else {
-        model.file <- system.file("model", "mvnma_2_2arm.txt", package = "mvnma")
-        run.data$k <- NULL
-      }
-    }
-    else if (method == "DM") {
-      if (multiarm)
-        model.file <-
-          system.file("model", "DM_mvnma_2_3arm.txt", package = "mvnma")
-      else {
-        model.file <-
-          system.file("model", "DM_mvnma_2_2arm.txt", package = "mvnma")
-        run.data$k2 <- NULL
-      }
-      
-    }
+    if (!multiarm)
+      run.data$k <- NULL
+    #
+    model.code <- mvnma_code(n.out, method, multiarm)
   }
   #
   else if (n.out == 3) {
@@ -501,27 +486,10 @@ mvnma <- function(...,
                 "psi1", "psi2", "psi3",
                 "rho1", "rho2", "rho3")
     #
-    if (method == "standard") {
-      if (multiarm)
-        model.file <-
-          system.file("model", "mvnma_3_3arm.txt", package = "mvnma")
-      else {
-        model.file <-
-          system.file("model", "mvnma_3_2arm.txt", package = "mvnma")
-        run.data$k2 <- NULL
-      }
-    }
-    else if (method == "DM") {
-      if (multiarm)
-        model.file <-
-          system.file("model", "DM_mvnma_3_3arm.txt", package = "mvnma")
-      else {
-        model.file <-
-          system.file("model", "DM_mvnma_3_2arm.txt", package = "mvnma")
-        run.data$k2 <- NULL
-      }
-      
-    }
+    if (!multiarm)
+      run.data$k <- NULL
+    #
+    model.code <- mvnma_code(n.out, method, multiarm)
   }
   #
   else if (n.out == 4) {
@@ -539,27 +507,10 @@ mvnma <- function(...,
                 "psi1", "psi2", "psi3", "psi4",
                 "rho1", "rho2", "rho3", "rho4", "rho5", "rho6")
     #
-    if (method == "standard") {
-      if (multiarm)
-        model.file <-
-          system.file("model", "mvnma_4_3arm.txt", package = "mvnma")
-      else {
-        model.file <-
-          system.file("model", "mvnma_4_2arm.txt", package = "mvnma")
-        run.data$k2 <- NULL
-      }
-    }
-    else if (method == "DM") {
-      if (multiarm)
-        model.file <-
-          system.file("model", "DM_mvnma_4_3arm.txt", package = "mvnma")
-      else {
-        model.file <-
-          system.file("model", "DM_mvnma_4_2arm.txt", package = "mvnma")
-        run.data$k2 <- NULL
-      }
-      
-    }
+    if (!multiarm)
+      run.data$k <- NULL
+    #
+    model.code <- mvnma_code(n.out, method, multiarm)
   }
   #
   else if (n.out == 5) {
@@ -568,27 +519,10 @@ mvnma <- function(...,
                 "rho1", "rho2", "rho3", "rho4", "rho5", "rho6",
                 "rho7", "rho8", "rho9", "rho10")
     #
-    if (method == "standard") {
-      if (multiarm)
-        model.file <-
-          system.file("model", "mvnma_5_3arm.txt", package = "mvnma")
-      else {
-        model.file <-
-          system.file("model", "mvnma_5_2arm.txt", package = "mvnma")
-        run.data$k2 <- NULL
-      }
-    }
-    else if (method == "DM") {
-      if (multiarm)
-        model.file <-
-          system.file("model", "DM_mvnma_5_3arm.txt", package = "mvnma")
-      else {
-        model.file <-
-          system.file("model", "DM_mvnma_5_2arm.txt", package = "mvnma")
-        run.data$k2 <- NULL
-      }
-      
-    }
+    if (!multiarm)
+      run.data$k <- NULL
+    #
+    model.code <- mvnma_code(n.out, method, multiarm)
   }
   #
   if (method == "DM")
@@ -609,7 +543,7 @@ mvnma <- function(...,
     #
     DIC = FALSE,
     #
-    model.file = model.file,
+    model.file = textConnection(model.code),
     quiet = quiet)
   #
   samples <- fit$BUGSoutput$sims.list
@@ -633,6 +567,7 @@ mvnma <- function(...,
   attr(res, "level") <- level
   attr(res, "sm") <- attr(data, "sm")
   attr(res, "method.model") <- method
+  attr(res, "model.code") <- model.code
   #
   class(res) <- "mvnma"
   #
