@@ -464,12 +464,12 @@ mvnma <- function(...,
                 "rho1")
     #
     if (method == "standard") {
-    if (multiarm)
-      model.file <- system.file("model", "mvnma_2_3arm.txt", package = "mvnma")
-    else {
-      model.file <- system.file("model", "mvnma_2_2arm.txt", package = "mvnma")
-      run.data$k2 <- NULL
-    }
+      if (multiarm)
+        model.file <- system.file("model", "mvnma_2_3arm.txt", package = "mvnma")
+      else {
+        model.file <- system.file("model", "mvnma_2_2arm.txt", package = "mvnma")
+        run.data$k <- NULL
+      }
     }
     else if (method == "DM") {
       if (multiarm)
