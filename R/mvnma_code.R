@@ -11,17 +11,23 @@ mvnma_code <- function(n.outcomes, method, multiarm) {
   #
   # Files with variances, covariances and estimates
   #
-  file <- paste0("mvnma_", n.outcomes, "_2arm.txt")
-  path <- system.file("model", file, package = "mvnma")
-  txt <- paste0(txt, paste(readLines(path), collapse = "\n"))
-  #
-  if (multiarm) {
-    file <- paste0("mvnma_", n.outcomes, "_3arm.txt")
+  if (n.outcomes <= 5) {
+    file <- paste0("mvnma_", n.outcomes, "_2arm.txt")
     path <- system.file("model", file, package = "mvnma")
-    txt <- paste0(txt, "\n", paste(readLines(path), collapse = "\n"))
+    txt <- paste0(txt, paste(readLines(path), collapse = "\n"))
+    #
+    if (multiarm) {
+      file <- paste0("mvnma_", n.outcomes, "_3arm.txt")
+      path <- system.file("model", file, package = "mvnma")
+      txt <- paste0(txt, "\n", paste(readLines(path), collapse = "\n"))
+    }
+    #
+    txt <- paste0(txt, "\n")
   }
-  #
-  txt <- paste0(txt, "\n")
+  else
+    warning("R function mvnma_code() not implemented for more than five ",
+            "outcomes.",
+            call. = FALSE)
   #
   txt <- paste0(txt, code_means(n.outcomes, multiarm))
   #
