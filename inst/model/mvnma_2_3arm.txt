@@ -9,7 +9,7 @@ model {
     control12[i] <- step(9999 - var1[i]) * step(9999 - var2[i])
   }
   # k = total number of studies
-  for (i in k2 + 1:(2 * (k - k2))) {
+  for (i in ((k2 + 1):(2 * k - k2))) {
     control12[i] <- step(9999 - var1[i]) * step(9999 - var2[i])
   }
   
