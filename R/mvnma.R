@@ -316,7 +316,7 @@ mvnma <- function(...,
     scale.psi1 <- 1
     scale.psi2 <- 1
   }  
-  else s{
+  else {
     scale.psi1 <- scale.psi[1]
     scale.psi2 <- scale.psi[2]
   }
