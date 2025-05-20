@@ -202,12 +202,11 @@ mvnma <- function(...,
   #
   # extract number of outcomes  
   n.out <- ncol(data$var)
-  n.cor <- c(0, 1, 3, 6, 10)[n.out]
+  n.cor <- choose(n.out, 2)
   #
   miss.lower <- missing(lower.rho)
   miss.upper <- missing(upper.rho)
   miss.scale.psi <- missing(scale.psi)
-  
   #
   if (!miss.lower)
     chknumeric(lower.rho, min = -1, max = 1, length = n.cor, NA.ok = FALSE)
@@ -463,9 +462,6 @@ mvnma <- function(...,
                 "psi1", "psi2",
                 "rho1")
     #
-    if (!multiarm)
-      run.data$k <- NULL
-    #
     model.code <- mvnma_code(n.out, method, multiarm)
   }
   #
@@ -486,9 +482,6 @@ mvnma <- function(...,
                 "psi1", "psi2", "psi3",
                 "rho1", "rho2", "rho3")
     #
-    if (!multiarm)
-      run.data$k <- NULL
-    #
     model.code <- mvnma_code(n.out, method, multiarm)
   }
   #
@@ -507,9 +500,6 @@ mvnma <- function(...,
                 "psi1", "psi2", "psi3", "psi4",
                 "rho1", "rho2", "rho3", "rho4", "rho5", "rho6")
     #
-    if (!multiarm)
-      run.data$k <- NULL
-    #
     model.code <- mvnma_code(n.out, method, multiarm)
   }
   #
@@ -519,14 +509,14 @@ mvnma <- function(...,
                 "rho1", "rho2", "rho3", "rho4", "rho5", "rho6",
                 "rho7", "rho8", "rho9", "rho10")
     #
-    if (!multiarm)
-      run.data$k <- NULL
-    #
     model.code <- mvnma_code(n.out, method, multiarm)
   }
   #
   if (method == "DM")
     params <- c(params, "sigma")  
+  #
+  if (!multiarm)
+    run.data$k <- NULL
   
   
   #
