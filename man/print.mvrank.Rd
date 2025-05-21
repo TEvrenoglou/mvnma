@@ -45,5 +45,4 @@ mvnma12
 mvrank(mvnma12, small = c("und", "und"))
 }
 
-
 }

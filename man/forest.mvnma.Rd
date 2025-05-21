@@ -8,9 +8,9 @@
   x,
   backtransf = FALSE,
   leftcols = "studlab",
-  leftlabs = "Comparison",
+  leftlabs,
   rightcols = c("effect", "ci"),
-  rightlabs = c("TE", NA),
+  rightlabs,
   col.study = "black",
   col.square = "black",
   col.square.lines = "black",
@@ -45,10 +45,12 @@
 
 \item{col.subgroup}{...}
 
-\item{\dots}{Additional arguments for \code{\link[meta]{forest.meta}} function.}
+\item{\dots}{Additional arguments for \code{\link[meta]{forest.meta}}
+function.}
 }
 \description{
-Draws a forest plot in the active graphics window (using grid graphics system).
+Draws a forest plot in the active graphics window (using grid graphics
+system).
 }
 \examples{
 \donttest{
@@ -78,6 +80,5 @@ mvnma12
 # Generate a forest plot with the results
 forest(mvnma12)
 }
-
 
 }

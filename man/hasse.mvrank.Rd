@@ -48,11 +48,15 @@ mvnma12 <- mvnma(p1, p2,
   n.iter = 1000, n.burnin = 100)
 mvnma12
 
-# Get all estimates
-league12 <- league(mvnma12)
-league12
+# Print odds ratios for efficacy outcomes
+outc <- names(mvnma12)[names(mvnma12) != "cor"]
+#
+for (i in outc) {
+  cat(paste0("\nOutcome: ", i, "\n\n"))
+  print(round(exp(mvnma12[[i]]$TE.random), 2))
+}
 
-# Rank treatments using sucra
+# Rank treatments using SUCRAs
 ranks12 <- mvrank(mvnma12, small.values = c("und", "und"), method = "sucra")
 ranks12
 

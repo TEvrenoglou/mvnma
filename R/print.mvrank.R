@@ -36,13 +36,10 @@
 #' mvrank(mvnma12, small = c("und", "und"))
 #' }
 #'
-#' 
 #' @method print mvrank 
 #' @export
 
-print.mvrank <- function(x,
-                         digits = gs("digits"),
-                         ...) {
+print.mvrank <- function(x, digits = gs("digits"), ...) {
   
   chkclass(x, "mvrank")
   #

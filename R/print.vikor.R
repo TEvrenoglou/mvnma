@@ -79,8 +79,8 @@ print.vikor <- function(x, digits = 4, ...) {
   else if ((cond1) & (!cond2)) {
     solution <- paste(row.names(Q)[1:2], collapse = ", ")
     #
-    txt <-paste("The compromise set of treatments across all outcomes are:",
-                solution)
+    txt <- paste("The compromise set of treatments across all outcomes are:",
+                 solution)
   }
   else if (!cond1) {
     compr <- Q$Q - Q$Q[1] < DQ

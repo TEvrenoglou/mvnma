@@ -41,8 +41,6 @@
 #' choice of 'v' is typically 0.5 (default also here), thereby allowing for a
 #' balanced decision making between treatment's overall and worst performance.
 #' 
-#'
-#' 
 #' @return
 #' The function returns a 'vikor' object. This consists of three ranking lists
 #' which are the following:
@@ -85,10 +83,10 @@
 #' ranks12 <- mvrank(mvnma12, small.values = c("und", "und"), method = "sucra")
 #' ranks12
 #' 
-#' # Get the best compromise solution across all Efficacy outcomes
+#' # Get the best compromise solution across the efficacy outcomes
 #' vikor(ranks12)
 #' 
-#' # Use larger weight for Response than Remission
+#' # Use larger weight for response than remission
 #' vikor(ranks12, weights = c(0.6, 0.3))
 #' }
 #'
@@ -110,28 +108,27 @@ vikor.mvrank <- function(x, weights = NULL, v = 0.5, ...) {
   outcomes <- names(x)
   
   if (attr(x, "method") %in% c("SUCRA", "pBV")) {
-  # Get rid of warning "no visible binding for global variable"
-  treatment <- NULL
-  
-  s <- vector("list")
-  #
-  for (i in seq_len(length(x))) {
-    dat.i <- x[[i]] %>% 
-      filter(treatment %in% trts) %>% 
-      arrange(treatment)
+    # Get rid of warning "no visible binding for global variable"
+    treatment <- NULL
+    
+    s <- vector("list")
     #
-    s[[i]] <- as.data.frame(dat.i[, 2])
+    for (i in seq_len(length(x))) {
+      dat.i <- x[[i]] %>% 
+        filter(treatment %in% trts) %>% 
+        arrange(treatment)
+      #
+      s[[i]] <- as.data.frame(dat.i[, 2])
+      #
+      names(s[[i]]) <- paste("ranks", i, sep = "_")
+    }
     #
-    names(s[[i]]) <- paste("ranks", i, sep = "_")
-  }
-  #
-  rankings <- bind_cols(s)
-  #
-  row.names(rankings) <- dat.i$treatment
-  names(rankings) <- outcomes
-  #
-  res <- vikor_internal(rankings, weights = weights, v = v)
-                     
+    rankings <- bind_cols(s)
+    #
+    row.names(rankings) <- dat.i$treatment
+    names(rankings) <- outcomes
+    #
+    res <- vikor_internal(rankings, weights = weights, v = v)
   }
   else {
     decision <- performance_fuzzy(x,trts)

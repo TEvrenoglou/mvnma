@@ -110,7 +110,6 @@ fuzzy_vikor_internal <- function(x, weights, v = 0.5) {
   pos.sol <- rep(1, length(weights_fuzzy))
   neg.sol <- rep(nrow(x), length(weights_fuzzy))
   
-  
   # 1. S and R index
   
   # Calculate differences
@@ -137,7 +136,6 @@ fuzzy_vikor_internal <- function(x, weights, v = 0.5) {
   R[, 2] <- apply(NW[,seq(2, ncol(x), 3)], 1, max)
   R[, 3] <- apply(NW[,seq(3, ncol(x), 3)], 1, max)
   
-  
   # 2. Q index
   
   Q1 <- matrix(nrow = nrow(x), ncol = 3)
@@ -160,13 +158,11 @@ fuzzy_vikor_internal <- function(x, weights, v = 0.5) {
   else
     Q <- v * Q1 + (1 - v) * Q2
   
-  
   # 3. De-fuzzification using the method by Opricovic
   
   Def_S <- (S[, 1] + S[, 2] * 2 + S[, 3]) / 4
   Def_R <- (R[, 1] + R[, 2] * 2 + R[, 3]) / 4
   Def_Q <- (Q[, 1] + Q[, 2] * 2 + Q[, 3]) / 4
-  
   
   # 4. Return results
   
@@ -175,8 +171,7 @@ fuzzy_vikor_internal <- function(x, weights, v = 0.5) {
   #
   class(res) <- c("vikor", class(res))
   attr(res, "performance.table") <- x
-  
   attr(res, "fuzzy.weights") <- weights_fuzzy
-  
+  #
   res
 }

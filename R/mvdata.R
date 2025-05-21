@@ -1,14 +1,10 @@
 mvdata <- function(p) {
   
-  if (is.list.pairwise(p) != "pairwise") {
-    
-    stop("Argument 'p' must be a list of 'pairwise' objects.")  
-    
-  }
-  else {
-    data_format <- create_data(p) 
-    jags_data <- make_jags_data(data_format) 
-  }
+  if (is.list.pairwise(p) != "pairwise")
+    stop("Argument 'p' must be a list of 'pairwise' objects.")
+  
+  data_format <- create_data(p) 
+  jags_data <- make_jags_data(data_format) 
   #
   class(jags_data) <- "mvdata"
   attr(jags_data, "structured_data") <- data_format

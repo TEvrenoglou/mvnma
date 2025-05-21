@@ -83,7 +83,7 @@ plot.mvrank <- function(x, which = 1:2,
   
   # Get rid of warning "no visible binding for global variable"
   treat <- NULL
-    
+  
   outcomes <- names(x)[c(first, second)]
   #
   dat1 <- x[[first]]

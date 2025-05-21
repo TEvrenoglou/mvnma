@@ -2,7 +2,7 @@ catch <- function(argname, matchcall, data, encl)
   eval(matchcall[[match(argname, names(matchcall))]], data, enclos = encl)
 
 multi_arm <- function(data) {
-
+  
   # Get rid of warning "no visible binding for global variable"
   studlab <- treat2 <- NULL
   
@@ -11,15 +11,11 @@ multi_arm <- function(data) {
   r <- t <- E <- vector("list")
   
   for (i in seq_along(studies)) {
-    
     r[[i]] <- data %>% filter(studlab == studies[i])
-    
+    #
     if (nrow(r[[i]]) > 2) {
-      
       t[[i]] <- as.data.frame(table(r[[i]]$treat2))
-      
       E[[i]] <- t[[i]]$Var1[which(t[[i]]$Freq == max(t[[i]]$Freq))]
-      
       r[[i]] %<>% filter(treat2 == E[[i]])
     }
   }
@@ -53,71 +49,71 @@ create_T <- function(data, max.arms) {
 '%!in%' <- function(x, y)
   !('%in%'(x, y))
 
+
 #
-# Helpers for new mvdata
+# Helpers for mvdata()
 #
 
 create_data <- function(p, ...) {
+  
+  if (!(any(class(p) == "list")))
+    stop("Argument 'p' must be a list of pairwise objects.", 
+         call. = FALSE)
+  
   # Get rid of warning "no visible binding for global variable"
   studlab <- TE <- seTE <- treat1 <- treat2 <- outcome <- n.arms <- NULL
   #
-  if (any(class(p) == "list")) {
-    dat1 <- dat2 <- studies <- vector("list")
+  dat1 <- dat2 <- studies <- vector("list")
+  #
+  n_outcomes <- length(p)
+  #
+  for (i in 1:n_outcomes) {
+    p[[i]] %<>% select(studlab, TE, seTE, treat1, treat2) 
+    p[[i]] <- multi_arm(p[[i]])
+    p[[i]]$outcome <- i
+    p[[i]] <- add_arms(p[[i]])
+  }
+  
+  # Combine all p's
+  comb_p <- list.rbind(p)
+  
+  for (i in 1:n_outcomes) {
+    dat1[[i]] <- comb_p %>% filter(outcome == i)
+    dat2[[i]] <- comb_p %>% filter(outcome != i) 
     #
-    n_outcomes <- length(p)
+    dat2[[i]]$TE <- dat2[[i]]$seTE <- NA
+    dat2[[i]]$new_outcome <- i
     #
-    for (i in 1:n_outcomes) {
-      p[[i]] %<>% select(studlab, TE, seTE, treat1, treat2) 
-      p[[i]] <- multi_arm(p[[i]])
-      p[[i]]$outcome <- i
-      p[[i]] <- add_arms(p[[i]])
-    }
-    
-    # combine all p's
-    
-    comb_p <- list.rbind(p)
-    
-    for (i in 1:n_outcomes) {
-      dat1[[i]] <- comb_p %>% filter(outcome == i)
-      dat2[[i]] <- comb_p %>% filter(outcome != i) 
-      #
-      dat2[[i]]$TE <- dat2[[i]]$seTE <- NA
-      dat2[[i]]$new_outcome <- i
-      #
-      studies[[i]] <- unique(which(dat2[[i]]$studlab %!in% dat1[[i]]$studlab))
-      #
-      if (length(studies[[i]]) > 0) {
-        dat2[[i]] <- dat2[[i]][studies[[i]], ]
-        dat2[[i]]$outcome <- dat2[[i]]$new_outcome
-        dat2[[i]]$new_outcome <- NULL
-        #
-        row.names(dat2[[i]]) <- NULL
-      }
-      else
-        dat2[[i]] <- list()
-    }
+    studies[[i]] <- unique(which(dat2[[i]]$studlab %!in% dat1[[i]]$studlab))
     #
-    if (length(dat2) != 0) {
-      dat2 <- list.rbind(dat2)
+    if (length(studies[[i]]) > 0) {
+      dat2[[i]] <- dat2[[i]][studies[[i]], ]
+      dat2[[i]]$outcome <- dat2[[i]]$new_outcome
+      dat2[[i]]$new_outcome <- NULL
       #
-      comb_p <- rbind.data.frame(comb_p, dat2)
-      comb_p %<>%  arrange(outcome)
-      #
-      row.names(comb_p) <- NULL
+      row.names(dat2[[i]]) <- NULL
     }
     else
-      comb_p %<>% arrange(outcome)
+      dat2[[i]] <- list()
+  }
+  #
+  if (length(dat2) != 0) {
+    dat2 <- list.rbind(dat2)
     #
-    res <- comb_p %>%
-      group_by(studlab) %>%
-      arrange(desc(treat1), .by_group = TRUE) %>% 
-      arrange(n.arms)
+    comb_p <- rbind.data.frame(comb_p, dat2)
+    comb_p %<>%  arrange(outcome)
     #
-    res <- add_labels(res)
+    row.names(comb_p) <- NULL
   }
   else
-    stop("Argument 'p' must be a list of pairwise objects.", 
-         call. = FALSE)
+    comb_p %<>% arrange(outcome)
+  #
+  res <- comb_p %>%
+    group_by(studlab) %>%
+    arrange(desc(treat1), .by_group = TRUE) %>% 
+    arrange(n.arms)
+  #
+  res <- add_labels(res)
   #
   res
 }
@@ -142,39 +138,27 @@ add_arms <- function(x, ...) {
 }
 
 add_labels <- function(data) {
-  
   all_treats <- unique(c(data$treat1, data$treat2))  
-  
+  #
   levels_treats <- as.data.frame(levels(as.factor(all_treats)))
-  
   names(levels_treats) <- c("treat")
-  
   levels_treats$level <- 1:nrow(levels_treats)  
-  
+  #
   data$label1 <- NA
-  
   data$label2 <- NA
-  
+  #
   for (i in 1:nrow(data)) {
-    
     for (j in 1:nrow(levels_treats)) {
-      
       if (data$treat1[i] == levels_treats$treat[j]) {
-        
         data$label1[i] = levels_treats$level[j]
-        
       }
-      
+      #
       if (data$treat2[i] == levels_treats$treat[j]) {
-        
         data$label2[i] = levels_treats$level[j]
-        
-      } 
-      
+      }
     }
-    
   }  
-  
+  #
   data
 }
 
@@ -183,73 +167,57 @@ make_jags_data <- function(dat) {
   # Get rid of warning "no visible binding for global variable"
   label <- NULL
   
-  # number of studies  
-  
+  # Number of studies  
   Ns <- length(unique(dat$studlab))    
   
   # labtreat 
   
   labtreat1 <- cbind.data.frame(dat$treat1, dat$label1)
-  
   labtreat2 <- cbind.data.frame(dat$treat2, dat$label2)
-  
+  #
   names(labtreat1) <- names(labtreat2) <- c("treat", "label")
+  #
+  labtreat <- rbind.data.frame(labtreat1, labtreat2) %>%
+    distinct() %>% arrange(label)
   
-  labtreat <- rbind.data.frame(labtreat1, labtreat2)
-  
-  labtreat %<>% distinct() %>% arrange(label)
-  
-  # NT 
-  
+  # NT
   NT <- length(labtreat$treat)
   
-  # number of outcomes
-  
+  # Number of outcomes
   n_outcomes <- length(unique(dat$outcome))
   
-  # arms per study
+  # Arms per study
   arm_data <- dat[!duplicated(dat$studlab), ]
   
-  # number of 2 arms studies
-  
+  # Number of two-arm studies
   two_arm <- length(which(arm_data$n.arms == 2))
   
   treat_data <- create_T(dat, max.arms = max(arm_data$n.arms))
   
   
-  # extract vector with treatment effects
-  
+  # Extract vector with treatment effects
   y <- dat$TE
-  
   y <- ifelse(is.na(y), 0, y)
+  #
+  dat_out <- var <- treat_out <- vector("list")
+  names_vec <- vector("character")
   
-  dat_out <- list()
-  
-  var <- list()
-  
-  treat_out <- list()
-  
-  names_vec <- c()
-  
-  for (i in 1:n_outcomes) {
-    
+  for (i in seq_len(n_outcomes)) {
     dat_out[[i]] <- dat[dat$outcome == i, ]
-    
+    #
     var[[i]] <- dat_out[[i]]$seTE^2
-    
     var[[i]] <- ifelse(is.na(var[[i]]), 10000, var[[i]])
-    
+    #
     names_vec[i] <- paste0("var", i)
-    
+    #
     dat_out[[i]] <- dat_out[[i]][complete.cases(dat_out[[i]]$TE), ]
-    
     treat_out[[i]] <- unique(c(dat_out[[i]]$treat1, dat_out[[i]]$treat2))
   }
-  
+  #
   var_f <- list.cbind(var)
   var_f <- as.data.frame(var_f)
   names(var_f) <- names_vec
-  
+  #
   res <- list(y = y, var = var_f, T = treat_data,
               Ns = Ns, N2h = two_arm, NT = NT, 
               labtreat = labtreat, treat_out = treat_out)
@@ -258,25 +226,20 @@ make_jags_data <- function(dat) {
 }
 
 is.list.pairwise <- function(p, ...) {
-  
-  all_class <- sapply(p, class)   
-  
-  check <- c()
-  
-  for (i in 1:ncol(all_class)) {
-    
+  all_class <- sapply(p, class)
+  #
+  check <- vector()
+  #
+  for (i in 1:ncol(all_class))
     check[i] <- isTRUE("pairwise" %in% all_class[, i])  
-    
-  }
-  
-  pair <- ifelse(sum(check)>=2, "pairwise", NA)
-  
+  #
+  pair <- ifelse(sum(check) >= 2, "pairwise", NA)
+  #
   pair
 }
 
 gather_results <- function(x, outcomes, trts, reference.group,
-                           level,treat_out,method, ...) {
-  
+                           level,treat_out, method, ...) {
   res <- as.data.frame(x$BUGSoutput$summary)
   samples <- x$BUGSoutput$sims.list
   #
@@ -292,22 +255,17 @@ gather_results <- function(x, outcomes, trts, reference.group,
   lower.level <- (1 - level) / 2
   upper.level <- 1 - (1 - level) / 2
   #
-  # make the elements of the list "treat_out" to be every possible treatment if method == "DM"
-  
+  # Make the elements of the list "treat_out" to be every possible treatment if
+  # argument 'method == "DM"'
   if (method == "DM") {
-    
-  for (i in 1:length(treat_out)) {
-    
-  treat_out[[i]] <- sort(trts)  
-    
-  }  
-    
+    for (i in 1:length(treat_out)) {
+      treat_out[[i]] <- sort(trts)
+    }
   }
-  
+  #
   basic <- dat_treat <- psi <- rho <- d <-
     TE.random <- seTE.random <- lower.random <- upper.random <-
     vector("list")
-  
   # Get rid of warning "no visible binding for global variable"
   sd <- Rhat <- n.eff <- lower <- upper <- NULL
   #
@@ -319,12 +277,9 @@ gather_results <- function(x, outcomes, trts, reference.group,
     d[[i]] <- samples[[d.i]]
     colnames(d[[i]]) <- trts
     rownames(d[[i]]) <- seq_len(nrow(d[[i]]))
-    
-    d[[i]] <- as.data.frame(d[[i]])
-    
-    d[[i]] <- d[[i]] %>% 
+    #
+    d[[i]] <- as.data.frame(d[[i]]) %>% 
       select(any_of(treat_out[[i]]))
-    
     #
     # Results for basic parameters
     #
@@ -332,7 +287,7 @@ gather_results <- function(x, outcomes, trts, reference.group,
       filter(grepl(paste0(d.i, "["), rnames, fixed = TRUE))
     #
     row.names(basic[[i]]) <- trts
-    basic[[i]] <- basic[[i]][which(row.names(basic[[i]]) %in% treat_out[[i]]),]
+    basic[[i]] <- basic[[i]][which(row.names(basic[[i]]) %in% treat_out[[i]]), ]
     #
     basic[[i]] %<>%
       mutate(lower =
@@ -357,7 +312,6 @@ gather_results <- function(x, outcomes, trts, reference.group,
     #
     # Matrices with all results
     #
-    #
     dmat.i <- d[[i]]
     #
     TE.random.i <- seTE.random.i <-
@@ -379,13 +333,13 @@ gather_results <- function(x, outcomes, trts, reference.group,
       for (k in seq_len(ncol(dmat.i)))
         if (j != k)
           lower.random.i[j, k] <- quantile(dmat.i[, j] - dmat.i[, k],
-                                         lower.level)
+                                           lower.level)
     #
     for (j in seq_len(ncol(dmat.i)))
       for (k in seq_len(ncol(dmat.i)))
         if (j != k)
           upper.random.i[j, k] <- quantile(dmat.i[, j] - dmat.i[, k],
-                                         upper.level)
+                                           upper.level)
     #
     diag(TE.random.i) <- diag(seTE.random.i) <-
       diag(lower.random.i) <- diag(upper.random.i) <- 0
@@ -395,20 +349,20 @@ gather_results <- function(x, outcomes, trts, reference.group,
     lower.random[[i]] <- lower.random.i
     upper.random[[i]] <- upper.random.i
   }
-  
-  # prepare output
+  #
+  # Prepare output
+  #
   cor <- rho[[1]]
   #
   cor %<>% select(mean, sd, "2.5%", "97.5%", Rhat, n.eff) %>%
     rename(lower = "2.5%", upper = "97.5%")
-  
+  #
   psi <- psi[[1]]
   row.names(psi) <- outcomes
-  
-  if (method == "DM") {
-  sigma <- res %>% filter(grepl("sigma", rnames))
-  }
-  
+  #
+  if (method == "DM")
+    sigma <- res %>% filter(grepl("sigma", rnames))
+  #
   # Create row.names for cor
   #
   r1 <- t(combn(seq_along(outcomes), 2))
@@ -421,7 +375,7 @@ gather_results <- function(x, outcomes, trts, reference.group,
   }
   #
   row.names(cor) <- r.names
-  
+  #
   out1 <- list(basic_estimates = basic[[1]],
                heterogeneity = psi[1, ],
                TE.random = TE.random[[1]],
@@ -858,8 +812,7 @@ formatCI <- function(lower, upper,
                      justify.upper = justify.lower,
                      lower.blank = gs("CIlower.blank"),
                      upper.blank = gs("CIupper.blank"),
-                     ...
-) {
+                     ...) {
   
   # Change layout of CIs
   #

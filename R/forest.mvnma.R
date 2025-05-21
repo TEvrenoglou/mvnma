@@ -1,7 +1,8 @@
 #' Forest plot for multivariate network meta-analysis
 #' 
 #' @description
-#' Draws a forest plot in the active graphics window (using grid graphics system).
+#' Draws a forest plot in the active graphics window (using grid graphics
+#' system).
 #' 
 #' @param x An object of class \code{\link{mvnma}}.
 #' @param backtransf ...
@@ -15,7 +16,8 @@
 #' @param squaresize ...
 #' @param header.line ...
 #' @param col.subgroup ...
-#' @param \dots Additional arguments for \code{\link[meta]{forest.meta}} function.
+#' @param \dots Additional arguments for \code{\link[meta]{forest.meta}}
+#'   function.
 #'
 #' @examples
 #' \donttest{
@@ -45,16 +47,15 @@
 #' # Generate a forest plot with the results
 #' forest(mvnma12)
 #' }
-#'
 #' 
 #' @method forest mvnma 
 #' @export
 
 forest.mvnma <- function(x, backtransf = FALSE,
                          #
-                         leftcols = "studlab", leftlabs = "Comparison",
+                         leftcols = "studlab", leftlabs,
                          rightcols = c("effect", "ci"),
-                         rightlabs = c("TE", NA),
+                         rightlabs,
                          col.study = "black",
                          col.square = "black",
                          col.square.lines = "black",
@@ -66,18 +67,24 @@ forest.mvnma <- function(x, backtransf = FALSE,
   chkclass(x, "mvnma")
   #
   method.model <- attr(x, "method.model")
-  
+  reference.group <- attr(x, "reference.group")
+  sm <- attr(x, "sm")
+  #
   x <- x[names(x) != "cor"]
-  
+  #
   if (method.model == "DM")
     x <- x[names(x) != "sigma"]
-  
+  #
   n.out <- length(x)
-  
-  sm <- attr(x, "sm")
+  #
+  if (missing(leftlabs))
+    leftlabs <- paste0("Comparison with '", reference.group, "'")
+  #
+  if (missing(rightlabs))
+    rightlabs <- rep(NA, length(rightcols))
   
   # Get rid of warning "no visible binding for global variable"
-  treat <- mean <- sd <- lower <- upper <- NULL
+  treat <- mean <- sd <- lower <- upper <- studlab <- NULL
   
   # Get estimates for each outcome
   #
@@ -92,14 +99,22 @@ forest.mvnma <- function(x, backtransf = FALSE,
     ests[[i]]$outcome <- attr(x, "names")[i]
   }
   
-  
-  ### construct final dataset    '
-  
+  # Construct final dataset
+  #
   dat <- bind_rows(ests)
   row.names(dat) <- NULL
   names(dat) <- c("studlab", "mean", "seTE", "lower", "upper", "outcome")
+  #
+  # Drop rows for reference group 
+  #
+  dat %<>% filter(studlab != reference.group)
   
-  m <- metagen(dat$mean, dat$seTE, sm = NULL,
+  if (length(unique(sm)) == 1)
+    sm <- unique(sm)
+  else
+    sm <- ""
+  #
+  m <- metagen(dat$mean, dat$seTE, sm = sm,
                subgroup = dat$outcome,
                backtransf = backtransf,
                print.subgroup.name = FALSE,
@@ -108,7 +123,6 @@ forest.mvnma <- function(x, backtransf = FALSE,
                method.tau = "DL", method.tau.ci = "")
   #
   ret <- forest(m,
-                backtransf = FALSE,
                 header.line = header.line,
                 col.subgroup = "black",
                 leftcols = leftcols, 

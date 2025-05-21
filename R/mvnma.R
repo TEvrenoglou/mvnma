@@ -15,25 +15,26 @@
 #' @param n.burnin Number of iterations for burn-in.
 #' @param level The level used to calculate confidence intervals
 #'   for network estimates.
-#' @param scale.psi Values for the scale parameter(s) of the Half-Normal prior used for the
-#'   heterogeneity parameters within each outcome. If NULL, all values are set to 1. If
-#'   specified, it should have a length equal to the number of outcomes.
+#' @param scale.psi Values for the scale parameter(s) of the Half-Normal prior
+#'   used for the heterogeneity parameters within each outcome. If NULL, all
+#'   values are set to 1. If specified, it should have a length equal to the
+#'   number of outcomes.
 #' @param lower.rho Lower bounds for the Uniform prior(s) used for the
 #'   correlation coefficient. If NULL all bounds are set to -1.
 #' @param upper.rho Upper bounds for the Uniform prior(s) used for the
 #'   correlation coefficient. If NULL all bounds are set to 1.
-#' @param method A character string specifying the method to be used for model fitting. This can
-#'   be either "standard" (default), referring to the standard bivariate model, or "DM",
-#'   referring to the bivariate model based on the DuMouchel method. The argument can be abbreviated.
+#' @param method A character string specifying the method to be used for model
+#'   fitting. This can be either "standard" (default), referring to the
+#'   standard bivariate model, or "DM", referring to the bivariate model based
+#'   on the DuMouchel method. The argument can be abbreviated.
 #' @param quiet A logical indicating whether to print information on the
 #'   progress of the JAGS model fitting.
 #' 
 #' @details
 #' The function \code{\link{mvnma}} expects two to five outcomes /
 #' \code{\link[meta]{pairwise}} objects. A common reference treatment across
-#' all outcomes is required. However, this requirement is only for enabling
-#' the calculations, as the function  \code{\link{league}} extracts all
-#' possible comparisons.
+#' all outcomes is required to only show comparisons with the reference in
+#' forest plots.
 #' 
 #' The Bayesian multivariate network meta-analysis model fitted in the
 #' \bold{mvnma} package assumes uniform priors for the between-outcome
@@ -61,6 +62,7 @@
 #' }
 #' 
 #' @seealso \code{\link[meta]{pairwise}}
+#' 
 #' @examples
 #' \donttest{
 #' library("netmeta")
@@ -116,8 +118,13 @@
 #' # Plot the results for efficacy outcomes
 #' forest(mvnma12)
 #' 
-#' # Get all estimates
-#' league12 <- league(mvnma12)
+#' # Print odds ratios for efficacy outcomes
+#' outc <- names(mvnma12)[names(mvnma12) != "cor"]
+#' #
+#' for (i in outc) {
+#'   cat(paste0("\nOutcome: ", i, "\n\n"))
+#'   print(round(exp(mvnma12[[i]]$TE.random), 2))
+#' }
 #' 
 #' # Fit the model combining all five outcomes
 #' mvnma_all <- mvnma(p1, p2, p3, p4, p5,
@@ -133,9 +140,14 @@
 #'
 #' # Plot the results for all outcomes
 #' forest(mvnma_all)
-#'
-#' # Get all estimates 
-#' league_all <- league(mvnma_all)
+#' 
+#' # Print odds ratios for all outcomes
+#' outc <- names(mvnma_all)[names(mvnma_all) != "cor"]
+#' #
+#' for (i in outc) {
+#'   cat(paste0("\nOutcome: ", i, "\n\n"))
+#'   print(round(exp(mvnma_all[[i]]$TE.random), 2))
+#' }
 #' }
 #'
 #' @export mvnma
@@ -146,7 +158,7 @@ mvnma <- function(...,
                   level = gs("level.ma"),
                   scale.psi,
                   lower.rho, upper.rho,
-                  method="standard",
+                  method = "standard",
                   quiet = FALSE) {
   
   is_pairwise <- function(x)
@@ -224,7 +236,7 @@ mvnma <- function(...,
   #
   if (!miss.scale.psi)
     chknumeric(scale.psi,zero = TRUE, min = 0, length = n.out, NA.ok = FALSE)
-    
+  
   # Create bounds for correlation prior
   #
   if (miss.lower)
@@ -548,8 +560,7 @@ mvnma <- function(...,
                         treat_out = treat_out,
                         reference.group = reference.group,
                         level = level,
-                        method=method
-                        )
+                        method = method)
   #
   attr(res, "outcomes") <- outclab
   attr(res, "trts") <- trts
