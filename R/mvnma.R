@@ -572,8 +572,8 @@ mvnma <- function(...,
   attr(res, "sm") <- attr(data, "sm")
   attr(res, "method.model") <- method
   attr(res, "model.code") <- model.code
-  attr(res,"fit") <- fit
-  attr(res,"params") <- params
+  attr(res, "fit") <- fit
+  attr(res, "params") <- params
   #
   class(res) <- "mvnma"
   #
