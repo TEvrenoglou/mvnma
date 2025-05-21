@@ -9,8 +9,10 @@ mvnma(
   ...,
   reference.group = NULL,
   outclab = NULL,
+  n.chains = 2,
   n.iter = 10000,
   n.burnin = 2000,
+  n.thin = 1,
   level = gs("level.ma"),
   scale.psi,
   lower.rho,
@@ -28,9 +30,13 @@ two to five pairwise objects.}
 \item{outclab}{An optional argument with labels for each outcome. If NULL,
 the each outcome is labelled as 'outcome_1', 'outcome_2' etc.}
 
-\item{n.iter}{Number of iterations.}
+\item{n.chains}{Number of Markov chains (default=2).}
 
-\item{n.burnin}{Number of iterations for burn-in.}
+\item{n.iter}{Number of iterations (default=10000).}
+
+\item{n.burnin}{Number of iterations for burn-in (default=2000).}
+
+\item{n.thin}{Thinning rate (default=1).}
 
 \item{level}{The level used to calculate confidence intervals
 for network estimates.}
