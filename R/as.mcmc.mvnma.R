@@ -77,9 +77,7 @@ as.mcmc.mvnma <- function(x, drop.reference.group = FALSE, ...) {
       patt <- paste0("\\b(d\\d+)\\[", j, "\\]")
       repl <-  paste0("\\1[", trts[j], "\\]")
       #
-      args <- list(pattern = patt, replacement = repl, x = nam)
-      #
-      nam <- do.call(gsub, args)
+      nam <- gsub(pattern = patt, replacement = repl, x = nam)
     }
     #
     colnames(res[[i]]) <- nam
@@ -91,8 +89,7 @@ as.mcmc.mvnma <- function(x, drop.reference.group = FALSE, ...) {
       #
       patt <- paste0("\\b(d\\d+)\\[", reference.group, "\\]")
       #
-      args <- list(pattern = patt, x = nam)
-      keep <- !do.call(grepl, args)
+      keep <- !grepl(pattern = patt, x = nam)
       #
       res[[i]] <- res[[i]][, keep, drop = FALSE]
     }
