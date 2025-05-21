@@ -68,7 +68,7 @@ as.mcmc.mvnma <- function(x, drop.reference.group = FALSE, ...) {
   trts <- attr(x, "trts")
   reference.group <- attr(x, "reference.group")
   #
-  res <- as.mcmc.list(attr(x, "fit")$BUGSoutput)
+  res <- as.mcmc.list(attr(x, "fit")$BUGSoutput, ...)
   #
   for (i in seq_along(res)) {
     nam <- colnames(res[[i]])
