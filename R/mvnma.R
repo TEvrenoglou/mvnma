@@ -11,8 +11,10 @@
 #' @param reference.group A common reference treatment across all outcomes.
 #' @param outclab An optional argument with labels for each outcome. If NULL,
 #'   the each outcome is labelled as 'outcome_1', 'outcome_2' etc.
-#' @param n.iter Number of iterations.
-#' @param n.burnin Number of iterations for burn-in.
+#' @param n.chains Number of Markov chains (default=2).
+#' @param n.thin Thinning rate (default=1).
+#' @param n.iter Number of iterations (default=10000).
+#' @param n.burnin Number of iterations for burn-in (default=2000).
 #' @param level The level used to calculate confidence intervals
 #'   for network estimates.
 #' @param scale.psi Values for the scale parameter(s) of the Half-Normal prior
@@ -154,7 +156,8 @@
 
 mvnma <- function(...,
                   reference.group = NULL, outclab = NULL,
-                  n.iter = 10000, n.burnin = 2000,
+                  n.chains = 2, n.iter = 10000, 
+                  n.burnin = 2000, n.thin = 1, 
                   level = gs("level.ma"),
                   scale.psi,
                   lower.rho, upper.rho,
@@ -204,7 +207,6 @@ mvnma <- function(...,
   data <- mvdata(args)
   
   treat_out <- data$treat_out
-  
   #
   chknull(reference.group)
   chklevel(level)
@@ -541,7 +543,8 @@ mvnma <- function(...,
     #
     parameters.to.save = params,
     #
-    n.chains = 2, n.iter = n.iter, n.burnin = n.burnin, n.thin = 1,
+    n.chains = n.chains, n.iter = n.iter, 
+    n.burnin = n.burnin, n.thin = n.thin,
     #
     DIC = FALSE,
     #
@@ -569,6 +572,8 @@ mvnma <- function(...,
   attr(res, "sm") <- attr(data, "sm")
   attr(res, "method.model") <- method
   attr(res, "model.code") <- model.code
+  attr(res,"fit") <- fit
+  attr(res,"params") <- params
   #
   class(res) <- "mvnma"
   #
