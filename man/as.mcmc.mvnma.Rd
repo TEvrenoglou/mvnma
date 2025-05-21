@@ -51,12 +51,22 @@ mcmc12 <- as.mcmc(mvnma12)
 
 library(coda)
 oldpar <- par(mfrow = c(3, 3))
+# traceplot
 traceplot(mcmc12)
+# density plot
+densplot(mcmc12)
+# traceplot and density plot together
+plot(mcmc12)
 
 # Do not print the trace plot for the reference group, i.e., placebo
 mcmc12.drop <- as.mcmc(mvnma12, drop.reference.group = TRUE)
 par(mfrow = c(2, 4))
+# traceplot
 traceplot(mcmc12.drop)
+# density plot
+densplot(mcmc12.drop)
+# traceplot and density plot together
+plot(mcmc12.drop)
 
 par(oldpar)
 }
