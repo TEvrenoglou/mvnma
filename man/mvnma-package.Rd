@@ -3,15 +3,20 @@
 \docType{package}
 \name{mvnma-package}
 \alias{mvnma-package}
-\title{mvnma: Brief overview}
+\title{mvnma: Brief overview of methods}
 \description{
-R package \bold{mvnma} ...
+R package \bold{mvnma} provides R functions for Bayesian multivariate
+network meta-analysis.
 }
 \details{
 The R package \bold{mvnma} provides the following functions:
 \itemize{
-\item Function \code{\link{mvnma}} ...
-\item Function \code{\link{mvrank}} ...
+\item Function \code{\link{mvnma}} to perform a Bayesian multivariate
+  network meta-analysis.
+\item Function \code{\link{mvrank}} to get outcome-specific treatment
+ rankings.
+\item Function \code{\link{vikor}} to rank treatments across all outcomes
+  using the VIKOR multi-criteria decision analysis method.
 }
 
 Type \code{help(package = "mvnma")} for a listing of R functions

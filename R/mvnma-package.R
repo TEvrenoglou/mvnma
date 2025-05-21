@@ -1,13 +1,18 @@
-#' mvnma: Brief overview
+#' mvnma: Brief overview of methods
 #'
 #' @description
-#' R package \bold{mvnma} ...
+#' R package \bold{mvnma} provides R functions for Bayesian multivariate
+#' network meta-analysis.
 #'
 #' @details
 #' The R package \bold{mvnma} provides the following functions:
 #' \itemize{
-#' \item Function \code{\link{mvnma}} ...
-#' \item Function \code{\link{mvrank}} ...
+#' \item Function \code{\link{mvnma}} to perform a Bayesian multivariate
+#'   network meta-analysis.
+#' \item Function \code{\link{mvrank}} to get outcome-specific treatment
+#'  rankings.
+#' \item Function \code{\link{vikor}} to rank treatments across all outcomes
+#'   using the VIKOR multi-criteria decision analysis method.
 #' }
 #' 
 #' Type \code{help(package = "mvnma")} for a listing of R functions
@@ -30,6 +35,7 @@
 #' @keywords package
 #'
 #' @importFrom R2jags jags
+#' @importFrom coda as.mcmc as.mcmc.list
 #' @importFrom meta forest gs metagen pairwise
 #' @importFrom netmeta hasse netposet rankogram
 #' @importFrom matrixStats colSds
@@ -40,6 +46,8 @@
 #' @importFrom graphics text
 #' @importFrom stats complete.cases quantile
 #' @importFrom utils combn packageVersion
+#' 
+#' @export as.mcmc
 
 "_PACKAGE"
 

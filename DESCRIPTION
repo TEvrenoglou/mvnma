@@ -1,9 +1,9 @@
 Package: mvnma
-Title: Multivariate Network Meta-Analysis
+Title: Multivariate Network Meta-Analysis using Bayesian Methods
 Version: 0.1-0
 Date: 2025-05-21
-Depends: R (>= 4.0.0), meta (>= 8.1-0), netmeta (>= 3.2-0), R2jags
-Imports: dplyr, magrittr, matrixStats, rlist
+Depends: R (>= 4.0.0), meta (>= 8.1-0), netmeta (>= 3.2-0)
+Imports: R2jags, coda, dplyr, magrittr, matrixStats, rlist
 Authors@R: c(person("Theodoros", "Evrenoglou",
                     role = c("aut", "cre"),
                     email = "theodoros.evrenoglou@uniklinik-freiburg.de",
@@ -13,7 +13,8 @@ Authors@R: c(person("Theodoros", "Evrenoglou",
                     comment = c(ORCID = "0000-0001-6214-9087")))
 Maintainer: Theodoros Evrenoglou <theodoros.evrenoglou@uniklinik-freiburg.de>
 URL: https://github.com/TEvrenoglou/mvnma
-Description: ...
+Description: A collection of functions to conduct Bayesian multivariate
+  network meta-analysis.
 License: GPL (>= 2)
 Encoding: UTF-8
 RoxygenNote: 7.3.2
