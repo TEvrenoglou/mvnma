@@ -290,12 +290,12 @@ gather_results <- function(x, outcomes, trts, reference.group,
     basic[[i]] <- basic[[i]][which(row.names(basic[[i]]) %in% treat_out[[i]]), ]
     #
     basic[[i]] %<>%
-      mutate(lower =
-               apply(d[[i]], 2, quantile, probs = lower.level,
-                     na.rm = TRUE),
-             upper =
-               apply(d[[i]], 2, quantile, probs = upper.level,
-                     na.rm = TRUE)) %>%
+      mutate(lower = basic[[i]]$`2.5%`,
+               # apply(d[[i]], 2, quantile, probs = lower.level,
+               #       na.rm = TRUE),
+             upper = basic[[i]]$`97.5%`) %>% 
+               # apply(d[[i]], 2, quantile, probs = upper.level,
+               #       na.rm = TRUE)) %>%
       select(mean, sd, lower, upper, Rhat, n.eff)
     #
     basic[[i]][reference.group, ] <- NA
