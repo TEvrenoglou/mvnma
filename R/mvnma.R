@@ -64,6 +64,15 @@
 #' }
 #' 
 #' @seealso \code{\link[meta]{pairwise}}
+#'
+#' @references 
+#' Efthimiou O, Mavridis D, Riley RD, Cipriani A, Salanti G. Joint synthesis of 
+#' multiple correlated outcomes in networks of interventions. \emph{Biostatistics}. 
+#' 2015 Jan;\bold{16}(1):84-97. doi: 10.1093/biostatistics/kxu030.
+#' 
+#' Riley RD, Thompson JR, Abrams KR. An alternative model for bivariate random-effects 
+#' meta-analysis when the within-study correlations are unknown. \emph{Biostatistics}. 
+#' 2008 Jan;\bold{9}(1):172-86. doi: 10.1093/biostatistics/kxm023.
 #' 
 #' @examples
 #' \donttest{
