@@ -23,13 +23,13 @@
 \arguments{
 \item{x}{An object of class \code{\link{mvnma}}.}
 
-\item{backtransf}{A logical indicating whether results should be back-transformed 
-in forest plots. If backtransf = TRUE, results for sm = "OR" 
-are presented as odds ratios rather than log odds ratios}
+\item{backtransf}{A logical indicating whether results should be back-transformed. 
+in forest plots. If backtransf = TRUE, results for sm = "OR".
+are presented as odds ratios rather than log odds ratios.}
 
 \item{leftcols}{A character vector specifying (additional) columns to be printed on the left side of the forest plot or a logical value.}
 
-\item{leftlabs}{A character vector specifying labels for (additional) columns on left side of the forest plot (as in \code{\link{forest.meta}}).}
+\item{leftlabs}{A character vector specifying labels for (additional) columns on left side of the forest plot.}
 
 \item{rightcols}{A character vector specifying (additional) columns to be printed on the right side of the forest plot or a logical value.}
 
@@ -37,7 +37,7 @@ are presented as odds ratios rather than log odds ratios}
 
 \item{col.study}{The colour for treatment effect estimates and confidence interval limits.}
 
-\item{col.square}{The colour for squares reflecting the treatment effect estimates}
+\item{col.square}{The colour for squares reflecting the treatment effect estimates.}
 
 \item{col.square.lines}{The colour for the outer lines of squares reflecting the treatment effect estimates.}
 
