@@ -54,7 +54,7 @@ analysis method VIKOR to produce an amalgamated ranking list across all
 outcomes. The standard VIKOR approach is applied when the \code{method} argument
 is set to \code{"sucra"} or \code{"pBV"} in \code{\link{mvrank}}. A fuzzy
 VIKOR method is applied when outcome-specific rankings are expressed in terms of
-median ranks and 95% credible intervals. The latter is possible when the
+median ranks and 95\% credible intervals. The latter is possible when the
 \code{\link{mvrank}} object is created with \code{method = "ranks"}.
 In both cases, the final ranking list is calculated based on treatments
 common across all outcomes. Treatments not present across all outcomes are
