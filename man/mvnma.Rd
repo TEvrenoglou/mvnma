@@ -186,12 +186,21 @@ for (i in outc) {
 }
 \references{
 Efthimiou O, Mavridis D, Riley RD, Cipriani A, Salanti G. Joint synthesis of 
-multiple correlated outcomes in networks of interventions. \emph{Biostatistics}. 
-2015 Jan;\bold{16}(1):84-97. doi: 10.1093/biostatistics/kxu030.
+multiple correlated outcomes in networks of interventions. \emph{Biostatistics} 
+2015;\bold{16}(1):84-97. doi: 10.1093/biostatistics/kxu030.
 
 Riley RD, Thompson JR, Abrams KR. An alternative model for bivariate random-effects 
-meta-analysis when the within-study correlations are unknown. \emph{Biostatistics}. 
-2008 Jan;\bold{9}(1):172-86. doi: 10.1093/biostatistics/kxm023.
+meta-analysis when the within-study correlations are unknown. \emph{Biostatistics} 
+2008;\bold{9}(1):172-86. doi: 10.1093/biostatistics/kxm023.
+
+Achana FA, Cooper NJ, Bujkiewicz S, Hubbard SJ, Kendrick D, Jones DR, Sutton AJ. 
+Network meta-analysis of multiple outcome measures accounting for borrowing of 
+information across outcomes. \emph{BMC Medical Research Methodology}. 2014; \bold{21}
+14:92. doi: 10.1186/1471-2288-14-92. 
+
+DuMouchel WH, Harris JE. Bayes Methods for Combining the Results of Cancer 
+Studies in Humans and Other Species. Journal of the American Statistical Association. 
+1983;\bold{78}(382):293–308
 }
 \seealso{
 \code{\link[meta]{pairwise}}

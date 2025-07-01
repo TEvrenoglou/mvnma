@@ -2,7 +2,7 @@
 % Please edit documentation in R/forest.mvnma.R
 \name{forest.mvnma}
 \alias{forest.mvnma}
-\title{Forest plot for multivariate network meta-analysis}
+\title{Forest plot for multivariate network meta-analysis results}
 \usage{
 \method{forest}{mvnma}(
   x,
@@ -23,30 +23,31 @@
 \arguments{
 \item{x}{An object of class \code{\link{mvnma}}.}
 
-\item{backtransf}{...}
+\item{backtransf}{A logical indicating whether results should be back-transformed 
+in forest plots. If backtransf = TRUE, results for sm = "OR" 
+are presented as odds ratios rather than log odds ratios (as in \code{\link{forest.meta}}).}
 
-\item{leftcols}{...}
+\item{leftcols}{A character vector specifying (additional) columns to be printed on the left side of the forest plot or a logical value.}
 
-\item{leftlabs}{...}
+\item{leftlabs}{A character vector specifying labels for (additional) columns on left side of the forest plot (as in \code{\link{forest.meta}}).}
 
-\item{rightcols}{...}
+\item{rightcols}{A character vector specifying (additional) columns to be printed on the right side of the forest plot or a logical value.}
 
-\item{rightlabs}{...}
+\item{rightlabs}{A character vector specifying labels for (additional) columns on right side of the forest plot.}
 
-\item{col.study}{...}
+\item{col.study}{The colour for treatment effect estimates and confidence interval limits.}
 
-\item{col.square}{...}
+\item{col.square}{The colour for squares reflecting the treatment effect estimates (as in \code{\link{forest.meta}}).}
 
-\item{col.square.lines}{...}
+\item{col.square.lines}{The colour for the outer lines of squares reflecting the treatment effect estimates.}
 
-\item{squaresize}{...}
+\item{squaresize}{The size of squares reflecting the treatment effect estimates (default: 0.7).}
 
-\item{header.line}{...}
+\item{header.line}{A logical value indicating whether to print a header line (default: TRUE) or a character string ("both", "below", "").}
 
-\item{col.subgroup}{...}
+\item{col.subgroup}{The colour to print information on different outcomes.}
 
-\item{\dots}{Additional arguments for \code{\link[meta]{forest.meta}}
-function.}
+\item{\dots}{Additional arguments for \code{\link[meta]{forest.meta}} function.}
 }
 \description{
 Draws a forest plot in the active graphics window (using grid graphics

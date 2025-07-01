@@ -26,15 +26,15 @@ of outcomes 2 and 3.}
 
 \item{pos}{Position of treatment labels.}
 
-\item{cex.point}{...}
+\item{cex.point}{a numeric value specifying the size of the points (default: 1)}
 
-\item{cex.label}{...}
+\item{cex.label}{a numeric value specifying the size of the point labels in the plot (default: 0.7)}
 
-\item{pch}{...}
+\item{pch}{a vector of plotting characters or symbols (default: 19)}
 
-\item{xlim}{...}
+\item{xlim}{the x limits of the plot}
 
-\item{ylim}{...}
+\item{ylim}{the y limits of the plot}
 
 \item{...}{Additional arguments for \code{\link{plot}} function.}
 }
