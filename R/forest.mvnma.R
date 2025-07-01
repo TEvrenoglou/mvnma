@@ -5,15 +5,15 @@
 #' system).
 #' 
 #' @param x An object of class \code{\link{mvnma}}.
-#' @param backtransf 	A logical indicating whether results should be back-transformed 
-#' in forest plots. If backtransf = TRUE, results for sm = "OR" 
-#' are presented as odds ratios rather than log odds ratios
+#' @param backtransf 	A logical indicating whether results should be back-transformed. 
+#' in forest plots. If backtransf = TRUE, results for sm = "OR".
+#' are presented as odds ratios rather than log odds ratios.
 #' @param leftcols 	A character vector specifying (additional) columns to be printed on the left side of the forest plot or a logical value.
-#' @param leftlabs 	A character vector specifying labels for (additional) columns on left side of the forest plot (as in \code{\link{forest.meta}}).
+#' @param leftlabs 	A character vector specifying labels for (additional) columns on left side of the forest plot.
 #' @param rightcols A character vector specifying (additional) columns to be printed on the right side of the forest plot or a logical value.
 #' @param rightlabs A character vector specifying labels for (additional) columns on right side of the forest plot. 
 #' @param col.study  The colour for treatment effect estimates and confidence interval limits. 
-#' @param col.square The colour for squares reflecting the treatment effect estimates
+#' @param col.square The colour for squares reflecting the treatment effect estimates.
 #' @param col.square.lines The colour for the outer lines of squares reflecting the treatment effect estimates.
 #' @param squaresize The size of squares reflecting the treatment effect estimates (default: 0.7).
 #' @param header.line A logical value indicating whether to print a header line (default: TRUE) or a character string ("both", "below", "").
