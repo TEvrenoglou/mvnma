@@ -1,23 +1,24 @@
-#' Forest plot for multivariate network meta-analysis
+#' Forest plot for multivariate network meta-analysis results
 #' 
 #' @description
 #' Draws a forest plot in the active graphics window (using grid graphics
 #' system).
 #' 
 #' @param x An object of class \code{\link{mvnma}}.
-#' @param backtransf ...
-#' @param leftcols ...
-#' @param leftlabs ...
-#' @param rightcols ...
-#' @param rightlabs ...
-#' @param col.study ...
-#' @param col.square ...
-#' @param col.square.lines ...
-#' @param squaresize ...
-#' @param header.line ...
-#' @param col.subgroup ...
-#' @param \dots Additional arguments for \code{\link[meta]{forest.meta}}
-#'   function.
+#' @param backtransf 	A logical indicating whether results should be back-transformed 
+#' in forest plots. If backtransf = TRUE, results for sm = "OR" 
+#' are presented as odds ratios rather than log odds ratios (as in \code{\link{forest.meta}}).
+#' @param leftcols 	A character vector specifying (additional) columns to be printed on the left side of the forest plot or a logical value.
+#' @param leftlabs 	A character vector specifying labels for (additional) columns on left side of the forest plot (as in \code{\link{forest.meta}}).
+#' @param rightcols A character vector specifying (additional) columns to be printed on the right side of the forest plot or a logical value.
+#' @param rightlabs A character vector specifying labels for (additional) columns on right side of the forest plot. 
+#' @param col.study  The colour for treatment effect estimates and confidence interval limits. 
+#' @param col.square The colour for squares reflecting the treatment effect estimates (as in \code{\link{forest.meta}}).
+#' @param col.square.lines The colour for the outer lines of squares reflecting the treatment effect estimates.
+#' @param squaresize The size of squares reflecting the treatment effect estimates (default: 0.7).
+#' @param header.line A logical value indicating whether to print a header line (default: TRUE) or a character string ("both", "below", "").
+#' @param col.subgroup 	The colour to print information on different outcomes.
+#' @param \dots Additional arguments for \code{\link[meta]{forest.meta}} function.
 #'
 #' @examples
 #' \donttest{

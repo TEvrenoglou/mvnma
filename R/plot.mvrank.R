@@ -10,11 +10,11 @@
 #'   implies that a scatter plot will be generated plotting the rankings
 #'   of outcomes 2 and 3.
 #' @param pos Position of treatment labels.
-#' @param cex.point ...
-#' @param cex.label ...
-#' @param pch ...
-#' @param xlim ...
-#' @param ylim ...
+#' @param cex.point a numeric value specifying the size of the points (default: 1)
+#' @param cex.label a numeric value specifying the size of the point labels in the plot (default: 0.7)
+#' @param pch a vector of plotting characters or symbols (default: 19)
+#' @param xlim the x limits of the plot
+#' @param ylim the y limits of the plot
 #' @param ... Additional arguments for \code{\link{plot}} function.
 #' 
 #' @examples

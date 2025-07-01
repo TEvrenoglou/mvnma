@@ -16,12 +16,17 @@
 #' @param \dots Additional arguments.
 #'
 #' @details
-#' This function takes a single mandatory argument which is an object of class
-#' mvrank or a matrix. It then uses the multi-criteria decision
+#' This function takes a single mandatory argument, which is either an object of class
+#' \code{\link{mvrank}} or a matrix. It then uses the multi-criteria decision
 #' analysis method VIKOR to produce an amalgamated ranking list across all
-#' outcomes. The final ranking list is calculated based on the common across
-#' outcomes treatments. Treatments not existing across all outcomes are
-#' excluded internally. 
+#' outcomes. The standard VIKOR approach is applied when the \code{method} argument
+#' is set to \code{"sucra"} or \code{"pBV"} in \code{\link{mvrank}}. A fuzzy
+#' VIKOR method is applied when outcome-specific rankings are expressed in terms of
+#' median ranks and 95% credible intervals. The latter is possible when the
+#' \code{\link{mvrank}} object is created with \code{method = "ranks"}.
+#' In both cases, the final ranking list is calculated based on treatments
+#' common across all outcomes. Treatments not present across all outcomes are
+#' excluded internally.
 #' 
 #' Using the argument 'weights' the users can specify the weight that each
 #' outcome should have in the decision making process. For each outcome this
@@ -53,6 +58,17 @@
 #' \item A ranking list R referring to the ranking in terms of penalizing each
 #'   treatment's worst performance.
 #' }
+#' In addition to the ranking lists, the function also evaluates the necessary conditions
+#' defined by the VIKOR method and returns a message indicating the set of compromise
+#' solutions.
+#'
+#' @references 
+#' Opricovic, S., Tzeng, G. H. Compromise solution by MCDM methods:
+#' A comparative analysis of VIKOR and TOPSIS. \emph{European Journal of Operational
+#' Research}. 2004; \bold{156} (2), 445–455 https://doi.org/10.1016/S0377-2217(03)00020-1
+#' 
+#' Opricovic, S. Fuzzy VIKOR with an application to water resources planning. 
+#' \emph{Expert Systems with Applications} 2011; \bold{38}(10), 12983-12990. https://doi.org/10.1016/j.eswa.2011.04.097
 #' 
 #' @examples
 #' \donttest{
