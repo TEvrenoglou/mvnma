@@ -25,7 +25,7 @@
 
 \item{backtransf}{A logical indicating whether results should be back-transformed 
 in forest plots. If backtransf = TRUE, results for sm = "OR" 
-are presented as odds ratios rather than log odds ratios (as in \code{\link{forest.meta}}).}
+are presented as odds ratios rather than log odds ratios}
 
 \item{leftcols}{A character vector specifying (additional) columns to be printed on the left side of the forest plot or a logical value.}
 
@@ -37,7 +37,7 @@ are presented as odds ratios rather than log odds ratios (as in \code{\link{fore
 
 \item{col.study}{The colour for treatment effect estimates and confidence interval limits.}
 
-\item{col.square}{The colour for squares reflecting the treatment effect estimates (as in \code{\link{forest.meta}}).}
+\item{col.square}{The colour for squares reflecting the treatment effect estimates}
 
 \item{col.square.lines}{The colour for the outer lines of squares reflecting the treatment effect estimates.}
 
