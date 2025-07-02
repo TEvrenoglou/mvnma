@@ -1,7 +1,7 @@
 #' A heatplot to visualize the output of \code{\link{mvrank}} across all outcomes
 #' 
 #' @description
-#' This function produces a heatmpap displaying the results of function \code{\link{mvrank}}. 
+#' This function produces a heatplot displaying the results of function \code{\link{mvrank}}. 
 #' The graph can be used to visualize the ranking output when the method used to rank the treatments
 #' is either the SUCRA or the pBV method.
 #' 
@@ -81,7 +81,7 @@
 #' # Create a heatplot sorting the results according to the first outcome appearing in ranks_sucra (i.e Early_Response)
 #'   heatplot(ranks_sucra,sortby = 1)
 #' # Create a heatplot sorting the results by explicitly mentioning the name of the outcome Early_Response
-#'   heatplot(ranks_sucra,sortby = Early_Response) 
+#'   heatplot(ranks_sucra,sortby = "Early_Response") 
 #'   }
 #' @method heatplot mvrank 
 #' @export
