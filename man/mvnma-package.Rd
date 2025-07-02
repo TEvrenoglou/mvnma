@@ -39,6 +39,7 @@ The R package \bold{mvnma} provides the following functions:
 \item Function \code{\link{forest.mvnma}} to visualize the results of the mvNMA model in terms of treatment effect estimates
 \item Function \code{\link{plot.mvrank}} to visualize per outcome ranking results for any pair of outcomes
 \item Function \code{\link{hasse.mvrank}} to visualize the partial order of the treatment across all outcomes
+\item Function \code{\link{heatplot}} to visualize in a heatplot the results in terms of outcome specic rankings 
 \item Function \code{\link{as.mcmc.mvnma}} an auxiliary function to extract an MCMC object. This makes any
 \bold{mvnnma} object compatible with the convergence checks performed by the R package \code{\link{coda}}.
 
