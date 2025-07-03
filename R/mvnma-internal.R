@@ -289,10 +289,11 @@ gather_results <- function(x, outcomes, trts, reference.group,
     #
     row.names(basic[[i]]) <- trts
     basic[[i]] <- basic[[i]][which(row.names(basic[[i]]) %in% treat_out[[i]]), ]
-    #
-    for (j in trts)
+    ##
+    for (j in rownames(basic[[i]])) {
       basic[[i]][j, c("lower", "upper")] <-
         quantile(d[[i]][[j]], probs = c(lower.level, upper.level), na.rm = TRUE)
+    }
     #
     basic[[i]] %<>% select(mean, sd, lower, upper, Rhat, n.eff)
     #
