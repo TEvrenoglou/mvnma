@@ -101,7 +101,7 @@ create_data <- function(p, ...) {
     dat2 <- list.rbind(dat2)
     #
     comb_p <- rbind.data.frame(comb_p, dat2)
-    comb_p %<>%  arrange(outcome)
+    comb_p <- comb_p %>% distinct() %>% arrange(outcome)
     #
     row.names(comb_p) <- NULL
   }
