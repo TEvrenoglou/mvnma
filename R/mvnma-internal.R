@@ -284,19 +284,17 @@ gather_results <- function(x, outcomes, trts, reference.group,
     # Results for basic parameters
     #
     basic[[i]] <- res %>%
-      filter(grepl(paste0(d.i, "["), rnames, fixed = TRUE))
+      filter(grepl(paste0(d.i, "["), rnames, fixed = TRUE)) %>%
+      mutate(lower = NA, upper = NA)
     #
     row.names(basic[[i]]) <- trts
     basic[[i]] <- basic[[i]][which(row.names(basic[[i]]) %in% treat_out[[i]]), ]
     #
-    basic[[i]] %<>%
-      mutate(lower = basic[[i]]$`2.5%`,
-               # apply(d[[i]], 2, quantile, probs = lower.level,
-               #       na.rm = TRUE),
-             upper = basic[[i]]$`97.5%`) %>% 
-               # apply(d[[i]], 2, quantile, probs = upper.level,
-               #       na.rm = TRUE)) %>%
-      select(mean, sd, lower, upper, Rhat, n.eff)
+    for (j in trts)
+      basic[[i]][j, c("lower", "upper")] <-
+        quantile(d[[i]][[j]], probs = c(lower.level, upper.level), na.rm = TRUE)
+    #
+    basic[[i]] %<>% select(mean, sd, lower, upper, Rhat, n.eff)
     #
     basic[[i]][reference.group, ] <- NA
     #
