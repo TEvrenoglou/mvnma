@@ -67,7 +67,7 @@ using a character string explicitly stating the name of the outcome. In this cas
 A \code{ggplot} object.
 }
 \description{
-This function produces a heatmpap displaying the results of function \code{\link{mvrank}}. 
+This function produces a heatplot displaying the results of function \code{\link{mvrank}}. 
 The graph can be used to visualize the ranking output when the method used to rank the treatments
 is either the SUCRA or the pBV method.
 }
@@ -122,6 +122,6 @@ ranks_sucra
 # Create a heatplot sorting the results according to the first outcome appearing in ranks_sucra (i.e Early_Response)
   heatplot(ranks_sucra,sortby = 1)
 # Create a heatplot sorting the results by explicitly mentioning the name of the outcome Early_Response
-  heatplot(ranks_sucra,sortby = Early_Response) 
+  heatplot(ranks_sucra,sortby = "Early_Response") 
   }
 }
