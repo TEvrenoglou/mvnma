@@ -119,9 +119,12 @@ mvnma_all <- mvnma(p1, p2, p3, p4, p5,
   small.values = c("undes", "undes", "des", "des", "des"),
   method = "SUCRA")
 ranks_sucra
-# Create a heatplot sorting the results according to the first outcome appearing in ranks_sucra (i.e Early_Response)
-  heatplot(ranks_sucra,sortby = 1)
-# Create a heatplot sorting the results by explicitly mentioning the name of the outcome Early_Response
-  heatplot(ranks_sucra,sortby = "Early_Response") 
-  }
+# Create a heatplot sorting the results according to the first outcome
+# appearing in ranks_sucra (i.e Early_Response)
+heatplot(ranks_sucra,sortby = 1)
+# Create a heatplot sorting the results by explicitly mentioning the
+# name of the outcome Early_Response
+heatplot(ranks_sucra,sortby = "Early_Response") 
+}
+
 }

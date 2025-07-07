@@ -78,11 +78,14 @@
 #'   small.values = c("undes", "undes", "des", "des", "des"),
 #'   method = "SUCRA")
 #' ranks_sucra
-#' # Create a heatplot sorting the results according to the first outcome appearing in ranks_sucra (i.e Early_Response)
-#'   heatplot(ranks_sucra,sortby = 1)
-#' # Create a heatplot sorting the results by explicitly mentioning the name of the outcome Early_Response
-#'   heatplot(ranks_sucra,sortby = "Early_Response") 
-#'   }
+#' # Create a heatplot sorting the results according to the first outcome
+#' # appearing in ranks_sucra (i.e Early_Response)
+#' heatplot(ranks_sucra,sortby = 1)
+#' # Create a heatplot sorting the results by explicitly mentioning the
+#' # name of the outcome Early_Response
+#' heatplot(ranks_sucra,sortby = "Early_Response") 
+#' }
+#' 
 #' @method heatplot mvrank 
 #' @export
 
@@ -111,6 +114,8 @@ heatplot.mvrank <- function(x,
     stop("Heatplot can only be produced for ",
          "'method = \"SUCRA\"' and 'method = \"pBV\"'.",
          call. = FALSE)
+  
+  outcome <- treatment <- val <- NULL
   
   legend.position <- setchar(legend.position,c("top","bottom","right","left"))
   
@@ -219,6 +224,4 @@ heatplot.mvrank <- function(x,
   attr(g,"method") <- method
   
  g
-  
 }
-

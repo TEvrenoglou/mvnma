@@ -33,16 +33,21 @@ The R package \bold{mvnma} provides the following functions:
 \item Function \code{\link{mvrank}} to get outcome-specific treatment
  rankings.
 \item Function \code{\link{vikor}} to rank treatments across all outcomes
-  using the VIKOR multi-criteria decision analysis method. Additionally, the function 
-  evaluates the concrete conditions defined by the VIKOR method and identifies the set of 
-  treatments that offer the best compromise between benefits and harms across all outcomes
-\item Function \code{\link{forest.mvnma}} to visualize the results of the mvNMA model in terms of treatment effect estimates
-\item Function \code{\link{plot.mvrank}} to visualize per outcome ranking results for any pair of outcomes
-\item Function \code{\link{hasse.mvrank}} to visualize the partial order of the treatment across all outcomes
-\item Function \code{\link{heatplot}} to visualize in a heatplot the results in terms of outcome specic rankings 
-\item Function \code{\link{as.mcmc.mvnma}} an auxiliary function to extract an MCMC object. This makes any
-\bold{mvnnma} object compatible with the convergence checks performed by the R package \code{\link{coda}}.
-
+  using the VIKOR multi-criteria decision analysis method. Additionally,
+  the function evaluates the concrete conditions defined by the VIKOR method
+  and identifies the set of treatments that offer the best compromise
+  between benefits and harms across all outcomes
+\item Function \code{\link{forest.mvnma}} to visualize the results of the
+  mvNMA model in terms of treatment effect estimates
+\item Function \code{\link{plot.mvrank}} to visualize per outcome ranking
+  results for any pair of outcomes
+\item Function \code{\link{hasse.mvrank}} to visualize the partial order of
+  the treatment across all outcomes
+\item Function \code{\link{heatplot.mvrank}} to visualize in a heatplot
+  the results in terms of outcome specific rankings
+\item Function \code{\link{as.mcmc.mvnma}} an auxiliary function to extract
+  an MCMC object. This makes any \bold{mvnnma} object compatible with the
+  convergence checks performed by the R package \bold{coda}.
 }
 
 Type \code{help(package = "mvnma")} for a listing of R functions

@@ -77,7 +77,7 @@ create_data <- function(p, ...) {
   # Combine all p's
   comb_p <- list.rbind(p)
   
-  for (i in 1:n_outcomes) {
+  for (i in seq_len(n_outcomes)) {
     dat1[[i]] <- comb_p %>% filter(outcome == i)
     dat2[[i]] <- comb_p %>% filter(outcome != i) 
     #
@@ -107,6 +107,40 @@ create_data <- function(p, ...) {
   }
   else
     comb_p %<>% arrange(outcome)
+  #
+  # Add missing comparisons for three-arm studies
+  #
+  twoarm <- comb_p %>%
+    filter(n.arms == 2) %>%
+    select(studlab) %>% unique() %>% pull()
+  #
+  threearm <- comb_p %>%
+    filter(n.arms == 3) %>%
+    select(studlab) %>% unique() %>% pull()
+  #
+  both <- twoarm[twoarm %in% threearm]
+  #
+  for (i in both) {
+    drugs.i <- comb_p %>% filter(studlab == i, n.arms == 3) %>%
+      select(studlab, treat1, treat2) %>% distinct()
+    #
+    dat2.i <- comb_p %>% filter(studlab == i, n.arms == 2)
+    #
+    for (j in unique(dat2.i$outcome)) {
+      drugs.ij <- drugs.i %>% mutate(outcome = j, n.arms = 3)
+      dat2.ij <- dat2.i %>% filter(outcome == j)
+      #
+      drop.j <- vector()
+      for (k in seq_len(nrow(drugs.ij))) {
+        drop.j[k] <- any(dat2.ij$studlab == i & dat2.ij$outcome == j &
+                           dat2.ij$treat1 == drugs.ij$treat1[k] &
+                           dat2.ij$treat2 == drugs.ij$treat2[k])
+      }
+      #
+      comb_p <- bind_rows(comb_p, drugs.ij %>% filter(!drop.j))
+      comb_p$n.arms[comb_p$studlab == i & comb_p$outcome == j] <- 3
+    }
+  }
   #
   res <- comb_p %>%
     group_by(studlab) %>%
