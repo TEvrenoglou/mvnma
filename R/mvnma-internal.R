@@ -107,7 +107,7 @@ create_data <- function(p, ...) {
                            dat2.ij$treat2 == drugs.ij$treat2[k])
       }
       #
-      comb_p <- bind_rows(comb_p, drugs.ij %>% filter(!drop.j))
+      comb_p <- bind_rows(comb_p, drugs.ij %>% filter(!drop.j) %>% arrange(outcome))
       comb_p$n.arms[comb_p$studlab == i & comb_p$outcome == j] <- 3
     }
   }
@@ -147,8 +147,9 @@ create_data <- function(p, ...) {
   comb_p %<>% distinct()
   #
   res <- comb_p %>%
+    distinct() %>% 
     group_by(studlab) %>%
-    arrange(desc(treat1), .by_group = TRUE) %>% 
+    arrange(desc(treat1), .by_group = TRUE) %>%
     arrange(n.arms)
   #
   res <- add_labels(res)
