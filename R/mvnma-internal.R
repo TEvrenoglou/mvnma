@@ -68,45 +68,15 @@ create_data <- function(p, ...) {
   n_outcomes <- length(p)
   #
   for (i in 1:n_outcomes) {
-    p[[i]] %<>% select(studlab, TE, seTE, treat1, treat2) 
+    p[[i]] %<>% select(studlab, TE, seTE, treat1, treat2)
     p[[i]] <- multi_arm(p[[i]])
     p[[i]]$outcome <- i
     p[[i]] <- add_arms(p[[i]])
   }
-  
-  # Combine all p's
-  comb_p <- list.rbind(p)
-  
-  for (i in seq_len(n_outcomes)) {
-    dat1[[i]] <- comb_p %>% filter(outcome == i)
-    dat2[[i]] <- comb_p %>% filter(outcome != i) 
-    #
-    dat2[[i]]$TE <- dat2[[i]]$seTE <- NA
-    dat2[[i]]$new_outcome <- i
-    #
-    studies[[i]] <- unique(which(dat2[[i]]$studlab %!in% dat1[[i]]$studlab))
-    #
-    if (length(studies[[i]]) > 0) {
-      dat2[[i]] <- dat2[[i]][studies[[i]], ]
-      dat2[[i]]$outcome <- dat2[[i]]$new_outcome
-      dat2[[i]]$new_outcome <- NULL
-      #
-      row.names(dat2[[i]]) <- NULL
-    }
-    else
-      dat2[[i]] <- list()
-  }
   #
-  if (length(dat2) != 0) {
-    dat2 <- list.rbind(dat2)
-    #
-    comb_p <- rbind.data.frame(comb_p, dat2)
-    comb_p <- comb_p %>% distinct() %>% arrange(outcome)
-    #
-    row.names(comb_p) <- NULL
-  }
-  else
-    comb_p %<>% arrange(outcome)
+  # Combine all pairwise objects
+  #
+  comb_p <- bind_rows(p)
   #
   # Add missing comparisons for three-arm studies
   #
@@ -141,6 +111,40 @@ create_data <- function(p, ...) {
       comb_p$n.arms[comb_p$studlab == i & comb_p$outcome == j] <- 3
     }
   }
+    
+  
+  for (i in seq_len(n_outcomes)) {
+    dat1[[i]] <- comb_p %>% filter(outcome == i)
+    dat2[[i]] <- comb_p %>% filter(outcome != i) 
+    #
+    dat2[[i]]$TE <- dat2[[i]]$seTE <- NA
+    dat2[[i]]$new_outcome <- i
+    #
+    studies[[i]] <- unique(which(dat2[[i]]$studlab %!in% dat1[[i]]$studlab))
+    #
+    if (length(studies[[i]]) > 0) {
+      dat2[[i]] <- dat2[[i]][studies[[i]], ]
+      dat2[[i]]$outcome <- dat2[[i]]$new_outcome
+      dat2[[i]]$new_outcome <- NULL
+      #
+      row.names(dat2[[i]]) <- NULL
+    }
+    else
+      dat2[[i]] <- list()
+  }
+  #
+  if (length(dat2) != 0) {
+    dat2 <- list.rbind(dat2)
+    #
+    comb_p <- rbind.data.frame(comb_p, dat2)
+    comb_p <- comb_p %>% arrange(outcome)
+    #
+    row.names(comb_p) <- NULL
+  }
+  else
+    comb_p %<>% arrange(outcome)
+  #
+  comb_p %<>% distinct()
   #
   res <- comb_p %>%
     group_by(studlab) %>%
