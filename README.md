@@ -35,7 +35,7 @@ Installation using R package
 [**remotes**](https://cran.r-project.org/package=remotes):
 ```r
 install.packages("remotes")
-remotes::install_github("TEvrenoglou/mvnma", ref = "develop")
+remotes::install_github("TEvrenoglou/mvnma", ref = "main")
 ```
 
 ### Bug Reports:
