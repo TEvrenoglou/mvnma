@@ -350,6 +350,14 @@ gather_results <- function(x, outcomes, trts, reference.group,
     # rho
     #
     rho[[i]] <- res %>% filter(grepl("rho", rnames))
+    # ensure the order of outcomes
+    rho[[i]]$out_num <- as.numeric(gsub("rho", "", rownames(df)))
+    
+    rho[[i]] <- rho[[i]] %>% 
+      arrange(out_num)
+    
+    rho[[i]]$out_num <- NULL
+    
     #
     # Matrices with all results
     #
