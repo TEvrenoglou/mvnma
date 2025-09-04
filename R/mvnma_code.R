@@ -493,7 +493,7 @@ code_priors_dumouchel <- function(n.out) {
     paste0(txt,
            "  prec.exp <- 1 / sigma.sq\n",
            "  sigma.sq <- sigma * sigma\n",
-           "  sigma ~ dnorm(0, 1)T(0, )\n")
+           "  sigma ~ dnorm(0, 1e-02)T(0, )\n")
   #
   txt
 }
