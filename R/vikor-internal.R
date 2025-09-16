@@ -47,7 +47,7 @@ vikor_internal <- function(x, weights, v) {
   res <- data.frame(Q, S, R, row.names = row.names(x)) %>% arrange(Q)
   
   #
-  class(res) <- c("vikor", class(res))
+  #class(res) <- c("vikor", class(res))
   attr(res, "performance.table") <- x
   #
   res
@@ -169,7 +169,7 @@ fuzzy_vikor_internal <- function(x, weights, v = 0.5) {
   res <- data.frame(Q = Def_Q, S = Def_S, R = Def_R,
                     row.names = row.names(x)) %>% arrange(Q)
   #
-  class(res) <- c("vikor", class(res))
+  #class(res) <- c("vikor", class(res))
   attr(res, "performance.table") <- x
   attr(res, "fuzzy.weights") <- weights_fuzzy
   #

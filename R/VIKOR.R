@@ -151,6 +151,7 @@ vikor.mvrank <- function(x, weights = NULL, v = 0.5, ...) {
     res <- fuzzy_vikor_internal(decision, weights = weights,v = v )
   }
   #
+  class(res) <- c("vikor", class(res))
   attr(res, "ranking.method") <- attr(x, "method")
   #
   res
