@@ -96,12 +96,15 @@ print.vikor <- function(x, digits = 4, ...) {
     txt <- paste("No compromise solution was identified. Please consider",
                  "different outcome weights.")
   
+  res_mat <- cbind(Q,S,R)
+  
   if (attr(x, "ranking.method") %in% c("SUCRA", "pBV"))
     cat("VIKOR results\n\n")
   else
     cat("Fuzzy VIKOR results\n\n")
   #
-  prmatrix(round(Q, digits = digits), quote = FALSE, right = TRUE)
+  #prmatrix(round(Q, digits = digits), quote = FALSE, right = TRUE)
+  prmatrix(round(res_mat, digits = digits), quote = FALSE, right = TRUE)
   #
   cat(paste0("\n", txt, "\n"))
   #
