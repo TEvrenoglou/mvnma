@@ -116,9 +116,9 @@ fuzzy_vikor_internal <- function(x, weights, v = 0.5) {
   d <- matrix(nrow = nrow(x), ncol = ncol(x))
   for (i in seq(1, ncol(x), 3)) {
     # denominator = neg.sol[i + 2] - posI[i]
-    d[, i] <- (x[, i] -pos.sol[i + 2])
-    d[, i + 1] <- (x[, i + 1] -pos.sol[i + 1])
-    d[, i + 2] <- (x[, i + 2] -pos.sol[i])
+    d[, i] <- (x[, i] -pos.sol[i + 2])/(neg.sol[i]-pos.sol[i])
+    d[, i + 1] <- (x[, i + 1] -pos.sol[i + 1])/(neg.sol[i]-pos.sol[i])
+    d[, i + 2] <- (x[, i + 2] -pos.sol[i])/(neg.sol[i]-pos.sol[i])
   }
   
   W <- diag(weights_fuzzy)
