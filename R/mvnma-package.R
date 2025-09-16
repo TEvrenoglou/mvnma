@@ -41,6 +41,7 @@
 #'   the treatment across all outcomes
 #' \item Function \code{\link{heatplot.mvrank}} to visualize in a heatplot
 #'   the results in terms of outcome specific rankings
+#' \item Function \code{\link{linechart}} to visualize the results of the three metrics calculated by the VIKOR method
 #' \item Function \code{\link{as.mcmc.mvnma}} an auxiliary function to extract
 #'   an MCMC object. This makes any \bold{mvnnma} object compatible with the
 #'   convergence checks performed by the R package \bold{coda}.
@@ -77,8 +78,8 @@
 #' @importFrom graphics text
 #' @importFrom stats complete.cases quantile relevel
 #' @importFrom utils combn packageVersion
-#' @importFrom ggplot2 ggplot aes geom_tile geom_text scale_fill_gradient guides 
-#'   guide_colourbar labs xlab ylab scale_y_discrete theme theme_void
+#' @importFrom ggplot2 ggplot aes geom_tile geom_line geom_point geom_text scale_fill_gradient guides 
+#'   guide_colourbar guide_legend labs xlab ylab ylim scale_y_discrete theme theme_void theme_minimal
 #'   element_text element_blank
 #' @importFrom forcats fct_rev
 #' @export as.mcmc

@@ -45,6 +45,7 @@ The R package \bold{mvnma} provides the following functions:
   the treatment across all outcomes
 \item Function \code{\link{heatplot.mvrank}} to visualize in a heatplot
   the results in terms of outcome specific rankings
+\item Function \code{\link{linechart}} to visualize the results of the three metrics calculated by the VIKOR method
 \item Function \code{\link{as.mcmc.mvnma}} an auxiliary function to extract
   an MCMC object. This makes any \bold{mvnnma} object compatible with the
   convergence checks performed by the R package \bold{coda}.
