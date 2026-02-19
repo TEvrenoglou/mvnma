@@ -101,6 +101,10 @@ mvrank <- function(x, small.values, method = "SUCRA") {
   }
   #
   outcomes <- attr(x, "names")
+  #
+  colname_list <- lapply(x, function(k) colnames(k$samples))
+  common_trts <- Reduce(intersect, colname_list)
+  #
   
   # Get rid of warning "no visible binding for global variable"
   treatment <- pBV <- SUCRA <- Freq <-
@@ -109,13 +113,21 @@ mvrank <- function(x, small.values, method = "SUCRA") {
   # Extract samples and create rankograms for each outcome
   #
   n.out <- length(outcomes)
-  d <- n.trts <- trts <- rank_out <- ranks <- quant <- rnk <-vector("list")
+  d <- d_common <- n.trts <- trts <- rank_out <- rank_out_common <-  ranks <- ranks.common <-
+    quant <- quant_common <- rnk <- rnk_common <- vector("list")
   
   for (i in seq_len(n.out)) {
     d[[i]] <- x[[i]]$samples
     n.trts[[i]] <- ncol(d[[i]])
     trts[[i]] <- colnames(d[[i]])
+    if(length(setdiff(trts[[i]],common_trts))==0){
+    d_common[[i]] <- d[[i]]  
+    }else{
+      d_common[[i]] <- d[[i]] %>% select(common_trts)
+    }
+    
     rank_out[[i]] <- rankogram(d[[i]], small.values = small.values[i])
+    rank_out_common[[i]] <- rankogram(d_common[[i]], small.values = small.values[i])
     #
     if (method == "pBV") {
       ranks.i <- data.frame(pBV = rank_out[[i]]$ranking.matrix.random[, 1])
@@ -124,12 +136,25 @@ mvrank <- function(x, small.values, method = "SUCRA") {
       row.names(ranks.i) <- NULL
       #
       ranks.i %<>% select(treatment, pBV) %>% arrange(desc(pBV))
+      
+      # recalculate only for the common treatments
+      ranks.i.common <- data.frame(pBV = rank_out_common[[i]]$ranking.matrix.random[, 1])
+      #
+      ranks.i.common$treatment <- row.names(ranks.i.common)
+      row.names(ranks.i.common) <- NULL
+      #
+      ranks.i.common %<>% select(treatment, pBV) %>% arrange(desc(pBV))
     }
     else if (method == "SUCRA") {
       ranks.i <- rank_out[[i]]$ranking.random
       ranks.i <- cbind.data.frame(names(ranks.i), unname(ranks.i))
       names(ranks.i) <- c("treatment", "SUCRA")
       ranks.i %<>% arrange(desc(SUCRA))
+      # recalculate for the common treatments
+      ranks.i.common <- rank_out_common[[i]]$ranking.random
+      ranks.i.common <- cbind.data.frame(names(ranks.i.common), unname(ranks.i.common))
+      names(ranks.i.common) <- c("treatment", "SUCRA")
+      ranks.i.common %<>% arrange(desc(SUCRA))
     }
     else if (method == "ranks") {
       if (small.values[i] == "undesirable")
@@ -154,19 +179,49 @@ mvrank <- function(x, small.values, method = "SUCRA") {
       ranks.i <- quant[[i]] %<>%
         select(treatment, median_rank, mean_rank, lower.CrI, upper.CrI) %>%
         arrange(mean_rank)
+      
+      # recalculate for the common treatments
+      
+      if (small.values[i] == "undesirable")
+        rnk_common[[i]] <- apply(-d_common[[i]], 1, rank, ties.method = "random")
+      else
+        rnk_common[[i]] <- apply(d_common[[i]], 1, rank, ties.method = "random") 
+      
+      quant_common[[i]] <-
+        as.data.frame(t(apply(rnk_common[[i]], 1,
+                              function(row) {
+                                quantile(row, probs = c(0.025, 0.5, 0.975),
+                                         na.rm = TRUE)
+                              })))
+      
+      quant_common[[i]]$treatment <- row.names(quant_common[[i]])
+      quant_common[[i]]$mean_ranks <- rowMeans(rnk_common[[i]])
+      #
+      row.names(quant_common[[i]]) <- NULL
+      names(quant_common[[i]]) <-
+        c("lower.CrI", "median_rank", "upper.CrI", "treatment", "mean_rank")
+      
+      ranks.i.common <- quant_common[[i]] %<>%
+        select(treatment, median_rank, mean_rank, lower.CrI, upper.CrI) %>%
+        arrange(mean_rank)
     }
     #
     ranks[[i]] <- ranks.i
+    ranks.common[[i]] <- ranks.i.common
   }
   #
   names(ranks) <- outcomes
   class(ranks) <- "mvrank"
   #
-  common_trts <- as.data.frame(table(unlist(trts))) %>% filter(Freq == n.out)
-  common_trts <- common_trts$Var1
+  names(ranks.common) <- outcomes
+  class(ranks.common) <- "mvrank"
+  #
+  # common_trts <- as.data.frame(table(unlist(trts))) %>% filter(Freq == n.out)
+  # common_trts <- common_trts$Var1
   #
   attr(ranks, "common_trts") <- common_trts
   attr(ranks, "method") <- method
+  attr(ranks,"ranks.common.trts") <- ranks.common
   #
   ranks
 }
