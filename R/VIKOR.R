@@ -129,8 +129,10 @@ vikor.mvrank <- function(x, weights = NULL, v = 0.5, ...) {
     
     s <- vector("list")
     #
+    x.common <- attr(x,"ranks.common")
+    #
     for (i in seq_len(length(x))) {
-      dat.i <- x[[i]] %>% 
+      dat.i <- x.common[[i]] %>% 
         filter(treatment %in% trts) %>% 
         arrange(treatment)
       #
