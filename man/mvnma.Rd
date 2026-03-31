@@ -10,10 +10,10 @@ mvnma(
   reference.group = NULL,
   outclab = NULL,
   n.domain = NULL,
-  n.chains = 2,
+  n.chains = 4,
   n.iter = 10000,
   n.burnin = 2000,
-  n.thin = 1,
+  n.thin = max(1, floor((n.iter - n.burnin)/1000)),
   level = gs("level.ma"),
   scale.psi,
   lower.rho,
@@ -36,11 +36,13 @@ first outcome domain (based on the order of the supplied pairwise objects).
 Used with `method = "DM"` to restrict information sharing within outcome 
 domains. Ignored when `method = "standard"`. Default is `NULL`.}
 
+\item{n.chains}{Number of Markov chains (default=4).}
+
 \item{n.iter}{Number of iterations (default=10000).}
 
 \item{n.burnin}{Number of iterations for burn-in (default=2000).}
 
-\item{n.thin}{Thinning rate (default=1).}
+\item{n.thin}{Thinning rate. Default is equal to max(1, floor((n.iter - n.burnin)/1000)).}
 
 \item{level}{The level used to calculate confidence intervals
 for network estimates.}

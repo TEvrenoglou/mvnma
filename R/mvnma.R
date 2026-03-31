@@ -11,11 +11,12 @@
 #' @param reference.group A common reference treatment across all outcomes.
 #' @param outclab An optional argument with labels for each outcome. If NULL,
 #'   the each outcome is labelled as 'outcome_1', 'outcome_2' etc.
+#' @param n.chains Number of Markov chains (default=4). 
 #' @param n.domain Integer indicating the position of the last outcome in the 
 #' first outcome domain (based on the order of the supplied pairwise objects). 
 #' Used with `method = "DM"` to restrict information sharing within outcome 
 #' domains. Ignored when `method = "standard"`. Default is `NULL`.
-#' @param n.thin Thinning rate (default=1).
+#' @param n.thin Thinning rate. Default is equal to max(1, floor((n.iter - n.burnin)/1000)).
 #' @param n.iter Number of iterations (default=10000).
 #' @param n.burnin Number of iterations for burn-in (default=2000).
 #' @param level The level used to calculate confidence intervals
@@ -200,8 +201,9 @@
 mvnma <- function(...,
                   reference.group = NULL, outclab = NULL,   
                   n.domain = NULL,
-                  n.chains = 2, n.iter = 10000, 
-                  n.burnin = 2000, n.thin = 1, 
+                  n.chains = 4, n.iter = 10000, 
+                  n.burnin = 2000, 
+                  n.thin = max(1, floor((n.iter - n.burnin)/1000)), 
                   level = gs("level.ma"),
                   scale.psi,
                   lower.rho, upper.rho,
