@@ -179,6 +179,7 @@ mvnma <- function(...,
                   level = gs("level.ma"),
                   scale.psi,
                   lower.rho, upper.rho,
+                  n.domain = NULL,
                   method = "standard",
                   quiet = FALSE) {
   
@@ -188,6 +189,7 @@ mvnma <- function(...,
   args <- list(...)
   #
   n.out <- length(args)
+  n.dom <- n.domain
   n.i <- seq_len(n.out)
   #
   if (n.out == 1) {
@@ -494,7 +496,7 @@ mvnma <- function(...,
                 "psi1", "psi2",
                 "rho1")
     #
-    model.code <- mvnma_code(n.out, method, multiarm)
+    model.code <- mvnma_code(n.out, method, multiarm,n.dom)
   }
   #
   else if (n.out == 3) {
@@ -514,7 +516,7 @@ mvnma <- function(...,
                 "psi1", "psi2", "psi3",
                 "rho1", "rho2", "rho3")
     #
-    model.code <- mvnma_code(n.out, method, multiarm)
+    model.code <- mvnma_code(n.out, method, multiarm,n.dom)
   }
   #
   else if (n.out == 4) {
@@ -532,7 +534,7 @@ mvnma <- function(...,
                 "psi1", "psi2", "psi3", "psi4",
                 "rho1", "rho2", "rho3", "rho4", "rho5", "rho6")
     #
-    model.code <- mvnma_code(n.out, method, multiarm)
+    model.code <- mvnma_code(n.out, method, multiarm,n.dom)
   }
   #
   else if (n.out == 5) {
@@ -541,11 +543,15 @@ mvnma <- function(...,
                 "rho1", "rho2", "rho3", "rho4", "rho5", "rho6",
                 "rho7", "rho8", "rho9", "rho10")
     #
-    model.code <- mvnma_code(n.out, method, multiarm)
+    model.code <- mvnma_code(n.out, method, multiarm,n.dom)
   }
   #
   if (method == "DM")
+    if(is.null(n.domain)){
     params <- c(params, "sigma")  
+    }else{
+    params <- c(params, "sigma1","sigma2") 
+    }
   #
   if (!multiarm)
     run.data$k <- NULL
@@ -581,10 +587,12 @@ mvnma <- function(...,
                         treat_out = treat_out,
                         reference.group = reference.group,
                         level = level,
+                        n.domain = n.domain,
                         method = method)
   #
   attr(res, "outcomes") <- outclab
   attr(res, "trts") <- trts
+  attr(res,"n.domain") <- n.domain
   attr(res, "reference.group") <- reference.group
   attr(res, "level") <- level
   attr(res, "sm") <- attr(data, "sm")

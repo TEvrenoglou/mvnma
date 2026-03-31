@@ -281,7 +281,7 @@ is.list.pairwise <- function(p, ...) {
 }
 
 gather_results <- function(x, outcomes, trts, reference.group,
-                           level,treat_out, method, ...) {
+                           level,treat_out, method,n.domain, ...) {
   res <- as.data.frame(x$BUGSoutput$summary)
   samples <- x$BUGSoutput$sims.list
   #
@@ -410,7 +410,12 @@ gather_results <- function(x, outcomes, trts, reference.group,
   row.names(psi) <- outcomes
   #
   if (method == "DM")
+    if(is.null(n.domain)){
     sigma <- res %>% filter(grepl("sigma", rnames))
+    }else{
+      sigma1 <- res %>% filter(grepl("sigma1", rnames))
+      sigma2 <- res %>% filter(grepl("sigma2", rnames))
+    }
   #
   # Create row.names for cor
   #
@@ -487,8 +492,16 @@ gather_results <- function(x, outcomes, trts, reference.group,
   names(res)[length(res)] <- "cor"
   #
   if (method == "DM") {
+    if(is.null(n.domain)){
     res[[length(res) + 1]] <- sigma
-    names(res)[length(res)] <- "sigma"  
+    names(res)[length(res)] <- "sigma"
+    }else{
+      res[[length(res) + 1]] <- sigma1
+      names(res)[length(res)] <- "sigma1"
+      #
+      res[[length(res) + 1]] <- sigma2
+      names(res)[length(res)] <- "sigma2"
+    }
   }
   #
   res

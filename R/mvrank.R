@@ -94,10 +94,15 @@ mvrank <- function(x, small.values, method = "SUCRA") {
   method <- setchar(method, c("SUCRA", "pBV", "ranks"))
   chkchar(method, length = 1)
   method.model <- attr(x, "method.model")
+  n.domain <- attr(x,"n.domain")
   #
   x <- x[names(x) != "cor"]
   if (method.model == "DM") {
+    if(is.null(n.domain)){
     x <- x[names(x) != "sigma"]
+    }else{
+      x <- x[!(names(x) %in% c("sigma1","sigma2"))]
+    }
   }
   #
   outcomes <- attr(x, "names")

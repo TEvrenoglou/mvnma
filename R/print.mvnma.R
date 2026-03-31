@@ -56,12 +56,18 @@ print.mvnma <- function(x,
   level <- attr(x, "level")
   reference.group <- attr(x, "reference.group")
   method <- attr(x, "method")
+  n.domain <- attr(x,"n.domain")
   #
   ci.lab <- paste0(round(100 * level, 1), "%-CI")
   #
   x <- x[names(x) != "cor"]
+  #
   if (method == "DM") {
-    x <- x[names(x) != "sigma"]
+    if(is.null(n.domain)){
+      x <- x[names(x) != "sigma"]
+    }else{
+      x <- x[!(names(x) %in% c("sigma1","sigma2"))]
+    }
   }
   nam <- names(x)
   

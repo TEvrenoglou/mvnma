@@ -69,12 +69,18 @@ forest.mvnma <- function(x, backtransf = FALSE,
   #
   method.model <- attr(x, "method.model")
   reference.group <- attr(x, "reference.group")
+  n.domain <- attr(x,"n.domain")
   sm <- attr(x, "sm")
   #
   x <- x[names(x) != "cor"]
   #
-  if (method.model == "DM")
-    x <- x[names(x) != "sigma"]
+  if (method.model == "DM") {
+    if(is.null(n.domain)){
+      x <- x[names(x) != "sigma"]
+    }else{
+      x <- x[!(names(x) %in% c("sigma1","sigma2"))]
+    }
+  }
   #
   n.out <- length(x)
   #
