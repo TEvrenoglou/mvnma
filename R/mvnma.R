@@ -214,6 +214,8 @@ mvnma <- function(...,
   args <- list(...)
   #
   n.out <- length(args)
+  #
+  chknumeric(n.domain,min=1,max=n.out)
   n.dom <- n.domain
   n.i <- seq_len(n.out)
   #
