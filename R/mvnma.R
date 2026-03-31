@@ -11,7 +11,10 @@
 #' @param reference.group A common reference treatment across all outcomes.
 #' @param outclab An optional argument with labels for each outcome. If NULL,
 #'   the each outcome is labelled as 'outcome_1', 'outcome_2' etc.
-#' @param n.chains Number of Markov chains (default=2).
+#' @param n.domain Integer indicating the position of the last outcome in the 
+#' first outcome domain (based on the order of the supplied pairwise objects). 
+#' Used with `method = "DM"` to restrict information sharing within outcome 
+#' domains. Ignored when `method = "standard"`. Default is `NULL`.
 #' @param n.thin Thinning rate (default=1).
 #' @param n.iter Number of iterations (default=10000).
 #' @param n.burnin Number of iterations for burn-in (default=2000).
@@ -50,7 +53,29 @@
 #' matters. For example, when pooling four outcomes, the lower and
 #' upper bounds correspond to the following order of correlation coefficients:
 #' (rho12, rho13, rho14, rho23, rho24, rho34).
-
+#' 
+#' Two types of priors for the treatment effect parameters are supported via 
+#' the argument `method`. Setting `method = "standard"` fits an mvNMA model 
+#' using non-informative normal priors (e.g., `N(0, 10^3)`).
+#' 
+#' Alternatively, `method = "DM"` specifies the DuMouchel prior, which assumes 
+#' constant relative treatment effects across outcomes and enables information 
+#' sharing. This may improve precision but can introduce bias when outcomes 
+#' from different domains (e.g., efficacy and safety) are analyzed jointly.
+#' 
+#' The argument `n.domain` can be used to restrict information sharing to 
+#' predefined outcome domains. It indicates the position (based on the order 
+#' of the supplied pairwise objects) of the last outcome in the first domain. 
+#' For example, with four outcomes, setting `n.domain = 2` assigns the first 
+#' two outcomes to one domain and the remaining outcomes to a second domain. 
+#' In this case, information is shared only within domains.
+#' 
+#' By default, `n.domain = NULL`, in which case information is shared across 
+#' all outcomes when `method = "DM"`. This may be appropriate when all outcomes 
+#' belong to the same domain or when cross-domain sharing is justified.
+#' 
+#' The argument `n.domain` is ignored when `method = "standard"`.
+#'  
 #' @return
 #' The function return an 'mvnma' object. This consists of the results for each
 #' outcome and the correlation coefficient estimates between the combined
@@ -173,13 +198,13 @@
 #' @export mvnma
 
 mvnma <- function(...,
-                  reference.group = NULL, outclab = NULL,
+                  reference.group = NULL, outclab = NULL,   
+                  n.domain = NULL,
                   n.chains = 2, n.iter = 10000, 
                   n.burnin = 2000, n.thin = 1, 
                   level = gs("level.ma"),
                   scale.psi,
                   lower.rho, upper.rho,
-                  n.domain = NULL,
                   method = "standard",
                   quiet = FALSE) {
   
