@@ -1,4 +1,4 @@
-spie.chart_internal <- function(x, weights = NULL){
+spiechart_internal <- function(x, weights = NULL){
   
   # spie.data <- data.frame(x = x, theta = theta)
   

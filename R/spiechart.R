@@ -52,21 +52,20 @@
 #' ranks12 <- mvrank(mvnma12, small.values = c("und", "und"), method = "sucra")
 #' ranks12
 #' 
-#' # Get the best compromise solution across the efficacy outcomes
-#' spie.chart(ranks12)
+#' # Get amalgamated treatment hierarchy
+#' spiechart(ranks12)
 #' }
-#'
-#' @export spie.chart
+#' @export spiechart
 
-spie.chart <- function(x, ...)
-  UseMethod("spie.chart")
+spiechart <- function(x, ...)
+  UseMethod("spiechart")
 
-#' @rdname spie.chart
-#' @method spie.chart mvrank
+#' @rdname spiechart
+#' @method spiechart mvrank
 #' @export
 
 
-spie.chart.mvrank <- function(x, weights = NULL,...) {
+spiechart.mvrank <- function(x, weights = NULL,...) {
   
   chkclass(x, "mvrank")
   #
@@ -96,14 +95,14 @@ spie.chart.mvrank <- function(x, weights = NULL,...) {
     row.names(rankings) <- dat.i$treatment
     names(rankings) <- outcomes
     #
-    res <- spie.chart_internal(rankings, weights = weights)
+    res <- spiechart_internal(rankings, weights = weights)
   }
   else {
   stop("Spie chart area can only be calculated for method SUCRA and pBV")
     
   }
   
-  class(res) <- c("spie.chart", class(res))
+  class(res) <- c("spiechart", class(res))
   
   attr(res, "weights") <- weights
   

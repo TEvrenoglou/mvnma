@@ -47,7 +47,7 @@ The R package \bold{mvnma} provides the following functions:
 \item Function \code{\link{as.mcmc.mvnma}} an auxiliary function to extract
   an MCMC object. This makes any \bold{mvnnma} object compatible with the
   convergence checks performed by the R package \bold{coda}.
- \item Function \code{\link{spie.chart}} to calculate a between outcomes hierarchy using the spie charts method.
+ \item Function \code{\link{spiechart}} to calculate a between outcomes hierarchy using the spie charts method.
 }
 
 Type \code{help(package = "mvnma")} for a listing of R functions
