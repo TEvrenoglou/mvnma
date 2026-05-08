@@ -18,6 +18,7 @@
 #' effect estimates; scatter plots, which show the per-outcome rankings for any pair of outcomes; and Hasse 
 #' diagrams, which visualise the partial order of treatments across all outcomes, as well as alternative 
 #' methods to yield a between-outcomes hierarchy, such as the spie chart method.
+#' 
 #' @details
 #' The R package \bold{mvnma} provides the following functions:
 #' \itemize{
@@ -69,16 +70,13 @@
 #' @importFrom meta forest gs metagen pairwise
 #' @importFrom netmeta hasse netposet rankogram heatplot
 #' @importFrom matrixStats colSds
-#' @importFrom dplyr %>% all_of any_of arrange bind_rows bind_cols desc
-#'   distinct filter group_by mutate rename select pull
+#' @importFrom dplyr %>% all_of any_of arrange bind_rows bind_cols desc distinct filter group_by mutate rename select pull
 #' @importFrom magrittr %<>%
 #' @importFrom rlist list.cbind list.rbind
 #' @importFrom graphics text
 #' @importFrom stats complete.cases quantile relevel
 #' @importFrom utils combn packageVersion
-#' @importFrom ggplot2 ggplot aes geom_tile geom_line geom_point geom_text scale_fill_gradient guides 
-#'   guide_colourbar guide_legend labs xlab ylab ylim scale_y_discrete theme theme_void theme_minimal
-#'   element_text element_blank
+#' @importFrom ggplot2 ggplot aes geom_tile geom_line geom_point geom_text scale_fill_gradient guides guide_colourbar guide_legend labs xlab ylab ylim scale_y_discrete theme theme_void theme_minimal element_text element_blank
 #' @importFrom forcats fct_rev
 #' @export as.mcmc
 

@@ -27,37 +27,33 @@ the SUCRA method and (ii) the probability of best value (pBV) method.
 }
 \examples{
 \donttest{
-library("netmeta")
-
-data("Linde2015")
-
 # Use 'pairwise' to obtain contrast based data for each one of the five
 # available outcomes 
 
 # Early response
-p1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
-  studlab = id, data = dat.linde2015, sm = "OR")
+  studlab = id, data = Linde2015, sm = "OR")
 
 # Early remissions
-p2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
-  studlab = id, data = dat.linde2015, sm = "OR")
+  studlab = id, data = Linde2015, sm = "OR")
 
 # Adverse events
-p3 <- pairwise(treat = list(treatment1, treatment2,treatment3),
+pw3 <- pairwise(treat = list(treatment1, treatment2,treatment3),
   event = list(ae1, ae2, ae3),  n = list(n1, n2, n3),
-  studlab = id, data = dat.linde2015, sm = "OR")
+  studlab = id, data = Linde2015, sm = "OR")
 
 # Loss to follow-up
-p4 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+pw4 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(loss1, loss2, loss3), n = list(n1, n2, n3),
-  studlab = id, data = dat.linde2015, sm = "OR")
+  studlab = id, data = Linde2015, sm = "OR")
 
 # Loss_to_follow_up_(AE)
-p5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+pw5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(loss.ae1, loss.ae2, loss.ae3), n = list(n1, n2, n3),
-  studlab = id, data = dat.linde2015, sm = "OR")
+  studlab = id, data = Linde2015, sm = "OR")
 
 # Define outcome labels
 outcomes <- c("Early_Response", "Early_Remission",
@@ -65,7 +61,7 @@ outcomes <- c("Early_Response", "Early_Remission",
 
 # Fit the model combining all five outcomes
 set.seed(1909)
-mvnma_all <- mvnma(p1, p2, p3, p4, p5,
+mvnma_all <- mvnma(pw1, pw2, pw3, pw4, pw5,
   reference.group = "Placebo", outclab = outcomes,
   n.iter = 1000, n.burnin = 100)
 

@@ -1,12 +1,13 @@
 #' A heatplot to visualize the output of \code{\link{mvrank}} across all outcomes
 #' 
 #' @description
-#' This function produces a heatplot displaying the results of function \code{\link{mvrank}}. 
+#' This function produces a heatplot displaying the results of function
+#' \code{\link{mvrank}}. 
 #' The graph can be used to visualize the ranking output when the method used to rank the treatments
 #' is either the SUCRA or the pBV method.
 #' 
 #' @param x An object of class \code{\link{mvrank}}.
-#' @param sortby An optional argument to define an outcome to be used as a reference when sorting
+#' @param sort An optional argument to define an outcome to be used as a reference when sorting
 #' the order of treatments on the x-axis. If \code{NULL}, then the first outcome, as it appears in \code{\link{mvrank}},
 #' is used as the reference. If not \code{NULL}, the user can specify this argument using a single numeric value indicating
 #' the position of the outcome in the order of \code{\link{mvrank}} (i.e., setting it equal to 1 will use the first outcome as the reference, as it appears in \code{\link{mvrank}}). Alternatively, the argument can be specified
@@ -32,37 +33,32 @@
 #'
 #' @examples
 #' \donttest{
-#' library("netmeta")
-#' 
-#' data("Linde2015")
-#' 
 #' # Use 'pairwise' to obtain contrast based data for each one of the five
-#' # available outcomes 
-#'
+#' # available outcomes
 #' # Early response
-#' p1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+#' pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
 #'   event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
-#'   studlab = id, data = dat.linde2015, sm = "OR")
+#'   studlab = id, data = Linde2015, sm = "OR")
 #'
 #' # Early remissions
-#' p2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+#' pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
 #'   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
-#'   studlab = id, data = dat.linde2015, sm = "OR")
+#'   studlab = id, data = Linde2015, sm = "OR")
 #'
 #' # Adverse events
-#' p3 <- pairwise(treat = list(treatment1, treatment2,treatment3),
+#' pw3 <- pairwise(treat = list(treatment1, treatment2,treatment3),
 #'   event = list(ae1, ae2, ae3),  n = list(n1, n2, n3),
-#'   studlab = id, data = dat.linde2015, sm = "OR")
+#'   studlab = id, data = Linde2015, sm = "OR")
 #'
 #' # Loss to follow-up
-#' p4 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+#' pw4 <- pairwise(treat = list(treatment1, treatment2, treatment3),
 #'   event = list(loss1, loss2, loss3), n = list(n1, n2, n3),
-#'   studlab = id, data = dat.linde2015, sm = "OR")
+#'   studlab = id, data = Linde2015, sm = "OR")
 #'
 #' # Loss_to_follow_up_(AE)
-#' p5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+#' pw5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
 #'   event = list(loss.ae1, loss.ae2, loss.ae3), n = list(n1, n2, n3),
-#'   studlab = id, data = dat.linde2015, sm = "OR")
+#'   studlab = id, data = Linde2015, sm = "OR")
 #'
 #' # Define outcome labels
 #' outcomes <- c("Early_Response", "Early_Remission",
@@ -70,27 +66,27 @@
 #' 
 #' # Fit the model combining all five outcomes
 #' set.seed(1909)
-#' mvnma_all <- mvnma(p1, p2, p3, p4, p5,
+#' mvnma_all <- mvnma(pw1, pw2, pw3, pw4, pw5,
 #'   reference.group = "Placebo", outclab = outcomes,
 #'   n.iter = 1000, n.burnin = 100)
 #' # Rank the treatments
-#'   ranks_sucra <- mvrank(mvnma_all, 
+#' ranks_sucra <- mvrank(mvnma_all, 
 #'   small.values = c("undes", "undes", "des", "des", "des"),
 #'   method = "SUCRA")
 #' ranks_sucra
 #' # Create a heatplot sorting the results according to the first outcome
 #' # appearing in ranks_sucra (i.e Early_Response)
-#' heatplot(ranks_sucra,sortby = 1)
+#' heatplot(ranks_sucra, sort = 1)
 #' # Create a heatplot sorting the results by explicitly mentioning the
 #' # name of the outcome Early_Response
-#' heatplot(ranks_sucra,sortby = "Early_Response") 
+#' heatplot(ranks_sucra, sort = "Early_Response") 
 #' }
 #' 
 #' @method heatplot mvrank 
 #' @export
 
 heatplot.mvrank <- function(x,
-                    sortby=NULL,
+                    sort=NULL,
                     col.num = "white",
                     num.size = 4.5,
                     col.low = "lightblue",
@@ -136,41 +132,41 @@ heatplot.mvrank <- function(x,
   
   dat.ranks <- bind_rows(dat.ranks)
   
-  # make sure that argument sortby is either a character (can be abbreviated) or a numeric value
+  # make sure that argument sort is either a character (can be abbreviated) or a numeric value
   
-  if(is.null(sortby)){
+  if(is.null(sort)){
     
-    sortby <-  names(x)[1]
+    sort <-  names(x)[1]
     
-    order <- dat.ranks %>% filter(outcome==sortby)
+    order <- dat.ranks %>% filter(outcome==sort)
     
   }else{
   
-  if(length(sortby)>1){
+  if(length(sort)>1){
     
-    stop("Argument 'sortby' should be of length 1.")
+    stop("Argument 'sort' should be of length 1.")
   }
   
-  if((!is.numeric(sortby)) & (!is.character(sortby))){
+  if((!is.numeric(sort)) & (!is.character(sort))){
     
-   stop("Argument 'sortby' should be either a character string or a numeric value of length 1.") 
+   stop("Argument 'sort' should be either a character string or a numeric value of length 1.") 
   
-    }else if(is.character(sortby)){  
+    }else if(is.character(sort)){  
   
-    sortby <- setchar(sortby,names(x))
+    sort <- setchar(sort,names(x))
     
-    order <- dat.ranks %>% filter(outcome==sortby)
+    order <- dat.ranks %>% filter(outcome==sort)
     
-    }else if(is.numeric(sortby)){
+    }else if(is.numeric(sort)){
     
-      sortby <- sortby
+      sort <- sort
 
-      if(sortby>length(x)){
-        stop(paste("Argument 'sortby' should be a number between ",1," and ",length(x),sep = ""))
+      if(sort>length(x)){
+        stop(paste("Argument 'sort' should be a number between ",1," and ",length(x),sep = ""))
       }
       
-      sortby <- names(x)[sortby] 
-      order <- dat.ranks %>% filter(outcome==sortby)
+      sort <- names(x)[sort] 
+      order <- dat.ranks %>% filter(outcome==sort)
     }
   }
   
@@ -181,7 +177,7 @@ heatplot.mvrank <- function(x,
   
   dat.ranks$outcome <- factor(dat.ranks$outcome,levels = names(x))
   
-  dat.ranks$outcome <- relevel(dat.ranks$outcome,ref = sortby)
+  dat.ranks$outcome <- relevel(dat.ranks$outcome,ref = sort)
   
   names(dat.ranks) <- c("treatment","val","outcome")
   

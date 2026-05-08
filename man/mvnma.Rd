@@ -38,11 +38,12 @@ domains. Ignored when `method = "standard"`. Default is `NULL`.}
 
 \item{n.chains}{Number of Markov chains (default=4).}
 
-\item{n.iter}{Number of iterations (default=10000).}
+\item{n.iter}{Number of iterations (default: 10000).}
 
-\item{n.burnin}{Number of iterations for burn-in (default=2000).}
+\item{n.burnin}{Number of iterations for burn-in (default: 2000).}
 
-\item{n.thin}{Thinning rate. Default is equal to max(1, floor((n.iter - n.burnin)/1000)).}
+\item{n.thin}{Thinning rate. Default is equal to
+\code{max(1, floor((n.iter - n.burnin) / 1000))}.}
 
 \item{level}{The level used to calculate confidence intervals
 for network estimates.}
@@ -126,37 +127,33 @@ The argument `n.domain` is ignored when `method = "standard"`.
 }
 \examples{
 \donttest{
-library("netmeta")
-
-data("Linde2015")
-
 # Use 'pairwise' to obtain contrast based data for each one of the five
 # available outcomes 
 
 # Early response
-p1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
-  studlab = id, data = dat.linde2015, sm = "OR")
+  studlab = id, data = Linde2015, sm = "OR")
 
 # Early remissions
-p2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
-  studlab = id, data = dat.linde2015, sm = "OR")
+  studlab = id, data = Linde2015, sm = "OR")
 
 # Adverse events
-p3 <- pairwise(treat = list(treatment1, treatment2,treatment3),
+pw3 <- pairwise(treat = list(treatment1, treatment2,treatment3),
   event = list(ae1, ae2, ae3),  n = list(n1, n2, n3),
-  studlab = id, data = dat.linde2015, sm = "OR")
+  studlab = id, data = Linde2015, sm = "OR")
 
 # Loss to follow-up
-p4 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+pw4 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(loss1, loss2, loss3), n = list(n1, n2, n3),
-  studlab = id, data = dat.linde2015, sm = "OR")
+  studlab = id, data = Linde2015, sm = "OR")
 
 # Loss_to_follow_up_(AE)
-p5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+pw5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(loss.ae1, loss.ae2, loss.ae3), n = list(n1, n2, n3),
-  studlab = id, data = dat.linde2015, sm = "OR")
+  studlab = id, data = Linde2015, sm = "OR")
 
 # Define outcome labels
 outcomes <- c("Early_Response", "Early_Remission",
@@ -164,7 +161,7 @@ outcomes <- c("Early_Response", "Early_Remission",
  
 # Fit the model combining only the two efficacy outcomes
 set.seed(1909)
-mvnma12 <- mvnma(p1, p2,
+mvnma12 <- mvnma(pw1, pw2,
   reference.group = "Placebo", outclab = outcomes[1:2],
   n.iter = 1000, n.burnin = 100)
 mvnma12
@@ -188,7 +185,7 @@ for (i in outc) {
 }
 
 # Fit the model combining all five outcomes
-mvnma_all <- mvnma(p1, p2, p3, p4, p5,
+mvnma_all <- mvnma(pw1, pw2, pw3, pw4, pw5,
   reference.group = "Placebo", outclab = outcomes,
   n.iter = 1000, n.burnin = 100)
 

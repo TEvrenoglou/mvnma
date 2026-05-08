@@ -19,30 +19,28 @@ Print results for treatment ranking in multivariate network meta-analysis
 }
 \examples{
 \donttest{
-library("netmeta")
-
 # Use 'pairwise' to obtain contrast based data for the first two outcomes
-data("Linde2015")
+
 # Early response
-p1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
-  studlab = id, data = dat.linde2015, sm = "OR")
+  studlab = id, data = Linde2015, sm = "OR")
 # Early remissions
-p2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
-  studlab = id, data = dat.linde2015, sm = "OR")
+  studlab = id, data = Linde2015, sm = "OR")
 
 # Define outcome labels
 outcomes <- c("Early Response", "Early Remission")
  
 # Fit the model combining the two efficacy outcomes
 set.seed(1909)
-mvnma12 <- mvnma(p1, p2,
+mvnma12 <- mvnma(pw1, pw2,
   reference.group = "Placebo", outclab = outcomes,
   n.iter = 10, n.burnin = 1)
 mvnma12
 
-mvrank(mvnma12, small = c("und", "und"))
+mvrank(mvnma12, small = c("undes", "undes"))
 }
 
 }

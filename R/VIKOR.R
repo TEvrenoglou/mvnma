@@ -16,14 +16,14 @@
 #' @param \dots Additional arguments.
 #'
 #' @details
-#' This function takes a single mandatory argument, which is either an object of class
-#' \code{\link{mvrank}} or a matrix. It then uses the multi-criteria decision
-#' analysis method VIKOR to produce an amalgamated ranking list across all
-#' outcomes. The standard VIKOR approach is applied when the \code{method} argument
-#' is set to \code{"sucra"} or \code{"pBV"} in \code{\link{mvrank}}. A fuzzy
-#' VIKOR method is applied when outcome-specific rankings are expressed in terms of
-#' median ranks and 95\% credible intervals. The latter is possible when the
-#' \code{\link{mvrank}} object is created with \code{method = "ranks"}.
+#' This function takes a single mandatory argument, which is either an object
+#' of class \code{\link{mvrank}} or a matrix. It then uses the multi-criteria
+#' decision analysis method VIKOR to produce an amalgamated ranking list across
+#' all outcomes. The standard VIKOR approach is applied when the \code{method}
+#' argument is set to \code{"sucra"} or \code{"pBV"} in \code{\link{mvrank}}.
+#' A fuzzy VIKOR method is applied when outcome-specific rankings are expressed
+#' in terms of median ranks and 95\% credible intervals. The latter is possible
+#' when the \code{\link{mvrank}} object is created with \code{method = "ranks"}.
 #' In both cases, the final ranking list is calculated based on treatments
 #' common across all outcomes. Treatments not present across all outcomes are
 #' excluded internally.
@@ -58,45 +58,48 @@
 #' \item A ranking list R referring to the ranking in terms of penalizing each
 #'   treatment's worst performance.
 #' }
-#' In addition to the ranking lists, the function also evaluates the necessary conditions
-#' defined by the VIKOR method and returns a message indicating the set of compromise
-#' solutions.
+#' In addition to the ranking lists, the function also evaluates the necessary
+#' conditions defined by the VIKOR method and returns a message indicating the
+#' set of compromise solutions.
 #'
 #' @references 
-#' Opricovic, S., Tzeng, G. H. Compromise solution by MCDM methods:
-#' A comparative analysis of VIKOR and TOPSIS. \emph{European Journal of Operational
-#' Research}. 2004; \bold{156} (2), 445–455 https://doi.org/10.1016/S0377-2217(03)00020-1
+#' Opricovic S, Tzeng GH (2004):
+#' Compromise solution by MCDM methods: A comparative analysis of VIKOR and
+#' TOPSIS.
+#' \emph{European Journal of Operational Research},
+#' \bold{156}, 445-55
 #' 
-#' Opricovic, S. Fuzzy VIKOR with an application to water resources planning. 
-#' \emph{Expert Systems with Applications} 2011; \bold{38}(10), 12983-12990. https://doi.org/10.1016/j.eswa.2011.04.097
+#' Opricovic S (2011):
+#' Fuzzy VIKOR with an application to water resources planning. 
+#' \emph{Expert Systems with Applications}, 
+#' \bold{38}, 12983-90
 #' 
 #' @examples
 #' \donttest{
-#' library("netmeta")
-#' 
 #' # Use 'pairwise' to obtain contrast based data for the first two outcomes
-#' data("Linde2015")
+#' 
 #' # Early response
-#' p1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+#' pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
 #'   event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
-#'   studlab = id, data = dat.linde2015, sm = "OR")
+#'   studlab = id, data = Linde2015, sm = "OR")
 #' # Early remissions
-#' p2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+#' pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
 #'   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
-#'   studlab = id, data = dat.linde2015, sm = "OR")
+#'   studlab = id, data = Linde2015, sm = "OR")
 #'
 #' # Define outcome labels
 #' outcomes <- c("Early_Response", "Early_Remission")
 #'  
 #' # Fit the model combining only the two efficacy outcomes
 #' set.seed(1909)
-#' mvnma12 <- mvnma(p1, p2,
+#' mvnma12 <- mvnma(pw1, pw2,
 #'   reference.group = "Placebo", outclab = outcomes,
 #'   n.iter = 1000, n.burnin = 100)
 #' mvnma12
 #' 
 #' # Rank treatments using SUCRAs
-#' ranks12 <- mvrank(mvnma12, small.values = c("und", "und"), method = "sucra")
+#' ranks12 <- mvrank(mvnma12, method = "sucra",
+#'   small.values = c("undes", "undes"))
 #' ranks12
 #' 
 #' # Get the best compromise solution across the efficacy outcomes
@@ -106,12 +109,6 @@
 #' vikor(ranks12, weights = c(0.6, 0.3))
 #' }
 #'
-#' @export vikor
-
-vikor <- function(x, ...)
-  UseMethod("vikor")
-
-
 #' @rdname vikor
 #' @method vikor mvrank
 #' @export
@@ -172,3 +169,10 @@ vikor.matrix <- function(x, weights = NULL, v = 0.5, ...) {
   #
   res
 }
+
+
+#' @rdname vikor
+#' @export vikor
+
+vikor <- function(x, ...)
+  UseMethod("vikor")

@@ -309,7 +309,7 @@ gather_results <- function(x, outcomes, trts, reference.group,
     TE.random <- seTE.random <- lower.random <- upper.random <-
     vector("list")
   # Get rid of warning "no visible binding for global variable"
-  sd <- Rhat <- n.eff <- lower <- upper <- NULL
+  sd <- Rhat <- n.eff <- lower <- upper <- out_num <- NULL
   #
   for (i in seq_len(n.out)) {
     d.i <- paste0("d", i)
@@ -352,10 +352,8 @@ gather_results <- function(x, outcomes, trts, reference.group,
     rho[[i]] <- res %>% filter(grepl("rho", rnames))
     # ensure the order of outcomes
     rho[[i]]$out_num <- as.numeric(gsub("rho", "", rownames(rho[[i]])))
-    
-    rho[[i]] <- rho[[i]] %>% 
-      arrange(out_num)
-    
+    #
+    rho[[i]] %<>% arrange(out_num)
     rho[[i]]$out_num <- NULL
     
     #

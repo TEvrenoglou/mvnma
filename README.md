@@ -4,7 +4,7 @@ Official Git repository of R package **mvnma**
 
 [![License: GPL (>=2)](https://img.shields.io/badge/license-GPL-blue)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![CRAN Version](https://www.r-pkg.org/badges/version/mvnma)](https://cran.r-project.org/package=mvnma)
-[![GitHub develop](https://img.shields.io/badge/develop-0.1--0-purple)](https://img.shields.io/badge/develop-0.1--0-purple)
+[![GitHub develop](https://img.shields.io/badge/develop-0.2--0-purple)](https://img.shields.io/badge/develop-0.2--0-purple)
 [![Monthly Downloads](https://cranlogs.r-pkg.org/badges/mvnma)](https://cranlogs.r-pkg.org/badges/mvnma)
 [![Total Downloads](https://cranlogs.r-pkg.org/badges/grand-total/mvnma)](https://cranlogs.r-pkg.org/badges/grand-total/mvnma)
 
@@ -29,13 +29,13 @@ install.packages("mvnma")
 ```
 -->
 
-### Current [![GitHub develop](https://img.shields.io/badge/develop-0.1--0-purple)](https://img.shields.io/badge/develop-0.1--0-purple) release on GitHub:
+### Current [![GitHub develop](https://img.shields.io/badge/develop-0.2--0-purple)](https://img.shields.io/badge/develop-0.2--0-purple) release on GitHub:
 
 Installation using R package
 [**remotes**](https://cran.r-project.org/package=remotes):
 ```r
 install.packages("remotes")
-remotes::install_github("TEvrenoglou/mvnma", ref = "main")
+remotes::install_github("TEvrenoglou/mvnma", ref = "develop")
 ```
 
 ### Bug Reports:

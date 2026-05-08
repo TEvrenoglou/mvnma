@@ -11,7 +11,8 @@
 #'   of outcomes 2 and 3.
 #' @param pos Position of treatment labels.
 #' @param cex.point a numeric value specifying the size of the points (default: 1)
-#' @param cex.label a numeric value specifying the size of the point labels in the plot (default: 0.7)
+#' @param cex.label a numeric value specifying the size of the point labels in
+#'   the plot (default: 0.7)
 #' @param pch a vector of plotting characters or symbols (default: 19)
 #' @param xlim the x limits of the plot
 #' @param ylim the y limits of the plot
@@ -19,31 +20,30 @@
 #' 
 #' @examples
 #' \donttest{
-#' library("netmeta")
-#' 
 #' # Use 'pairwise' to obtain contrast based data for the first two outcomes
-#' data("Linde2015")
+#' 
 #' # Early response
-#' p1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+#' pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
 #'   event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
-#'   studlab = id, data = dat.linde2015, sm = "OR")
+#'   studlab = id, data = Linde2015, sm = "OR")
 #' # Early remissions
-#' p2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+#' pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
 #'   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
-#'   studlab = id, data = dat.linde2015, sm = "OR")
+#'   studlab = id, data = Linde2015, sm = "OR")
 #' 
 #' # Define outcome labels
 #' outcomes <- c("Early_Response", "Early_Remission")
 #' 
 #' # Fit the model combining the two efficacy outcomes
 #' set.seed(1909)
-#' mvnma12 <- mvnma(p1, p2,
+#' mvnma12 <- mvnma(pw1, pw2,
 #'   reference.group = "Placebo", outclab = outcomes[1:2],
 #'   n.iter = 1000, n.burnin = 100)
 #' mvnma12
 #' 
 #' # Rank treatments using SUCRAs
-#' ranks12 <- mvrank(mvnma12, small.values = c("und", "und"), method = "sucra")
+#' ranks12 <- mvrank(mvnma12, method = "sucra",
+#'   small.values = c("undes", "undes"))
 #' ranks12
 #' 
 #' # Visualize SUCRAs in a scatter plot with outcome 1

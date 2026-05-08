@@ -6,7 +6,7 @@
 \usage{
 \method{heatplot}{mvrank}(
   x,
-  sortby = NULL,
+  sort = NULL,
   col.num = "white",
   num.size = 4.5,
   col.low = "lightblue",
@@ -27,7 +27,7 @@
 \arguments{
 \item{x}{An object of class \code{\link{mvrank}}.}
 
-\item{sortby}{An optional argument to define an outcome to be used as a reference when sorting
+\item{sort}{An optional argument to define an outcome to be used as a reference when sorting
 the order of treatments on the x-axis. If \code{NULL}, then the first outcome, as it appears in \code{\link{mvrank}},
 is used as the reference. If not \code{NULL}, the user can specify this argument using a single numeric value indicating
 the position of the outcome in the order of \code{\link{mvrank}} (i.e., setting it equal to 1 will use the first outcome as the reference, as it appears in \code{\link{mvrank}}). Alternatively, the argument can be specified
@@ -67,43 +67,39 @@ using a character string explicitly stating the name of the outcome. In this cas
 A \code{ggplot} object.
 }
 \description{
-This function produces a heatplot displaying the results of function \code{\link{mvrank}}. 
+This function produces a heatplot displaying the results of function
+\code{\link{mvrank}}. 
 The graph can be used to visualize the ranking output when the method used to rank the treatments
 is either the SUCRA or the pBV method.
 }
 \examples{
 \donttest{
-library("netmeta")
-
-data("Linde2015")
-
 # Use 'pairwise' to obtain contrast based data for each one of the five
-# available outcomes 
-
+# available outcomes
 # Early response
-p1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
-  studlab = id, data = dat.linde2015, sm = "OR")
+  studlab = id, data = Linde2015, sm = "OR")
 
 # Early remissions
-p2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
-  studlab = id, data = dat.linde2015, sm = "OR")
+  studlab = id, data = Linde2015, sm = "OR")
 
 # Adverse events
-p3 <- pairwise(treat = list(treatment1, treatment2,treatment3),
+pw3 <- pairwise(treat = list(treatment1, treatment2,treatment3),
   event = list(ae1, ae2, ae3),  n = list(n1, n2, n3),
-  studlab = id, data = dat.linde2015, sm = "OR")
+  studlab = id, data = Linde2015, sm = "OR")
 
 # Loss to follow-up
-p4 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+pw4 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(loss1, loss2, loss3), n = list(n1, n2, n3),
-  studlab = id, data = dat.linde2015, sm = "OR")
+  studlab = id, data = Linde2015, sm = "OR")
 
 # Loss_to_follow_up_(AE)
-p5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
+pw5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(loss.ae1, loss.ae2, loss.ae3), n = list(n1, n2, n3),
-  studlab = id, data = dat.linde2015, sm = "OR")
+  studlab = id, data = Linde2015, sm = "OR")
 
 # Define outcome labels
 outcomes <- c("Early_Response", "Early_Remission",
@@ -111,20 +107,20 @@ outcomes <- c("Early_Response", "Early_Remission",
 
 # Fit the model combining all five outcomes
 set.seed(1909)
-mvnma_all <- mvnma(p1, p2, p3, p4, p5,
+mvnma_all <- mvnma(pw1, pw2, pw3, pw4, pw5,
   reference.group = "Placebo", outclab = outcomes,
   n.iter = 1000, n.burnin = 100)
 # Rank the treatments
-  ranks_sucra <- mvrank(mvnma_all, 
+ranks_sucra <- mvrank(mvnma_all, 
   small.values = c("undes", "undes", "des", "des", "des"),
   method = "SUCRA")
 ranks_sucra
 # Create a heatplot sorting the results according to the first outcome
 # appearing in ranks_sucra (i.e Early_Response)
-heatplot(ranks_sucra,sortby = 1)
+heatplot(ranks_sucra, sort = 1)
 # Create a heatplot sorting the results by explicitly mentioning the
 # name of the outcome Early_Response
-heatplot(ranks_sucra,sortby = "Early_Response") 
+heatplot(ranks_sucra, sort = "Early_Response") 
 }
 
 }

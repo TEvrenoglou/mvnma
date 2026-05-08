@@ -1,6 +1,8 @@
 spiechart_internal <- function(x, weights = NULL){
   
-  # spie.data <- data.frame(x = x, theta = theta)
+  # Get rid of warning 'Undefined global functions or variables'
+  #
+  area <- NULL
   
   if (is.null(weights))
     weights <- rep(1 /ncol(x), ncol(x))
@@ -16,28 +18,19 @@ spiechart_internal <- function(x, weights = NULL){
             paste(weights, collapse = ", "))
   }
   
-  # transform weights to sum up to 2*pi
+  # Transform weights to sum up to 2 * pi
+  #
+  weights <- 2 * pi * weights
   
-  weights <- 2*pi*weights
-  
-  area <- vector("list")
-  
-  for(i in 1:nrow(x)){
-    
-    for(j in 1:length(weights)){
-    
-  area[[i]] <- (1/(2*pi))*sum(weights[j]*x[i,]^2)
-  
-    }
-  }
-  
-  area <- data.frame ("Area" = unlist(area))
-  
-  row.names(area) <- row.names(x)
-  
-  area %<>% arrange(desc(Area)) %<>% mutate("Area" = round(Area,digits = 2)) 
-  
-  attr(area, "transformed.weights") <- weights
-  
-  return(area)
+  n.trts <- nrow(x)
+  res <- data.frame(area = rep(NA, n.trts))
+  row.names(res) <- row.names(x)
+  for (i in seq_len(n.trts))
+    res$area[i] <- (1 / (2 * pi)) * sum(weights * x[i, ]^2)
+  #
+  res %<>% arrange(desc(area))
+  #
+  attr(res, "transformed.weights") <- weights
+  #
+  res
 }
