@@ -46,7 +46,6 @@
 #' @param \dots Additional arguments (ignored)
 #' 
 #' @details
-#' 
 #' The multivariate network meta-analysis (mvNMA) model supported by this
 #' package refers to the single correlation coefficient model, interpreted as
 #' an amalgam of within- and across-outcome correlations
@@ -106,15 +105,8 @@
 #' }
 #' 
 #' @seealso \code{\link[meta]{pairwise}}
-#'
-#' @references
-#' Achana FA, Cooper NJ, Bujkiewicz S, Hubbard SJ, Kendrick D, Jones DR,
-#' Sutton AJ (2014):
-#' Network meta-analysis of multiple outcome measures accounting for borrowing
-#' of information across outcomes.
-#' \emph{BMC Medical Research Methodology},
-#' \bold{21}, 92
 #' 
+#' @references
 #' DuMouchel WH, Harris JE (1983):
 #' Bayes methods for combining the results of cancer studies in humans and
 #' other species.
@@ -140,32 +132,34 @@
 #' pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
 #'   event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
 #'   studlab = id, data = Linde2015, sm = "OR")
-#'
+#' 
 #' # Early remissions
 #' pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
 #'   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
 #'   studlab = id, data = Linde2015, sm = "OR")
-#'
+#' 
 #' # Adverse events
 #' pw3 <- pairwise(treat = list(treatment1, treatment2,treatment3),
 #'   event = list(ae1, ae2, ae3),  n = list(n1, n2, n3),
 #'   studlab = id, data = Linde2015, sm = "OR")
-#'
+#' 
 #' # Loss to follow-up
 #' pw4 <- pairwise(treat = list(treatment1, treatment2, treatment3),
 #'   event = list(loss1, loss2, loss3), n = list(n1, n2, n3),
 #'   studlab = id, data = Linde2015, sm = "OR")
-#'
+#' 
 #' # Loss_to_follow_up_(AE)
 #' pw5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
 #'   event = list(loss.ae1, loss.ae2, loss.ae3), n = list(n1, n2, n3),
 #'   studlab = id, data = Linde2015, sm = "OR")
-#'
+#' 
 #' # Define outcome labels
 #' outcomes <- c("Early_Response", "Early_Remission",
 #'   "Adverse_events", "Loss_to_follow_up", "Loss_to_follow_up_AE")
-#'  
+#' 
 #' # Fit the model combining only the two efficacy outcomes
+#' # (note, we are using only 100 iterations and 20 burnins to reduce the
+#' #  runtime of the example; in real applications use larger numbers)
 #' set.seed(1909)
 #' mvnma12 <- mvnma(pw1, pw2,
 #'   reference.group = "Placebo", outclab = outcomes[1:2],
@@ -190,8 +184,10 @@
 #'   print(round(exp(mvnma12[[i]]$TE.random), 2))
 #' }
 #' 
-#' \dontrun{
+#' \donttest{
 #' # Fit the model combining all five outcomes
+#' # (note, we are using only 100 iterations and 20 burnins to reduce the
+#' #  runtime of the example; in real applications use larger numbers)
 #' set.seed(1904)
 #' mvnma_all <- mvnma(pw1, pw2, pw3, pw4, pw5,
 #'   reference.group = "Placebo", outclab = outcomes,
@@ -203,7 +199,7 @@
 #' 
 #' # Extract outcome correlation 
 #' mvnma_all$cor
-#'
+#' 
 #' # Plot the results for all outcomes
 #' forest(mvnma_all)
 #' 

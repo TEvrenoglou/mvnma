@@ -8,9 +8,10 @@
 R package \bold{mvnma} provides R functions for Bayesian multivariate
 network meta-analysis (mvNMA). The mvNMA model supported by this package
 refers to the single correlation coefficient model, interpreted as an
-amalgam of within- and across-outcome correlations. In this way, the model
-does not depend on the extraction of within-study outcome correlations,
-which are seldom reported at the study level.
+amalgam of within- and across-outcome correlations (Efthimiou et al., 2015)
+which is a generalisation of Riley et al. (2008).
+In this way, the model does not depend on the extraction of within-study
+outcome correlations, which are seldom reported at the study level.
 
 DuMouchel priors assuming constant relative treatment effects across
 outcomes and enabling information sharing can be used (DuMouchel & Harris,
@@ -86,13 +87,6 @@ The development version of \bold{mvnma} is available on GitHub
 \url{https://github.com/TEvrenoglou/mvnma}.
 }
 \references{
-Achana FA, Cooper NJ, Bujkiewicz S, Hubbard SJ, Kendrick D, Jones DR,
-Sutton AJ (2014):
-Network meta-analysis of multiple outcome measures accounting for borrowing
-of information across outcomes.
-\emph{BMC Medical Research Methodology},
-\bold{21}, 92
-
 Carlsen L, Bruggemann R (2014):
 Partial order methodology: a valuable tool in chemometrics.
 \emph{Journal of Chemometrics},

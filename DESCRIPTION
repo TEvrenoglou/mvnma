@@ -13,8 +13,8 @@ Authors@R: c(person("Theodoros", "Evrenoglou",
                     comment = c(ORCID = "0000-0001-6214-9087")))
 Maintainer: Theodoros Evrenoglou <theodoros.evrenoglou@uniklinik-freiburg.de>
 URL: https://github.com/TEvrenoglou/mvnma
-Description: Tools to conduct Bayesian multivariate network meta-analysis:
- - single correlation coefficient model by Efthimiou et al. (2015) <doi:10.1093/biostatistics/kxu030>;
+Description: Tools to conduct Bayesian multivariate network meta-analysis providing
+ - the single correlation coefficient model by Efthimiou et al. (2015) <doi:10.1093/biostatistics/kxu030>;
  - per-outcome treatment hierarchies using the surface under the cumulative ranking curve (SUCRA), the probability of best value, or median (or mean) ranks (Salanti et al., 2011) <doi:10.1016/j.jclinepi.2010.03.016>;
  - across-outcomes benefit-risk assessment using the VišeKriterijumska Optimizacija I Kompromisno Rešenje (VIKOR) method (Opricovic & Tzeng, 2004) <doi:10.1016/S0377-2217(03)00020-1>;
  - convergence checks using trace plots, density plots, or the R-hat statistic;

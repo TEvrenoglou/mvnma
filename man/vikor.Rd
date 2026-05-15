@@ -41,7 +41,7 @@ which are the following:
   of the method. 
 \item A ranking list S referring to the ranking in terms of each treatment's
   overall performance.
-\item A ranking list R referring to the ranking in terms of penalizing each
+\item A ranking list R referring to the ranking in terms of penalising each
   treatment's worst performance.
 }
 In addition to the ranking lists, the function also evaluates the necessary
@@ -92,7 +92,7 @@ choice of 'v' is typically 0.5 (default also here), thereby allowing for a
 balanced decision making between treatment's overall and worst performance.
 }
 \examples{
-# Locate file "mvnma_example.rda" with mvnma() results
+# Locate file "mvnma_examples.rda" with mvnma() results
 .fname <- system.file("extdata/mvnma_examples.rda", package = "mvnma")
 load(.fname)
 

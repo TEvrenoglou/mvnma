@@ -88,13 +88,6 @@
 #'   Guido Schwarzer <guido.schwarzer@@uniklinik-freiburg.de>
 #' 
 #' @references
-#' Achana FA, Cooper NJ, Bujkiewicz S, Hubbard SJ, Kendrick D, Jones DR,
-#' Sutton AJ (2014):
-#' Network meta-analysis of multiple outcome measures accounting for borrowing
-#' of information across outcomes.
-#' \emph{BMC Medical Research Methodology},
-#' \bold{21}, 92
-#' 
 #' Carlsen L, Bruggemann R (2014):
 #' Partial order methodology: a valuable tool in chemometrics.
 #' \emph{Journal of Chemometrics},

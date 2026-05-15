@@ -75,7 +75,7 @@ Draws a forest plot in the active graphics window (using grid graphics
 system).
 }
 \examples{
-# Locate file "mvnma_example.rda" with mvnma() results
+# Locate file "mvnma_examples.rda" with mvnma() results
 .fname <- system.file("extdata/mvnma_examples.rda", package = "mvnma")
 load(.fname)
 

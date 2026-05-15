@@ -104,6 +104,11 @@ Currently, the function can simultaneously pool up to five outcomes.
 Additionally, the studies to be included should be of maximum three arms.
 }
 \details{
+The multivariate network meta-analysis (mvNMA) model supported by this
+package refers to the single correlation coefficient model, interpreted as
+an amalgam of within- and across-outcome correlations
+(Efthimiou et al., 2015) which is a generalisation of Riley et al. (2008).
+
 The function \code{\link{mvnma}} expects two to five outcomes /
 \code{\link[meta]{pairwise}} objects. A common reference treatment across
 all outcomes is required to only show comparisons with the reference in
@@ -177,8 +182,10 @@ pw5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
 # Define outcome labels
 outcomes <- c("Early_Response", "Early_Remission",
   "Adverse_events", "Loss_to_follow_up", "Loss_to_follow_up_AE")
- 
+
 # Fit the model combining only the two efficacy outcomes
+# (note, we are using only 100 iterations and 20 burnins to reduce the
+#  runtime of the example; in real applications use larger numbers)
 set.seed(1909)
 mvnma12 <- mvnma(pw1, pw2,
   reference.group = "Placebo", outclab = outcomes[1:2],
@@ -203,8 +210,10 @@ for (i in outc) {
   print(round(exp(mvnma12[[i]]$TE.random), 2))
 }
 
-\dontrun{
+\donttest{
 # Fit the model combining all five outcomes
+# (note, we are using only 100 iterations and 20 burnins to reduce the
+#  runtime of the example; in real applications use larger numbers)
 set.seed(1904)
 mvnma_all <- mvnma(pw1, pw2, pw3, pw4, pw5,
   reference.group = "Placebo", outclab = outcomes,
@@ -231,13 +240,6 @@ for (i in outc) {
 
 }
 \references{
-Achana FA, Cooper NJ, Bujkiewicz S, Hubbard SJ, Kendrick D, Jones DR,
-Sutton AJ (2014):
-Network meta-analysis of multiple outcome measures accounting for borrowing
-of information across outcomes.
-\emph{BMC Medical Research Methodology},
-\bold{21}, 92
-
 DuMouchel WH, Harris JE (1983):
 Bayes methods for combining the results of cancer studies in humans and
 other species.
