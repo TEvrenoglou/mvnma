@@ -93,6 +93,11 @@ of information across outcomes.
 \emph{BMC Medical Research Methodology},
 \bold{21}, 92
 
+Carlsen L, Bruggemann R (2014):
+Partial order methodology: a valuable tool in chemometrics.
+\emph{Journal of Chemometrics},
+\bold{28}, 226--34
+
 Daly CH, Mbuagbaw L, Thabane L, Straus SE, Hamid JS (2020):
 Spie charts for quantifying treatment effectiveness and safety in multiple
 outcome network meta-analysis: a proof-of-concept study.
@@ -108,11 +113,6 @@ Efthimiou O, Mavridis D, Riley RD, Cipriani A, Salanti G (2015):
 Joint synthesis of multiple correlated outcomes in networks of interventions.
 \emph{Biostatistics}, 
 \bold{16}, 84--97
-
-Carlsen L, Bruggemann R (2014):
-Partial order methodology: a valuable tool in chemometrics.
-\emph{Journal of Chemometrics},
-\bold{28}, 226--34
 
 Opricovic S, Tzeng GH (2004):
 Compromise solution by MCDM methods: A comparative analysis of VIKOR and

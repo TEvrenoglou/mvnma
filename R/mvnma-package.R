@@ -4,9 +4,10 @@
 #' R package \bold{mvnma} provides R functions for Bayesian multivariate
 #' network meta-analysis (mvNMA). The mvNMA model supported by this package
 #' refers to the single correlation coefficient model, interpreted as an
-#' amalgam of within- and across-outcome correlations. In this way, the model
-#' does not depend on the extraction of within-study outcome correlations,
-#' which are seldom reported at the study level.
+#' amalgam of within- and across-outcome correlations (Efthimiou et al., 2015)
+#' which is a generalisation of Riley et al. (2008).
+#' In this way, the model does not depend on the extraction of within-study
+#' outcome correlations, which are seldom reported at the study level.
 #' 
 #' DuMouchel priors assuming constant relative treatment effects across
 #' outcomes and enabling information sharing can be used (DuMouchel & Harris,
@@ -94,6 +95,11 @@
 #' \emph{BMC Medical Research Methodology},
 #' \bold{21}, 92
 #' 
+#' Carlsen L, Bruggemann R (2014):
+#' Partial order methodology: a valuable tool in chemometrics.
+#' \emph{Journal of Chemometrics},
+#' \bold{28}, 226--34
+#' 
 #' Daly CH, Mbuagbaw L, Thabane L, Straus SE, Hamid JS (2020):
 #' Spie charts for quantifying treatment effectiveness and safety in multiple
 #' outcome network meta-analysis: a proof-of-concept study.
@@ -109,11 +115,6 @@
 #' Joint synthesis of multiple correlated outcomes in networks of interventions.
 #' \emph{Biostatistics}, 
 #' \bold{16}, 84--97
-#' 
-#' Carlsen L, Bruggemann R (2014):
-#' Partial order methodology: a valuable tool in chemometrics.
-#' \emph{Journal of Chemometrics},
-#' \bold{28}, 226--34
 #'
 #' Opricovic S, Tzeng GH (2004):
 #' Compromise solution by MCDM methods: A comparative analysis of VIKOR and

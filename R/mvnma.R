@@ -46,6 +46,12 @@
 #' @param \dots Additional arguments (ignored)
 #' 
 #' @details
+#' 
+#' The multivariate network meta-analysis (mvNMA) model supported by this
+#' package refers to the single correlation coefficient model, interpreted as
+#' an amalgam of within- and across-outcome correlations
+#' (Efthimiou et al., 2015) which is a generalisation of Riley et al. (2008).
+#' 
 #' The function \code{\link{mvnma}} expects two to five outcomes /
 #' \code{\link[meta]{pairwise}} objects. A common reference treatment across
 #' all outcomes is required to only show comparisons with the reference in
