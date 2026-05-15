@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.mvrank.R
 \name{plot.mvrank}
 \alias{plot.mvrank}
-\title{Scatter plot to visualize the ranking lists for two outcomes.}
+\title{Scatter plot to visualize the ranking of two outcomes in a multivariate network meta-analysis}
 \usage{
 \method{plot}{mvrank}(
   x,
@@ -26,7 +26,8 @@ of outcomes 2 and 3.}
 
 \item{pos}{Position of treatment labels.}
 
-\item{cex.point}{a numeric value specifying the size of the points (default: 1)}
+\item{cex.point}{a numeric value specifying the size of the points
+(default: 1)}
 
 \item{cex.label}{a numeric value specifying the size of the point labels in
 the plot (default: 0.7)}
@@ -37,49 +38,30 @@ the plot (default: 0.7)}
 
 \item{ylim}{the y limits of the plot}
 
-\item{...}{Additional arguments for \code{\link{plot}} function.}
+\item{\dots}{Additional arguments for \code{\link{plot}} function.}
+}
+\value{
+A scatter plot is shown in the active graphics window.
 }
 \description{
-Draw a scatter plot (using grid graphics system) in the active graphics
-window or store the forest plot in a file.
+Draw a scatter plot in the active graphics window.
 }
 \examples{
-\donttest{
-# Use 'pairwise' to obtain contrast based data for the first two outcomes
+# Locate file "mvnma_example.rda" with mvnma() results
+.fname <- system.file("extdata/mvnma_examples.rda", package = "mvnma")
+load(.fname)
 
-# Early response
-pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-  event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
-  studlab = id, data = Linde2015, sm = "OR")
-# Early remissions
-pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-  event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
-  studlab = id, data = Linde2015, sm = "OR")
-
-# Define outcome labels
-outcomes <- c("Early_Response", "Early_Remission")
-
-# Fit the model combining the two efficacy outcomes
-set.seed(1909)
-mvnma12 <- mvnma(pw1, pw2,
-  reference.group = "Placebo", outclab = outcomes[1:2],
-  n.iter = 1000, n.burnin = 100)
-mvnma12
-
-# Rank treatments using SUCRAs
-ranks12 <- mvrank(mvnma12, method = "sucra",
-  small.values = c("undes", "undes"))
+# Rank treatments using SUCRAs (default)
+ranks12 <- mvrank(mvnma12, small.values = c("undes", "undes"))
 ranks12
 
-# Visualize SUCRAs in a scatter plot with outcome 1
-# (as specified in the mvdata() function) in the x-axis and outcome 2
-# (as specified in the mvdata() function) in the y-axis
+# Visualize SUCRAs in a scatter plot with outcome 1 on the x-axis and
+# outcome 2 on the y-axis
 plot(ranks12)
 
-# Visualize SUCRAs in a scatter plot with outcome 2
-# (as specified in the mvdata() function) in the x-axis and outcome 1
-# (as specified in the mvdata() function) in the y-axis
+# Visualize SUCRAs in a scatter plot with outcome 2 on the x-axis and
+# outcome 1 on the y-axis
 plot(ranks12, which = 2:1)
-}
 
 }
+\keyword{hplot}

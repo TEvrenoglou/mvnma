@@ -4,14 +4,17 @@
 \alias{vikor.mvrank}
 \alias{vikor.matrix}
 \alias{vikor}
-\title{Rank treatments across all outcomes using the VIKOR multi-criteria decision
-analysis method.}
+\alias{print.vikor}
+\title{Rank treatments across all outcomes using the VišeKriterijumska Optimizacija
+I Kompromisno Rešenje (VIKOR) multi-criteria decision analysis method}
 \usage{
 \method{vikor}{mvrank}(x, weights = NULL, v = 0.5, ...)
 
 \method{vikor}{matrix}(x, weights = NULL, v = 0.5, ...)
 
 vikor(x, ...)
+
+\method{print}{vikor}(x, digits = 4, ...)
 }
 \arguments{
 \item{x}{An object of class \code{\link{mvrank}} or a matrix.}
@@ -24,7 +27,10 @@ weights.}
 making process. Following guidance from the multi-criteria decision
 analysis field it is set to 0.5.}
 
-\item{\dots}{Additional arguments.}
+\item{\dots}{Additional arguments (ignored).}
+
+\item{digits}{A numeric specifying the number of digits to print the
+ranking matrix Q.}
 }
 \value{
 The function returns a 'vikor' object. This consists of three ranking lists
@@ -43,19 +49,26 @@ conditions defined by the VIKOR method and returns a message indicating the
 set of compromise solutions.
 }
 \description{
-This function employs the VIKOR method to analyze all outcome-specific
-ranking lists. It provides both an amalgamated ranking list and guidance on
+This function employs the VišeKriterijumska Optimizacija I Kompromisno
+Rešenje (VIKOR) method to analyze all outcome-specific ranking lists.
+It provides both an amalgamated ranking list and guidance on
 which treatments correspond to the best compromise solutions.
 }
 \details{
 This function takes a single mandatory argument, which is either an object
 of class \code{\link{mvrank}} or a matrix. It then uses the multi-criteria
-decision analysis method VIKOR to produce an amalgamated ranking list across
-all outcomes. The standard VIKOR approach is applied when the \code{method}
-argument is set to \code{"sucra"} or \code{"pBV"} in \code{\link{mvrank}}.
-A fuzzy VIKOR method is applied when outcome-specific rankings are expressed
-in terms of median ranks and 95\% credible intervals. The latter is possible
-when the \code{\link{mvrank}} object is created with \code{method = "ranks"}.
+decision analysis method VišeKriterijumska Optimizacija I Kompromisno
+Rešenje (VIKOR) to produce an amalgamated ranking list across
+all outcomes (Opricovic & Tzeng, 2004).
+
+The standard VIKOR approach is applied when the \code{method} argument is
+set to \code{"sucra"} or \code{"pBV"} in \code{\link{mvrank}}.
+
+A fuzzy VIKOR method (Opricovic, 2011) is applied when outcome-specific
+rankings are expressed in terms of median ranks and 95\% credible intervals.
+The latter is possible when the \code{\link{mvrank}} object is created with
+\code{method = "ranks"}.
+
 In both cases, the final ranking list is calculated based on treatments
 common across all outcomes. Treatments not present across all outcomes are
 excluded internally.
@@ -79,26 +92,11 @@ choice of 'v' is typically 0.5 (default also here), thereby allowing for a
 balanced decision making between treatment's overall and worst performance.
 }
 \examples{
-\donttest{
-# Use 'pairwise' to obtain contrast based data for the first two outcomes
+# Locate file "mvnma_example.rda" with mvnma() results
+.fname <- system.file("extdata/mvnma_examples.rda", package = "mvnma")
+load(.fname)
 
-# Early response
-pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-  event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
-  studlab = id, data = Linde2015, sm = "OR")
-# Early remissions
-pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-  event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
-  studlab = id, data = Linde2015, sm = "OR")
-
-# Define outcome labels
-outcomes <- c("Early_Response", "Early_Remission")
- 
-# Fit the model combining only the two efficacy outcomes
-set.seed(1909)
-mvnma12 <- mvnma(pw1, pw2,
-  reference.group = "Placebo", outclab = outcomes,
-  n.iter = 1000, n.burnin = 100)
+# Print the results of a bivariate network meta-analysis
 mvnma12
 
 # Rank treatments using SUCRAs
@@ -111,7 +109,6 @@ vikor(ranks12)
 
 # Use larger weight for response than remission
 vikor(ranks12, weights = c(0.6, 0.3))
-}
 
 }
 \references{
@@ -119,10 +116,10 @@ Opricovic S, Tzeng GH (2004):
 Compromise solution by MCDM methods: A comparative analysis of VIKOR and
 TOPSIS.
 \emph{European Journal of Operational Research},
-\bold{156}, 445-55
+\bold{156}, 445--55
 
 Opricovic S (2011):
 Fuzzy VIKOR with an application to water resources planning. 
 \emph{Expert Systems with Applications}, 
-\bold{38}, 12983-90
+\bold{38}, 12983--90
 }

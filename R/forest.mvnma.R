@@ -33,6 +33,9 @@
 #' @param text.outcome A text string printed before the name of the outcome.
 #' @param \dots Additional arguments passed on to
 #'   \code{\link[meta]{forest.meta}}.
+#'
+#' @return
+#' A forest plot is shown in the active graphics window.
 #' 
 #' @keywords hplot
 #' 
@@ -41,7 +44,7 @@
 #' .fname <- system.file("extdata/mvnma_examples.rda", package = "mvnma")
 #' load(.fname)
 #' 
-#' # Print multivariate meta-analysis results
+#' # Print multivariate network meta-analysis results
 #' mvnma12
 #' 
 #' # Generate a forest plot with the results

@@ -1,4 +1,5 @@
 mvnma_code <- function(n.out, method, multiarm, n.dom) {
+  
   chknumeric(n.out, min = 2, length = 1)
   method <- setchar(method, c("standard", "DM"))
   chklogical(multiarm)
@@ -433,16 +434,17 @@ code_priors_dumouchel <- function(n.out,n.dom) {
       "  #\n",
       "  #\n\n")
   #
-  if(is.null(n.dom)){
-  txt <-
-    paste0(txt,
-           "  for (i in 1:(ref - 1)) {\n",
-           "    for (m in 1:", n.out, ") {\n",
-           "      meand[m, i] <- alpha[i] + gamma[m]\n",
-           "      d[m, i] ~ dnorm(meand[m, i], prec.exp)\n",
-           "    }\n",
-           "    #\n")
-  }else{
+  if (is.null(n.dom)) {
+    txt <-
+      paste0(txt,
+             "  for (i in 1:(ref - 1)) {\n",
+             "    for (m in 1:", n.out, ") {\n",
+             "      meand[m, i] <- alpha[i] + gamma[m]\n",
+             "      d[m, i] ~ dnorm(meand[m, i], prec.exp)\n",
+             "    }\n",
+             "    #\n")
+  }
+  else {
     txt <-
       paste0(txt,
              "  for (i in 1:(ref - 1)) {\n",
@@ -467,16 +469,17 @@ code_priors_dumouchel <- function(n.out,n.dom) {
     txt <- paste0(txt, "  d", i, "[ref] <- 0\n")
   txt <- paste0(txt, "  #\n")
   #
-  if(is.null(n.dom)){
-  txt <-
-    paste0(txt,
-           "  for (i in (ref + 1):n) {\n",
-           "    for (m in 1:", n.out, ") {\n",
-           "      meand[m, i] <- alpha[i] + gamma[m]\n",
-           "      d[m, i] ~ dnorm(meand[m, i], prec.exp)\n",
-           "    }\n",
-           "    #\n")
-  }else{
+  if (is.null(n.dom)) {
+    txt <-
+      paste0(txt,
+             "  for (i in (ref + 1):n) {\n",
+             "    for (m in 1:", n.out, ") {\n",
+             "      meand[m, i] <- alpha[i] + gamma[m]\n",
+             "      d[m, i] ~ dnorm(meand[m, i], prec.exp)\n",
+             "    }\n",
+             "    #\n")
+  }
+  else {
     txt <-
       paste0(txt,
              "  for (i in (ref + 1):n) {\n",
@@ -498,14 +501,15 @@ code_priors_dumouchel <- function(n.out,n.dom) {
   #
   txt <- paste0(txt, "  #\n")
   #
-  if(is.null(n.dom)){
-  txt <-
-    paste0(txt,
-           "  for (m in 1:", n.out, ") {\n",
-           "  gamma[m] ~ dnorm(0, 1e-03)\n",
-           "  }\n",
-           "  #\n")
-  }else{
+  if (is.null(n.dom)) {
+    txt <-
+      paste0(txt,
+             "  for (m in 1:", n.out, ") {\n",
+             "  gamma[m] ~ dnorm(0, 1e-03)\n",
+             "  }\n",
+             "  #\n")
+  }
+  else{
     txt <-
       paste0(txt,
              "  for (m in 1:", n.dom, ") {\n",
@@ -517,31 +521,33 @@ code_priors_dumouchel <- function(n.out,n.dom) {
              "  #\n")
   }
   #
-  if(is.null(n.dom)){
-  txt <-
-    paste0(txt,
-           "  for (i in 1:(ref - 1)) {\n",
-           "    alpha[i] ~ dnorm(0, 1e-03)\n",
-           "  }\n",
-           "  #\n")
-  }else{
-  txt <-
-    paste0(txt,
-           "  for (i in 1:(ref - 1)) {\n",
-           "    alpha1[i] ~ dnorm(0, 1e-03)\n",
-           "    alpha2[i] ~ dnorm(0, 1e-03)\n",
-           "  }\n",
-           "  #\n")
+  if (is.null(n.dom)) {
+    txt <-
+      paste0(txt,
+             "  for (i in 1:(ref - 1)) {\n",
+             "    alpha[i] ~ dnorm(0, 1e-03)\n",
+             "  }\n",
+             "  #\n")
+  }
+  else {
+    txt <-
+      paste0(txt,
+             "  for (i in 1:(ref - 1)) {\n",
+             "    alpha1[i] ~ dnorm(0, 1e-03)\n",
+             "    alpha2[i] ~ dnorm(0, 1e-03)\n",
+             "  }\n",
+             "  #\n")
   }
   #
-  if(is.null(n.dom)){
-  txt <-
-    paste0(txt,
-           "  for (i in (ref + 1):n) {\n",
-           "    alpha[i] ~ dnorm(0, 1e-03)\n",
-           "  }\n",
-           "  #\n")
-  }else{
+  if (is.null(n.dom)) {
+    txt <-
+      paste0(txt,
+             "  for (i in (ref + 1):n) {\n",
+             "    alpha[i] ~ dnorm(0, 1e-03)\n",
+             "  }\n",
+             "  #\n")
+  }
+  else {
     txt <-
       paste0(txt,
              "  for (i in (ref + 1):n) {\n",
@@ -552,22 +558,23 @@ code_priors_dumouchel <- function(n.out,n.dom) {
     
   }
   #
-  if(is.null(n.dom)){
-  txt <-
-    paste0(txt,
-           "  prec.exp <- 1 / sigma.sq\n",
-           "  sigma.sq <- sigma * sigma\n",
-           "  sigma ~ dnorm(0, 1e-02)T(0, )\n")
-  }else{
-  txt <-
-    paste0(txt,
-           "  prec.exp1 <- 1 / sigma.sq1\n",
-           "  sigma.sq1 <- sigma1 * sigma1\n",
-           "  sigma1 ~ dnorm(0, 1e-02)T(0, )\n",
-           "  prec.exp2 <- 1 / sigma.sq2\n",
-           "  sigma.sq2 <- sigma2 * sigma2\n",
-           "  sigma2 ~ dnorm(0, 1e-02)T(0, )\n"
-           )
+  if (is.null(n.dom)) {
+    txt <-
+      paste0(txt,
+             "  prec.exp <- 1 / sigma.sq\n",
+             "  sigma.sq <- sigma * sigma\n",
+             "  sigma ~ dnorm(0, 1e-02)T(0, )\n")
+  }
+  else {
+    txt <-
+      paste0(txt,
+             "  prec.exp1 <- 1 / sigma.sq1\n",
+             "  sigma.sq1 <- sigma1 * sigma1\n",
+             "  sigma1 ~ dnorm(0, 1e-02)T(0, )\n",
+             "  prec.exp2 <- 1 / sigma.sq2\n",
+             "  sigma.sq2 <- sigma2 * sigma2\n",
+             "  sigma2 ~ dnorm(0, 1e-02)T(0, )\n"
+      )
   }
   #
   txt

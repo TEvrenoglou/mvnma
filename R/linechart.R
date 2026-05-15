@@ -1,9 +1,10 @@
-#' Linechart showing the results of \code{\link{vikor}} across the three metrics Q, S and R.
+#' Line chart showing the VIKOR results
 #'
 #' @description
-#' A linechart showing the results of \code{\link{vikor}} across the three
-#' metrics Q, S and R for each treatment. Within each metric, lower values
-#' represent better treatment performance.
+#' A line chart showing the results of VišeKriterijumska Optimizacija I
+#' Kompromisno Rešenje (VIKOR) across the three metrics Q, S and R for each
+#' treatment. Within each metric, lower values represent better treatment
+#' performance.
 #' 
 #' @param x An object of class \code{\link{vikor}}.
 #' @param sort A character specifying the order of treatments on the x-axis.
@@ -29,49 +30,29 @@
 #' A \code{ggplot} object.
 #' 
 #' @examples
-#' \donttest{
-#' # Use 'pairwise' to obtain contrast based data for the first two outcomes
+#' # Locate file "mvnma_example.rda" with mvnma() results
+#' .fname <- system.file("extdata/mvnma_examples.rda", package = "mvnma")
+#' load(.fname)
 #' 
-#' # Early response
-#' pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-#'   event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
-#'   studlab = id, data = Linde2015, sm = "OR")
-#' # Early remissions
-#' pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-#'   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
-#'   studlab = id, data = Linde2015, sm = "OR")
-#'
-#' # Define outcome labels
-#' outcomes <- c("Early_Response", "Early_Remission")
-#'  
-#' # Fit the model combining only the two efficacy outcomes
-#' set.seed(1909)
-#' mvnma12 <- mvnma(pw1, pw2,
-#'   reference.group = "Placebo", outclab = outcomes,
-#'   n.iter = 1000, n.burnin = 100)
-#' mvnma12
-#' 
-#' # Rank treatments using SUCRAs
-#' ranks12 <- mvrank(mvnma12, method = "sucra",
-#'   small.values = c("undes", "undes"))
+#' # Rank treatments using SUCRAs (default)
+#' ranks12 <- mvrank(mvnma12, small.values = c("undes", "undes"))
 #' ranks12
 #' 
 #' # Get the best compromise solution across the efficacy outcomes
-#' vk <- vikor(ranks12)
+#' vk12 <- vikor(ranks12)
 #' 
 #' # Visualize the results with default settings
-#' linechart(vk)
+#' linechart(vk12)
 #' 
 #' # Sort by the "R" metric
-#' linechart(vk, sort = "R")
+#' linechart(vk12, sort = "R")
 #' 
 #' # Sort by the "R" metric and include only the first 3 treatments
-#' linechart(vk, sort = "R", n = 3)
+#' linechart(vk12, sort = "R", n = 3)
 #' 
 #' # Exclude the "R" metric
 #' #
-#' linechart(vk, exclude = "R")
-#' }
+#' linechart(vk12, exclude = "R")
 #' 
 #' @export linechart
 
@@ -85,16 +66,17 @@ linechart <- function(x,
   
   chkclass(x, "vikor")
   #
-  sort <- setchar(sort, c("Q" ,"S", "R"))
+  sort <- setchar(sort, c("Q" , "S", "R"))
   exclude <- setchar(exclude, val = c("none", "Q", "S", "R"))
   #
   chknumeric(n, min = 1, max = nrow(x), length = 1)
   chknumeric(linewidth, min = 0, zero = TRUE, length = 1)
   chknumeric(size, min = 0, zero = TRUE, length = 1)
-  
+  #
   if (sort == exclude)
-    stop("The excluded list cannot coincide with the list sorting by.")
-  
+    stop("The excluded list cannot coincide with the list used for sorting.",
+         call. = FALSE)
+  #
   chknumeric(n, min = 0)
   
   treat <- rep(row.names(x), 3)
@@ -130,7 +112,7 @@ linechart <- function(x,
       mutate(treat = factor(treat, levels = sort.treat))
   }
   
-  graph <- ggplot(dat, aes(x = treat, y = values, color = type, group = type)) +
+  p <- ggplot(dat, aes(x = treat, y = values, color = type, group = type)) +
     geom_line(linewidth = linewidth) +
     geom_point(size = size) +
     theme_minimal() +
@@ -139,7 +121,7 @@ linechart <- function(x,
     ylim(c(0, 1)) +
     guides(color = guide_legend(title = "Metric"))
   #
-  attr(graph, "data") <- dat
+  attr(p, "data") <- dat
   #
-  graph
+  p
 }

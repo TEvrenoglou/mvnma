@@ -36,6 +36,14 @@
 #'   on the DuMouchel method. The argument can be abbreviated.
 #' @param quiet A logical indicating whether to print information on the
 #'   progress of the JAGS model fitting.
+#' @param x An object of class \code{\link{mvnma}}.
+#' @param digits Minimal number of significant digits, see
+#'   \code{print.default}.
+#' @param digits.sd Minimal number of significant digits for standard
+#'   deviations
+#' @param print.sd A logical specifying whether standard deviations should be
+#'   printed.
+#' @param \dots Additional arguments (ignored)
 #' 
 #' @details
 #' The function \code{\link{mvnma}} expects two to five outcomes /
@@ -62,8 +70,9 @@
 #' 
 #' Alternatively, `method = "DM"` specifies the DuMouchel prior, which assumes 
 #' constant relative treatment effects across outcomes and enables information 
-#' sharing. This may improve precision but can introduce bias when outcomes 
-#' from different domains (e.g., efficacy and safety) are analyzed jointly.
+#' sharing (DuMouchel & Harris, 1983). This may improve precision but can
+#' introduce bias when outcomes from different domains (e.g., efficacy and
+#' safety) are analyzed jointly.
 #' 
 #' The argument `n.domain` can be used to restrict information sharing to 
 #' predefined outcome domains. It indicates the position (based on the order 
@@ -92,30 +101,32 @@
 #' 
 #' @seealso \code{\link[meta]{pairwise}}
 #'
-#' @references 
-#' Efthimiou O, Mavridis D, Riley RD, Cipriani A, Salanti G. Joint synthesis of 
-#' multiple correlated outcomes in networks of interventions. \emph{Biostatistics} 
-#' 2015;\bold{16}(1):84-97. doi: 10.1093/biostatistics/kxu030.
+#' @references
+#' Achana FA, Cooper NJ, Bujkiewicz S, Hubbard SJ, Kendrick D, Jones DR,
+#' Sutton AJ (2014):
+#' Network meta-analysis of multiple outcome measures accounting for borrowing
+#' of information across outcomes.
+#' \emph{BMC Medical Research Methodology},
+#' \bold{21}, 92
 #' 
-#' Riley RD, Thompson JR, Abrams KR. An alternative model for bivariate random-effects 
-#' meta-analysis when the within-study correlations are unknown. \emph{Biostatistics} 
-#' 2008;\bold{9}(1):172-86. doi: 10.1093/biostatistics/kxm023.
+#' DuMouchel WH, Harris JE (1983):
+#' Bayes methods for combining the results of cancer studies in humans and
+#' other species.
+#' \emph{Journal of the American Statistical Association},
+#' \bold{78}, 293--308
 #' 
-#' Achana FA, Cooper NJ, Bujkiewicz S, Hubbard SJ, Kendrick D, Jones DR, Sutton AJ. 
-#' Network meta-analysis of multiple outcome measures accounting for borrowing of 
-#' information across outcomes. \emph{BMC Medical Research Methodology}. 2014; \bold{21}
-#' 14:92. doi: 10.1186/1471-2288-14-92. 
+#' Efthimiou O, Mavridis D, Riley RD, Cipriani A, Salanti G (2015):
+#' Joint synthesis of multiple correlated outcomes in networks of interventions.
+#' \emph{Biostatistics}, 
+#' \bold{16}, 84--97
 #' 
-#' DuMouchel WH, Harris JE. Bayes Methods for Combining the Results of Cancer 
-#' Studies in Humans and Other Species. Journal of the American Statistical Association. 
-#' 1983;\bold{78}(382):293–308
+#' Riley RD, Thompson JR, Abrams KR (2008):
+#' An alternative model for bivariate random-effects meta-analysis when the
+#' within-study correlations are unknown.
+#' \emph{Biostatistics},
+#' \bold{9}, 172--86
 #' 
 #' @examples
-#' 
-#' # Locate file "mvnma_example.rda" with mvnma() results
-#' filename <- system.file("extdata/mvnma_example.rda", package = "mvnma")
-#' 
-#' \donttest{
 #' # Use 'pairwise' to obtain contrast based data for each one of the five
 #' # available outcomes 
 #' 
@@ -152,9 +163,9 @@
 #' set.seed(1909)
 #' mvnma12 <- mvnma(pw1, pw2,
 #'   reference.group = "Placebo", outclab = outcomes[1:2],
-#'   n.iter = 1000, n.burnin = 100)
+#'   n.iter = 100, n.burnin = 20)
 #' mvnma12
-#'        
+#' 
 #' # Extract treatment effect estimates and heterogeneity for Early_Response 
 #' mvnma12$Early_Response$basic_estimates
 #' mvnma12$Early_Response$heterogeneity
@@ -173,10 +184,12 @@
 #'   print(round(exp(mvnma12[[i]]$TE.random), 2))
 #' }
 #' 
+#' \dontrun{
 #' # Fit the model combining all five outcomes
+#' set.seed(1904)
 #' mvnma_all <- mvnma(pw1, pw2, pw3, pw4, pw5,
 #'   reference.group = "Placebo", outclab = outcomes,
-#'   n.iter = 1000, n.burnin = 100)
+#'   n.iter = 100, n.burnin = 20)
 #' 
 #' # Extract treatment effect estimates and heterogeneity for Early_Response 
 #' mvnma_all$Early_Response$basic_estimates
@@ -196,7 +209,7 @@
 #'   print(round(exp(mvnma_all[[i]]$TE.random), 2))
 #' }
 #' }
-#'
+#' 
 #' @export mvnma
 
 mvnma <- function(...,
@@ -634,4 +647,71 @@ mvnma <- function(...,
   class(res) <- "mvnma"
   #
   res
+}
+
+
+#' @rdname mvnma
+#' @method print mvnma
+#' @export
+
+print.mvnma <- function(x,
+                        digits = gs("digits"),
+                        digits.sd = gs("digits.sd"),
+                        print.sd = FALSE,
+                        ...) {
+  
+  chkclass(x, "mvnma")
+  #
+  chknumeric(digits, min = 0, length = 1)
+  chknumeric(digits.sd, min = 0, length = 1)
+  chklogical(print.sd)
+  #
+  level <- attr(x, "level")
+  reference.group <- attr(x, "reference.group")
+  method <- attr(x, "method")
+  n.domain <- attr(x,"n.domain")
+  #
+  ci.lab <- paste0(round(100 * level, 1), "%-CI")
+  #
+  x <- x[names(x) != "cor"]
+  #
+  if (method == "DM") {
+    if (is.null(n.domain)) {
+      x <- x[names(x) != "sigma"]
+    }
+    else {
+      x <- x[!(names(x) %in% c("sigma1","sigma2"))]
+    }
+  }
+  nam <- names(x)
+  
+  # Get rid of warning "no visible binding for global variable"
+  lower <- upper <- psi <- NULL
+  #
+  for (i in seq_along(nam)) {
+    cat(paste0(if (i > 1) "\n" else "", "Outcome: ", nam[i], "\n\n"))
+    #
+    dat.i <- x[[i]]$basic_estimates
+    dat.i <- dat.i[rownames(dat.i) != reference.group, ]
+    #
+    dat.i$mean <- formatN(dat.i$mean, digits = digits)
+    #
+    if (!print.sd)
+      dat.i$sd <- NULL
+    else
+      dat.i$sd <- formatN(dat.i$sd, digits = digits.sd)
+    #
+    dat.i$lower <- formatCI(formatN(dat.i$lower, digits = digits),
+                            formatN(dat.i$upper, digits = digits))
+    dat.i %<>% select(-upper)
+    names(dat.i)[names(dat.i) == "lower"] <- ci.lab
+    #
+    dat.i$Rhat <- formatN(dat.i$Rhat, digits = 4)
+    #
+    rownames(dat.i) <- paste0("d[", rownames(dat.i), "]")
+    #
+    prmatrix(dat.i, quote = FALSE, right = TRUE)
+  }
+  #
+  invisible(NULL)
 }

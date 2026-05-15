@@ -67,6 +67,9 @@ line (default: TRUE) or a character string ("both", "below", "").}
 \item{\dots}{Additional arguments passed on to
 \code{\link[meta]{forest.meta}}.}
 }
+\value{
+A forest plot is shown in the active graphics window.
+}
 \description{
 Draws a forest plot in the active graphics window (using grid graphics
 system).
@@ -76,7 +79,7 @@ system).
 .fname <- system.file("extdata/mvnma_examples.rda", package = "mvnma")
 load(.fname)
 
-# Print multivariate meta-analysis results
+# Print multivariate network meta-analysis results
 mvnma12
 
 # Generate a forest plot with the results

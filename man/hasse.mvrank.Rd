@@ -12,6 +12,9 @@
 \item{\dots}{Additional arguments passed on to
 \code{\link[netmeta]{hasse.netposet}}.}
 }
+\value{
+A Hasse diagram is shown in the active graphics window.
+}
 \description{
 This function generates a Hasse diagram for a partial order of treatment
 ranks in a multivariate network meta-analysis.
@@ -48,10 +51,12 @@ hasse(ranks12)
 \references{
 Carlsen L, Bruggemann R (2014):
 Partial order methodology: a valuable tool in chemometrics.
-\emph{Journal of Chemometrics}, \bold{28}, 226--34
+\emph{Journal of Chemometrics},
+\bold{28}, 226--34
 
 Rücker G, Schwarzer G (2017):
 Resolve conflicting rankings of outcomes in network meta-analysis:
 Partial ordering of treatments.
-\emph{Research Synthesis Methods}, \bold{8}, 526--36
+\emph{Research Synthesis Methods},
+\bold{8}, 526--36
 }

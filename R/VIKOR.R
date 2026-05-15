@@ -1,9 +1,10 @@
-#' Rank treatments across all outcomes using the VIKOR multi-criteria decision
-#' analysis method.
+#' Rank treatments across all outcomes using the VišeKriterijumska Optimizacija
+#' I Kompromisno Rešenje (VIKOR) multi-criteria decision analysis method
 #' 
 #' @description
-#' This function employs the VIKOR method to analyze all outcome-specific
-#' ranking lists. It provides both an amalgamated ranking list and guidance on
+#' This function employs the VišeKriterijumska Optimizacija I Kompromisno
+#' Rešenje (VIKOR) method to analyze all outcome-specific ranking lists.
+#' It provides both an amalgamated ranking list and guidance on
 #' which treatments correspond to the best compromise solutions.
 #' 
 #' @param x An object of class \code{\link{mvrank}} or a matrix.
@@ -13,17 +14,25 @@
 #' @param v A scalar from 0 to 1 interpreted as the weight of the decision
 #'   making process. Following guidance from the multi-criteria decision
 #'   analysis field it is set to 0.5.
-#' @param \dots Additional arguments.
+#' @param digits A numeric specifying the number of digits to print the
+#'   ranking matrix Q.
+#' @param \dots Additional arguments (ignored).
 #'
 #' @details
 #' This function takes a single mandatory argument, which is either an object
 #' of class \code{\link{mvrank}} or a matrix. It then uses the multi-criteria
-#' decision analysis method VIKOR to produce an amalgamated ranking list across
-#' all outcomes. The standard VIKOR approach is applied when the \code{method}
-#' argument is set to \code{"sucra"} or \code{"pBV"} in \code{\link{mvrank}}.
-#' A fuzzy VIKOR method is applied when outcome-specific rankings are expressed
-#' in terms of median ranks and 95\% credible intervals. The latter is possible
-#' when the \code{\link{mvrank}} object is created with \code{method = "ranks"}.
+#' decision analysis method VišeKriterijumska Optimizacija I Kompromisno
+#' Rešenje (VIKOR) to produce an amalgamated ranking list across
+#' all outcomes (Opricovic & Tzeng, 2004).
+#' 
+#' The standard VIKOR approach is applied when the \code{method} argument is
+#' set to \code{"sucra"} or \code{"pBV"} in \code{\link{mvrank}}.
+#' 
+#' A fuzzy VIKOR method (Opricovic, 2011) is applied when outcome-specific
+#' rankings are expressed in terms of median ranks and 95\% credible intervals.
+#' The latter is possible when the \code{\link{mvrank}} object is created with
+#' \code{method = "ranks"}.
+#' 
 #' In both cases, the final ranking list is calculated based on treatments
 #' common across all outcomes. Treatments not present across all outcomes are
 #' excluded internally.
@@ -62,39 +71,24 @@
 #' conditions defined by the VIKOR method and returns a message indicating the
 #' set of compromise solutions.
 #'
-#' @references 
+#' @references
 #' Opricovic S, Tzeng GH (2004):
 #' Compromise solution by MCDM methods: A comparative analysis of VIKOR and
 #' TOPSIS.
 #' \emph{European Journal of Operational Research},
-#' \bold{156}, 445-55
+#' \bold{156}, 445--55
 #' 
 #' Opricovic S (2011):
 #' Fuzzy VIKOR with an application to water resources planning. 
 #' \emph{Expert Systems with Applications}, 
-#' \bold{38}, 12983-90
+#' \bold{38}, 12983--90
 #' 
 #' @examples
-#' \donttest{
-#' # Use 'pairwise' to obtain contrast based data for the first two outcomes
+#' # Locate file "mvnma_example.rda" with mvnma() results
+#' .fname <- system.file("extdata/mvnma_examples.rda", package = "mvnma")
+#' load(.fname)
 #' 
-#' # Early response
-#' pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-#'   event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
-#'   studlab = id, data = Linde2015, sm = "OR")
-#' # Early remissions
-#' pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-#'   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
-#'   studlab = id, data = Linde2015, sm = "OR")
-#'
-#' # Define outcome labels
-#' outcomes <- c("Early_Response", "Early_Remission")
-#'  
-#' # Fit the model combining only the two efficacy outcomes
-#' set.seed(1909)
-#' mvnma12 <- mvnma(pw1, pw2,
-#'   reference.group = "Placebo", outclab = outcomes,
-#'   n.iter = 1000, n.burnin = 100)
+#' # Print the results of a bivariate network meta-analysis
 #' mvnma12
 #' 
 #' # Rank treatments using SUCRAs
@@ -107,7 +101,6 @@
 #' 
 #' # Use larger weight for response than remission
 #' vikor(ranks12, weights = c(0.6, 0.3))
-#' }
 #'
 #' @rdname vikor
 #' @method vikor mvrank
@@ -176,3 +169,68 @@ vikor.matrix <- function(x, weights = NULL, v = 0.5, ...) {
 
 vikor <- function(x, ...)
   UseMethod("vikor")
+
+
+#' @rdname vikor
+#' @method print vikor
+#' @export
+
+print.vikor <- function(x, digits = 4, ...) {
+  
+  chkclass(x, "vikor")
+  #
+  chknumeric(digits, min = 0, length = 1)
+  
+  Q <- x %>% select(Q)
+  S <- x %>% select(S)
+  R <- x %>% select(R)
+  #
+  trts <- row.names(Q)
+  #
+  DQ <- 1 / (length(trts) - 1)
+  
+  cond1 <- Q$Q[2] - Q$Q[1] >= DQ
+  #
+  cond2_1 <- isTRUE(row.names(Q)[1] == row.names(S)[1])
+  cond2_2 <- isTRUE(row.names(Q)[1] == row.names(R)[1])
+  #
+  cond2 <- isTRUE(cond2_1 & cond2_2)
+  #
+  if (cond1 & cond2) {
+    solution <- row.names(Q)[1]
+    #
+    txt <- paste("The compromise treatment across all outcomes is:", solution)
+  }
+  else if ((cond1) & (!cond2)) {
+    solution <- paste(row.names(Q)[1:2], collapse = ", ")
+    #
+    txt <- paste("The compromise set of treatments across all outcomes are:",
+                 solution)
+  }
+  else if (!cond1) {
+    compr <- Q$Q - Q$Q[1] < DQ
+    #
+    E <- which(compr)
+    #
+    solution <- paste(row.names(Q)[E], collapse = ", ")
+    #
+    txt <- paste("The compromise set of treatments across all outcomes are:",
+                 solution)
+  }
+  else if (!cond1 & !cond2)
+    txt <- paste("No compromise solution was identified. Please consider",
+                 "different outcome weights.")
+  
+  res_mat <- cbind(Q, S, R)
+  
+  if (attr(x, "ranking.method") %in% c("SUCRA", "pBV"))
+    cat("VIKOR results\n\n")
+  else
+    cat("Fuzzy VIKOR results\n\n")
+  #
+  prmatrix(round(res_mat, digits = digits), quote = FALSE, right = TRUE)
+  #
+  cat(paste0("\n", txt, "\n"))
+  #
+  invisible(NULL)
+}

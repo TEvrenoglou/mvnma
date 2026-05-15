@@ -1,8 +1,7 @@
-#' Scatter plot to visualize the ranking lists for two outcomes.
+#' Scatter plot to visualize the ranking of two outcomes in a multivariate network meta-analysis
 #' 
 #' @description
-#' Draw a scatter plot (using grid graphics system) in the active graphics
-#' window or store the forest plot in a file.
+#' Draw a scatter plot in the active graphics window.
 #' 
 #' @param x An object of class \code{\link{mvrank}}.
 #' @param which A mandatory numeric vector of length 2 specifying which
@@ -10,58 +9,41 @@
 #'   implies that a scatter plot will be generated plotting the rankings
 #'   of outcomes 2 and 3.
 #' @param pos Position of treatment labels.
-#' @param cex.point a numeric value specifying the size of the points (default: 1)
+#' @param cex.point a numeric value specifying the size of the points
+#'   (default: 1)
 #' @param cex.label a numeric value specifying the size of the point labels in
 #'   the plot (default: 0.7)
 #' @param pch a vector of plotting characters or symbols (default: 19)
 #' @param xlim the x limits of the plot
 #' @param ylim the y limits of the plot
-#' @param ... Additional arguments for \code{\link{plot}} function.
+#' @param \dots Additional arguments for \code{\link{plot}} function.
+#'
+#' @return
+#' A scatter plot is shown in the active graphics window.
+#' 
+#' @keywords hplot
 #' 
 #' @examples
-#' \donttest{
-#' # Use 'pairwise' to obtain contrast based data for the first two outcomes
+#' # Locate file "mvnma_example.rda" with mvnma() results
+#' .fname <- system.file("extdata/mvnma_examples.rda", package = "mvnma")
+#' load(.fname)
 #' 
-#' # Early response
-#' pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-#'   event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
-#'   studlab = id, data = Linde2015, sm = "OR")
-#' # Early remissions
-#' pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-#'   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
-#'   studlab = id, data = Linde2015, sm = "OR")
-#' 
-#' # Define outcome labels
-#' outcomes <- c("Early_Response", "Early_Remission")
-#' 
-#' # Fit the model combining the two efficacy outcomes
-#' set.seed(1909)
-#' mvnma12 <- mvnma(pw1, pw2,
-#'   reference.group = "Placebo", outclab = outcomes[1:2],
-#'   n.iter = 1000, n.burnin = 100)
-#' mvnma12
-#' 
-#' # Rank treatments using SUCRAs
-#' ranks12 <- mvrank(mvnma12, method = "sucra",
-#'   small.values = c("undes", "undes"))
+#' # Rank treatments using SUCRAs (default)
+#' ranks12 <- mvrank(mvnma12, small.values = c("undes", "undes"))
 #' ranks12
 #' 
-#' # Visualize SUCRAs in a scatter plot with outcome 1
-#' # (as specified in the mvdata() function) in the x-axis and outcome 2
-#' # (as specified in the mvdata() function) in the y-axis
+#' # Visualize SUCRAs in a scatter plot with outcome 1 on the x-axis and
+#' # outcome 2 on the y-axis
 #' plot(ranks12)
 #' 
-#' # Visualize SUCRAs in a scatter plot with outcome 2
-#' # (as specified in the mvdata() function) in the x-axis and outcome 1
-#' # (as specified in the mvdata() function) in the y-axis
+#' # Visualize SUCRAs in a scatter plot with outcome 2 on the x-axis and
+#' # outcome 1 on the y-axis
 #' plot(ranks12, which = 2:1)
-#' }
 #' 
-#' @method plot mvrank 
-#' @export  
+#' @method plot mvrank
+#' @export
 
-plot.mvrank <- function(x, which = 1:2,
-                        pos = 1,
+plot.mvrank <- function(x, which = 1:2, pos = 1,
                         cex.point = 1, cex.label = 0.7, pch = 19,
                         xlim = c(0, 1), ylim = c(0, 1),
                         ...) {

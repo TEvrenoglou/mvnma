@@ -14,6 +14,21 @@
 #' 
 #' This R function is a wrapper function for
 #' \code{\link[netmeta]{hasse.netposet}}.
+#'
+#' @return
+#' A Hasse diagram is shown in the active graphics window.
+#' 
+#' @references
+#' Carlsen L, Bruggemann R (2014):
+#' Partial order methodology: a valuable tool in chemometrics.
+#' \emph{Journal of Chemometrics},
+#' \bold{28}, 226--34
+#'
+#' Rücker G, Schwarzer G (2017):
+#' Resolve conflicting rankings of outcomes in network meta-analysis:
+#' Partial ordering of treatments.
+#' \emph{Research Synthesis Methods},
+#' \bold{8}, 526--36
 #'                                             
 #' @examples
 #' # Locate file "mvnma_example.rda" with mvnma() results
@@ -35,16 +50,6 @@
 #' 
 #' # Get the Hasse diagram for the efficacy outcomes
 #' hasse(ranks12)
-#' 
-#' @references
-#' Carlsen L, Bruggemann R (2014):
-#' Partial order methodology: a valuable tool in chemometrics.
-#' \emph{Journal of Chemometrics}, \bold{28}, 226--34
-#'
-#' Rücker G, Schwarzer G (2017):
-#' Resolve conflicting rankings of outcomes in network meta-analysis:
-#' Partial ordering of treatments.
-#' \emph{Research Synthesis Methods}, \bold{8}, 526--36
 #' 
 #' @method hasse mvrank
 #' @export

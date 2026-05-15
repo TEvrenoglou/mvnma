@@ -9,7 +9,7 @@
 #'   samples for the reference group.
 #' @param \dots Additional arguments passed on to
 #'   \code{\link[coda]{as.mcmc.list}}.
-#'  
+#' 
 #' @return
 #' The function returns the Markov Chain Monte Carlo object which is a list
 #' of 'mcmc' objects.

@@ -2,6 +2,7 @@
 % Please edit documentation in R/mvnma.R
 \name{mvnma}
 \alias{mvnma}
+\alias{print.mvnma}
 \title{Perform a Bayesian multivariate network meta-analysis using a
 single-correlation coefficient model}
 \usage{
@@ -21,10 +22,17 @@ mvnma(
   method = "standard",
   quiet = FALSE
 )
+
+\method{print}{mvnma}(
+  x,
+  digits = gs("digits"),
+  digits.sd = gs("digits.sd"),
+  print.sd = FALSE,
+  ...
+)
 }
 \arguments{
-\item{\dots}{Either two to five pairwise objects or a single list with
-two to five pairwise objects.}
+\item{\dots}{Additional arguments (ignored)}
 
 \item{reference.group}{A common reference treatment across all outcomes.}
 
@@ -66,6 +74,17 @@ on the DuMouchel method. The argument can be abbreviated.}
 
 \item{quiet}{A logical indicating whether to print information on the
 progress of the JAGS model fitting.}
+
+\item{x}{An object of class \code{\link{mvnma}}.}
+
+\item{digits}{Minimal number of significant digits, see
+\code{print.default}.}
+
+\item{digits.sd}{Minimal number of significant digits for standard
+deviations}
+
+\item{print.sd}{A logical specifying whether standard deviations should be
+printed.}
 }
 \value{
 The function returns an 'mvnma' object. This consists of the results for each
@@ -109,8 +128,9 @@ using non-informative normal priors (e.g., `N(0, 10^3)`).
 
 Alternatively, `method = "DM"` specifies the DuMouchel prior, which assumes 
 constant relative treatment effects across outcomes and enables information 
-sharing. This may improve precision but can introduce bias when outcomes 
-from different domains (e.g., efficacy and safety) are analyzed jointly.
+sharing (DuMouchel & Harris, 1983). This may improve precision but can
+introduce bias when outcomes from different domains (e.g., efficacy and
+safety) are analyzed jointly.
 
 The argument `n.domain` can be used to restrict information sharing to 
 predefined outcome domains. It indicates the position (based on the order 
@@ -126,11 +146,6 @@ belong to the same domain or when cross-domain sharing is justified.
 The argument `n.domain` is ignored when `method = "standard"`.
 }
 \examples{
-
-# Locate file "mvnma_example.rda" with mvnma() results
-filename <- system.file("extdata/mvnma_example.rda", package = "mvnma")
-
-\donttest{
 # Use 'pairwise' to obtain contrast based data for each one of the five
 # available outcomes 
 
@@ -167,9 +182,9 @@ outcomes <- c("Early_Response", "Early_Remission",
 set.seed(1909)
 mvnma12 <- mvnma(pw1, pw2,
   reference.group = "Placebo", outclab = outcomes[1:2],
-  n.iter = 1000, n.burnin = 100)
+  n.iter = 100, n.burnin = 20)
 mvnma12
-       
+
 # Extract treatment effect estimates and heterogeneity for Early_Response 
 mvnma12$Early_Response$basic_estimates
 mvnma12$Early_Response$heterogeneity
@@ -188,10 +203,12 @@ for (i in outc) {
   print(round(exp(mvnma12[[i]]$TE.random), 2))
 }
 
+\dontrun{
 # Fit the model combining all five outcomes
+set.seed(1904)
 mvnma_all <- mvnma(pw1, pw2, pw3, pw4, pw5,
   reference.group = "Placebo", outclab = outcomes,
-  n.iter = 1000, n.burnin = 100)
+  n.iter = 100, n.burnin = 20)
 
 # Extract treatment effect estimates and heterogeneity for Early_Response 
 mvnma_all$Early_Response$basic_estimates
@@ -214,22 +231,29 @@ for (i in outc) {
 
 }
 \references{
-Efthimiou O, Mavridis D, Riley RD, Cipriani A, Salanti G. Joint synthesis of 
-multiple correlated outcomes in networks of interventions. \emph{Biostatistics} 
-2015;\bold{16}(1):84-97. doi: 10.1093/biostatistics/kxu030.
+Achana FA, Cooper NJ, Bujkiewicz S, Hubbard SJ, Kendrick D, Jones DR,
+Sutton AJ (2014):
+Network meta-analysis of multiple outcome measures accounting for borrowing
+of information across outcomes.
+\emph{BMC Medical Research Methodology},
+\bold{21}, 92
 
-Riley RD, Thompson JR, Abrams KR. An alternative model for bivariate random-effects 
-meta-analysis when the within-study correlations are unknown. \emph{Biostatistics} 
-2008;\bold{9}(1):172-86. doi: 10.1093/biostatistics/kxm023.
+DuMouchel WH, Harris JE (1983):
+Bayes methods for combining the results of cancer studies in humans and
+other species.
+\emph{Journal of the American Statistical Association},
+\bold{78}, 293--308
 
-Achana FA, Cooper NJ, Bujkiewicz S, Hubbard SJ, Kendrick D, Jones DR, Sutton AJ. 
-Network meta-analysis of multiple outcome measures accounting for borrowing of 
-information across outcomes. \emph{BMC Medical Research Methodology}. 2014; \bold{21}
-14:92. doi: 10.1186/1471-2288-14-92. 
+Efthimiou O, Mavridis D, Riley RD, Cipriani A, Salanti G (2015):
+Joint synthesis of multiple correlated outcomes in networks of interventions.
+\emph{Biostatistics}, 
+\bold{16}, 84--97
 
-DuMouchel WH, Harris JE. Bayes Methods for Combining the Results of Cancer 
-Studies in Humans and Other Species. Journal of the American Statistical Association. 
-1983;\bold{78}(382):293–308
+Riley RD, Thompson JR, Abrams KR (2008):
+An alternative model for bivariate random-effects meta-analysis when the
+within-study correlations are unknown.
+\emph{Biostatistics},
+\bold{9}, 172--86
 }
 \seealso{
 \code{\link[meta]{pairwise}}

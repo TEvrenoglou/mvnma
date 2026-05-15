@@ -2,9 +2,12 @@
 % Please edit documentation in R/mvrank.R
 \name{mvrank}
 \alias{mvrank}
+\alias{print.mvrank}
 \title{Outcome-specific treatment rankings in multivariate network meta-analysis.}
 \usage{
 mvrank(x, small.values, method = "SUCRA")
+
+\method{print}{mvrank}(x, digits = gs("digits"), ...)
 }
 \arguments{
 \item{x}{An object of class \code{\link{mvnma}}.}
@@ -18,11 +21,16 @@ supported. The SUCRA method (specified as \code{method = "SUCRA"}) is the
 default approach. The probability of best value method (specified as
 \code{method = "pBV"}) and the mean and median ranks (specified as
 \code{method = "ranks"}) are also supported.}
+
+\item{digits}{Minimal number of significant digits, see
+\code{print.default}.}
+
+\item{\dots}{Additional arguments (ignored)}
 }
 \value{
 The function returns an 'mvrank' object which is a list consisting of
 a data frame with the variables 'treatment' and either 'SUCRA' or 'pBV'
-for each outcome in the multivariate meta-analysis.
+for each outcome in the multivariate network meta-analysis.
 }
 \description{
 Produces outcome-specific treatment rankings in multivariate
@@ -32,7 +40,7 @@ function.
 This function produces outcome-specific treatment rankings in multivariate
 network meta-analysis based on the output of the \code{\link{mvnma}}
 function. Two ranking methods (argument \code{method}) are currently
-supported:
+supported (Salanti et al., 2011):
 \itemize{
 \item Surface under the cumulative ranking curve (SUCRA) method,
 \item Probability of best value (pBV) method.
@@ -65,4 +73,11 @@ ranks_mean_median <- mvrank(mvnma_all,
 ranks_mean_median
 }
 
+}
+\references{
+Salanti G, Ades AE, Ioannidis JP (2011):
+Graphical methods and numerical summaries for presenting results
+from multiple-treatment meta-analysis: an overview and tutorial.
+\emph{Journal of Clinical Epidemiology},
+\bold{64}, 163--71
 }

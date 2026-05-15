@@ -14,12 +14,15 @@
 #'   default approach. The probability of best value method (specified as
 #'   \code{method = "pBV"}) and the mean and median ranks (specified as
 #'   \code{method = "ranks"}) are also supported.
+#' @param digits Minimal number of significant digits, see
+#'   \code{print.default}.
+#' @param \dots Additional arguments (ignored)
 #' 
 #' @description
 #' This function produces outcome-specific treatment rankings in multivariate
 #' network meta-analysis based on the output of the \code{\link{mvnma}}
 #' function. Two ranking methods (argument \code{method}) are currently
-#' supported:
+#' supported (Salanti et al., 2011):
 #' \itemize{
 #' \item Surface under the cumulative ranking curve (SUCRA) method,
 #' \item Probability of best value (pBV) method.
@@ -28,7 +31,14 @@
 #' @return
 #' The function returns an 'mvrank' object which is a list consisting of
 #' a data frame with the variables 'treatment' and either 'SUCRA' or 'pBV'
-#' for each outcome in the multivariate meta-analysis.
+#' for each outcome in the multivariate network meta-analysis.
+#' 
+#' @references
+#' Salanti G, Ades AE, Ioannidis JP (2011):
+#' Graphical methods and numerical summaries for presenting results
+#' from multiple-treatment meta-analysis: an overview and tutorial.
+#' \emph{Journal of Clinical Epidemiology},
+#' \bold{64}, 163--71
 #' 
 #' @examples
 #' # Locate file "mvnma_example.rda" with mvnma() results
@@ -216,4 +226,38 @@ mvrank <- function(x, small.values, method = "SUCRA") {
   attr(ranks, "ranks.common.trts") <- ranks.common
   #
   ranks
+}
+
+
+#' @rdname mvrank 
+#' @method print mvrank
+#' @export
+
+print.mvrank <- function(x, digits = gs("digits"), ...) {
+  
+  chkclass(x, "mvrank")
+  #
+  chknumeric(digits, min = 0, length = 1)
+  #
+  nam <- names(x)
+  
+  # Get rid of warning "no visible binding for global variable"
+  treatment <- NULL
+  #
+  for (i in seq_along(nam)) {
+    cat(paste0(if (i > 1) "\n" else "", "Outcome: ", nam[i], "\n\n"))
+    #
+    dat.i <- x[[i]]
+    rownames(dat.i) <- dat.i$treatment
+    dat.i %<>% select(-treatment)
+    #
+    nam.i <- names(dat.i)
+    #
+    for (j in nam.i)
+      dat.i[[j]] <- formatN(dat.i[[j]], digits = digits)
+    #
+    prmatrix(dat.i, quote = FALSE, right = TRUE)
+  }
+  #
+  invisible(NULL)
 }
