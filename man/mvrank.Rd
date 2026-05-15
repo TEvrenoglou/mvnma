@@ -19,74 +19,50 @@ default approach. The probability of best value method (specified as
 \code{method = "pBV"}) and the mean and median ranks (specified as
 \code{method = "ranks"}) are also supported.}
 }
+\value{
+The function returns an 'mvrank' object which is a list consisting of
+a data frame with the variables 'treatment' and either 'SUCRA' or 'pBV'
+for each outcome in the multivariate meta-analysis.
+}
 \description{
+Produces outcome-specific treatment rankings in multivariate
+network meta-analysis based on the output of the \code{\link{mvnma}}
+function.
+
 This function produces outcome-specific treatment rankings in multivariate
 network meta-analysis based on the output of the \code{\link{mvnma}}
-function. Two ranking methods are currently supported, these are: (i)
-the SUCRA method and (ii) the probability of best value (pBV) method.
+function. Two ranking methods (argument \code{method}) are currently
+supported:
+\itemize{
+\item Surface under the cumulative ranking curve (SUCRA) method,
+\item Probability of best value (pBV) method.
+}
 }
 \examples{
+# Locate file "mvnma_example.rda" with mvnma() results
+.fname <- system.file("extdata/mvnma_examples.rda", package = "mvnma")
+load(.fname)
+
+# Rank treatments using SUCRAs (default)
+ranks_sucra <- mvrank(mvnma_all, 
+  small.values = c("undes", "undes", "des", "des", "des"))
+#
+ranks_sucra
+
 \donttest{
-# Use 'pairwise' to obtain contrast based data for each one of the five
-# available outcomes 
-
-# Early response
-pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-  event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
-  studlab = id, data = Linde2015, sm = "OR")
-
-# Early remissions
-pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-  event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
-  studlab = id, data = Linde2015, sm = "OR")
-
-# Adverse events
-pw3 <- pairwise(treat = list(treatment1, treatment2,treatment3),
-  event = list(ae1, ae2, ae3),  n = list(n1, n2, n3),
-  studlab = id, data = Linde2015, sm = "OR")
-
-# Loss to follow-up
-pw4 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-  event = list(loss1, loss2, loss3), n = list(n1, n2, n3),
-  studlab = id, data = Linde2015, sm = "OR")
-
-# Loss_to_follow_up_(AE)
-pw5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-  event = list(loss.ae1, loss.ae2, loss.ae3), n = list(n1, n2, n3),
-  studlab = id, data = Linde2015, sm = "OR")
-
-# Define outcome labels
-outcomes <- c("Early_Response", "Early_Remission",
-  "Adverse_events", "Loss_to_follow_up", "Loss_to_follow_up_AE")
-
-# Fit the model combining all five outcomes
-set.seed(1909)
-mvnma_all <- mvnma(pw1, pw2, pw3, pw4, pw5,
-  reference.group = "Placebo", outclab = outcomes,
-  n.iter = 1000, n.burnin = 100)
-
 # Rank treatments using pBV
 ranks_pBV <- mvrank(mvnma_all,
   small.values = c("undes", "undes", "des", "des", "des"),
   method = "pBV")
-ranks_pBV                    
-   
+#
+ranks_pBV         
+
 # Rank treatments using mean and median ranks
 ranks_mean_median <- mvrank(mvnma_all,
   small.values = c("undes", "undes", "des", "des", "des"),
   method = "ranks")
+#
 ranks_mean_median
-   
-# Rank treatments using SUCRAs
-ranks_sucra <- mvrank(mvnma_all, 
-  small.values = c("undes", "undes", "des", "des", "des"),
-  method = "SUCRA")
-ranks_sucra
-                     
-# Same results without method = "SUCRA" 
-ranks_sucra1 <- mvrank(mvnma_all, 
-  small.values = c("undes", "undes", "des", "des", "des"))
-ranks_sucra1
 }
 
 }

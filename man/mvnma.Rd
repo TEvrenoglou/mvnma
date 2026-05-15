@@ -68,7 +68,7 @@ on the DuMouchel method. The argument can be abbreviated.}
 progress of the JAGS model fitting.}
 }
 \value{
-The function return an 'mvnma' object. This consists of the results for each
+The function returns an 'mvnma' object. This consists of the results for each
 outcome and the correlation coefficient estimates between the combined
 outcomes. The outcome-specific estimates are expressed in the format of a
 list (one for each outcome) which contains:
@@ -126,6 +126,10 @@ belong to the same domain or when cross-domain sharing is justified.
 The argument `n.domain` is ignored when `method = "standard"`.
 }
 \examples{
+
+# Locate file "mvnma_example.rda" with mvnma() results
+filename <- system.file("extdata/mvnma_example.rda", package = "mvnma")
+
 \donttest{
 # Use 'pairwise' to obtain contrast based data for each one of the five
 # available outcomes 

@@ -70,7 +70,7 @@
 #' @importFrom meta forest gs metagen pairwise
 #' @importFrom netmeta hasse netposet rankogram heatplot
 #' @importFrom matrixStats colSds
-#' @importFrom dplyr %>% all_of any_of arrange bind_rows bind_cols desc distinct filter group_by mutate rename select pull
+#' @importFrom dplyr %>% all_of any_of arrange bind_rows bind_cols desc distinct filter group_by mutate rename select pull n_distinct
 #' @importFrom magrittr %<>%
 #' @importFrom rlist list.cbind list.rbind
 #' @importFrom graphics text

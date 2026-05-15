@@ -9,6 +9,10 @@
 #'   samples for the reference group.
 #' @param \dots Additional arguments passed on to
 #'   \code{\link[coda]{as.mcmc.list}}.
+#'  
+#' @return
+#' The function returns the Markov Chain Monte Carlo object which is a list
+#' of 'mcmc' objects.
 #' 
 #' @aliases as.mcmc.mvnma as.mcmc
 #' 
@@ -17,39 +21,19 @@
 #' @seealso \code{\link{mvnma}}
 #' 
 #' @examples
-#' \donttest{
-#' data("Linde2015")
+#' # Locate file "mvnma_example.rda" with mvnma() results
+#' .fname <- system.file("extdata/mvnma_examples.rda", package = "mvnma")
+#' load(.fname)
 #' 
-#' # Use 'pairwise' to obtain contrast based data for each one of the five
-#' # available outcomes 
-#'
-#' # Early response
-#' pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-#'   event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
-#'   studlab = id, data = Linde2015, sm = "OR")
-#'
-#' # Early remissions
-#' pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-#'   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
-#'   studlab = id, data = Linde2015, sm = "OR")
-#'
-#' # Define outcome labels
-#' outcomes <- c("Early_Response", "Early_Remission")
-#'  
-#' # Fit the model combining only the two efficacy outcomes
-#' set.seed(1909)
-#' mvnma12 <- mvnma(pw1, pw2,
-#'   reference.group = "Placebo", outclab = outcomes,
-#'   n.iter = 1000, n.burnin = 100)
 #' mcmc12 <- as.mcmc(mvnma12)
 #' 
 #' library(coda)
 #' oldpar <- par(mfrow = c(3, 3))
-#' # traceplot
+#' # Traceplot
 #' traceplot(mcmc12)
-#' # density plot
+#' # Density plot
 #' densplot(mcmc12)
-#' # traceplot and density plot together
+#' # Traceplot and density plot together
 #' plot(mcmc12)
 #' 
 #' # Do not print the trace plot for the reference group, i.e., placebo
@@ -63,7 +47,6 @@
 #' plot(mcmc12.drop)
 #' 
 #' par(oldpar)
-#' }
 #' 
 #' @method as.mcmc mvnma
 #' @export

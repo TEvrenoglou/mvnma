@@ -24,27 +24,9 @@ This R function is a wrapper function for
 \code{\link[netmeta]{hasse.netposet}}.
 }
 \examples{
-\donttest{
-# Use 'pairwise' to obtain contrast based data for the first two outcomes
-#
-# Early response
-pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-  event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
-  studlab = id, data = Linde2015, sm = "OR")
-# Early remissions
-pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-  event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
-  studlab = id, data = Linde2015, sm = "OR")
-
-# Define outcome labels
-outcomes <- c("Early Response", "Early Remission")
- 
-# Fit the model combining the two efficacy outcomes
-set.seed(1909)
-mvnma12 <- mvnma(pw1, pw2,
-  reference.group = "Placebo", outclab = outcomes,
-  n.iter = 1000, n.burnin = 100)
-mvnma12
+# Locate file "mvnma_example.rda" with mvnma() results
+.fname <- system.file("extdata/mvnma_examples.rda", package = "mvnma")
+load(.fname)
 
 # Print odds ratios for efficacy outcomes
 outc <- names(mvnma12)[names(mvnma12) != "cor"]
@@ -61,7 +43,6 @@ ranks12
 
 # Get the Hasse diagram for the efficacy outcomes
 hasse(ranks12)
-}
 
 }
 \references{

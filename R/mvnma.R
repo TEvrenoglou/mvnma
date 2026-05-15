@@ -79,7 +79,7 @@
 #' The argument `n.domain` is ignored when `method = "standard"`.
 #'  
 #' @return
-#' The function return an 'mvnma' object. This consists of the results for each
+#' The function returns an 'mvnma' object. This consists of the results for each
 #' outcome and the correlation coefficient estimates between the combined
 #' outcomes. The outcome-specific estimates are expressed in the format of a
 #' list (one for each outcome) which contains:
@@ -111,6 +111,10 @@
 #' 1983;\bold{78}(382):293–308
 #' 
 #' @examples
+#' 
+#' # Locate file "mvnma_example.rda" with mvnma() results
+#' filename <- system.file("extdata/mvnma_example.rda", package = "mvnma")
+#' 
 #' \donttest{
 #' # Use 'pairwise' to obtain contrast based data for each one of the five
 #' # available outcomes 

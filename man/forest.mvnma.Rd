@@ -7,6 +7,7 @@
 \method{forest}{mvnma}(
   x,
   backtransf = FALSE,
+  separate = n_distinct(attr(x, "sm")) > 1,
   leftcols = "studlab",
   leftlabs,
   rightcols = c("effect", "ci"),
@@ -14,70 +15,75 @@
   col.study = "black",
   col.square = "black",
   col.square.lines = "black",
+  col.subgroup = "black",
   squaresize = 0.7,
   header.line = TRUE,
-  col.subgroup = "black",
+  text.outcome = "Outcome: ",
   ...
 )
 }
 \arguments{
 \item{x}{An object of class \code{\link{mvnma}}.}
 
-\item{backtransf}{A logical indicating whether results should be back-transformed. 
-in forest plots. If backtransf = TRUE, results for sm = "OR".
-are presented as odds ratios rather than log odds ratios.}
+\item{backtransf}{A logical indicating whether results should be
+back transformed in forest plots. If \code{backtransf = TRUE},
+results for \code{sm = "OR"} are presented as odds ratios rather
+than log odds ratios, for example.}
 
-\item{leftcols}{A character vector specifying (additional) columns to be printed on the left side of the forest plot or a logical value.}
+\item{separate}{A logical indicating whether separate forest plots should be
+created for outcomes.}
 
-\item{leftlabs}{A character vector specifying labels for (additional) columns on left side of the forest plot.}
+\item{leftcols}{A character vector specifying (additional) columns to be
+printed on the left side of the forest plot or a logical value.}
 
-\item{rightcols}{A character vector specifying (additional) columns to be printed on the right side of the forest plot or a logical value.}
+\item{leftlabs}{A character vector specifying labels for (additional)
+columns on left side of the forest plot.}
 
-\item{rightlabs}{A character vector specifying labels for (additional) columns on right side of the forest plot.}
+\item{rightcols}{A character vector specifying (additional) columns to be 
+printed on the right side of the forest plot or a logical value.}
 
-\item{col.study}{The colour for treatment effect estimates and confidence interval limits.}
+\item{rightlabs}{A character vector specifying labels for (additional)
+columns on right side of the forest plot.}
 
-\item{col.square}{The colour for squares reflecting the treatment effect estimates.}
+\item{col.study}{The colour for treatment effect estimates and confidence
+interval limits.}
 
-\item{col.square.lines}{The colour for the outer lines of squares reflecting the treatment effect estimates.}
+\item{col.square}{The colour for squares reflecting the treatment effect
+estimates.}
 
-\item{squaresize}{The size of squares reflecting the treatment effect estimates (default: 0.7).}
-
-\item{header.line}{A logical value indicating whether to print a header line (default: TRUE) or a character string ("both", "below", "").}
+\item{col.square.lines}{The colour for the outer lines of squares reflecting
+the treatment effect estimates.}
 
 \item{col.subgroup}{The colour to print information on different outcomes.}
 
-\item{\dots}{Additional arguments for \code{\link[meta]{forest.meta}} function.}
+\item{squaresize}{The size of squares reflecting the treatment effect
+estimates (default: 0.7).}
+
+\item{header.line}{A logical value indicating whether to print a header
+line (default: TRUE) or a character string ("both", "below", "").}
+
+\item{text.outcome}{A text string printed before the name of the outcome.}
+
+\item{\dots}{Additional arguments passed on to
+\code{\link[meta]{forest.meta}}.}
 }
 \description{
 Draws a forest plot in the active graphics window (using grid graphics
 system).
 }
 \examples{
-\donttest{
-# Use 'pairwise' to obtain contrast based data for the first two outcomes
-data("Linde2015")
-# Early response
-pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-  event = list(resp1, resp2, resp3), n = list(n1, n2, n3),
-  studlab = id, data = Linde2015, sm = "OR")
-# Early remissions
-pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
-  event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
-  studlab = id, data = Linde2015, sm = "OR")
+# Locate file "mvnma_example.rda" with mvnma() results
+.fname <- system.file("extdata/mvnma_examples.rda", package = "mvnma")
+load(.fname)
 
-# Define outcome labels
-outcomes <- c("Early Response", "Early Remission")
- 
-# Fit the model combining the two efficacy outcomes
-set.seed(1909)
-mvnma12 <- mvnma(pw1, pw2,
-  reference.group = "Placebo", outclab = outcomes,
-  n.iter = 1000, n.burnin = 100)
+# Print multivariate meta-analysis results
 mvnma12
 
 # Generate a forest plot with the results
 forest(mvnma12)
-}
+
+# Generate a separate forest plot for each outcome
+forest(mvnma12, separate = TRUE)
 
 }
+\keyword{hplot}
