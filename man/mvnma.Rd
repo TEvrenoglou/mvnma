@@ -151,8 +151,7 @@ belong to the same domain or when cross-domain sharing is justified.
 The argument `n.domain` is ignored when `method = "standard"`.
 }
 \examples{
-# Use 'pairwise' to obtain contrast based data for each one of the five
-# available outcomes 
+# Use 'pairwise' to obtain contrast based data for the first two outcomes
 
 # Early response
 pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
@@ -163,6 +162,22 @@ pw1 <- pairwise(treat = list(treatment1, treatment2, treatment3),
 pw2 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(remi1, remi2, remi3), n = list(n1, n2, n3),
   studlab = id, data = Linde2015, sm = "OR")
+
+# Define outcome labels
+outcomes <- c("Early_Response", "Early_Remission",
+  "Adverse_events", "Loss_to_follow_up", "Loss_to_follow_up_AE")
+
+# Fit the model combining only the two efficacy outcomes
+# (note, we are using only 10 iterations and 2 burnins to reduce the
+#  runtime of the example; in real applications use larger numbers)
+set.seed(1910)
+mvnma(pw1, pw2,
+  reference.group = "Placebo", outclab = outcomes[1:2],
+  n.iter = 10, n.burnin = 2)
+
+\donttest{
+# Use 'pairwise' to obtain contrast based data for the third to fifth
+# outcome
 
 # Adverse events
 pw3 <- pairwise(treat = list(treatment1, treatment2,treatment3),
@@ -178,10 +193,6 @@ pw4 <- pairwise(treat = list(treatment1, treatment2, treatment3),
 pw5 <- pairwise(treat = list(treatment1, treatment2, treatment3),
   event = list(loss.ae1, loss.ae2, loss.ae3), n = list(n1, n2, n3),
   studlab = id, data = Linde2015, sm = "OR")
-
-# Define outcome labels
-outcomes <- c("Early_Response", "Early_Remission",
-  "Adverse_events", "Loss_to_follow_up", "Loss_to_follow_up_AE")
 
 # Fit the model combining only the two efficacy outcomes
 # (note, we are using only 100 iterations and 20 burnins to reduce the
@@ -210,7 +221,6 @@ for (i in outc) {
   print(round(exp(mvnma12[[i]]$TE.random), 2))
 }
 
-\donttest{
 # Fit the model combining all five outcomes
 # (note, we are using only 100 iterations and 20 burnins to reduce the
 #  runtime of the example; in real applications use larger numbers)
