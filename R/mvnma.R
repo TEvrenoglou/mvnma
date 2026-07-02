@@ -243,7 +243,7 @@ mvnma <- function(...,
   #
   n.out <- length(args)
   #
-  chknumeric(n.domain,min=1,max=n.out)
+  chknumeric(n.domain, min = 1, max = n.out)
   n.dom <- n.domain
   n.i <- seq_len(n.out)
   #
@@ -471,7 +471,7 @@ mvnma <- function(...,
     #
     treat1 = data$T[, 1], treat2 = data$T[, 2], treat3 = NA,
     #
-    prec.psi1 = prec.psi1, prec.psi2=prec.psi2,
+    prec.psi1 = prec.psi1, prec.psi2 = prec.psi2,
     prec.psi3 = NA, prec.psi4 = NA, prec.psi5 = NA,
     #
     lower.rho1 = lower.rho1, upper.rho1 = upper.rho1,
@@ -551,7 +551,7 @@ mvnma <- function(...,
                 "psi1", "psi2",
                 "rho1")
     #
-    model.code <- mvnma_code(n.out, method, multiarm,n.dom)
+    model.code <- mvnma_code(n.out, method, multiarm, n.dom)
   }
   #
   else if (n.out == 3) {
@@ -571,7 +571,7 @@ mvnma <- function(...,
                 "psi1", "psi2", "psi3",
                 "rho1", "rho2", "rho3")
     #
-    model.code <- mvnma_code(n.out, method, multiarm,n.dom)
+    model.code <- mvnma_code(n.out, method, multiarm, n.dom)
   }
   #
   else if (n.out == 4) {
@@ -589,7 +589,7 @@ mvnma <- function(...,
                 "psi1", "psi2", "psi3", "psi4",
                 "rho1", "rho2", "rho3", "rho4", "rho5", "rho6")
     #
-    model.code <- mvnma_code(n.out, method, multiarm,n.dom)
+    model.code <- mvnma_code(n.out, method, multiarm, n.dom)
   }
   #
   else if (n.out == 5) {
@@ -598,15 +598,17 @@ mvnma <- function(...,
                 "rho1", "rho2", "rho3", "rho4", "rho5", "rho6",
                 "rho7", "rho8", "rho9", "rho10")
     #
-    model.code <- mvnma_code(n.out, method, multiarm,n.dom)
+    model.code <- mvnma_code(n.out, method, multiarm, n.dom)
   }
   #
-  if (method == "DM")
-    if(is.null(n.domain)){
-    params <- c(params, "sigma")  
-    }else{
-    params <- c(params, "sigma1","sigma2") 
+  if (method == "DM") {
+    if (is.null(n.domain)) {
+      params <- c(params, "sigma")  
     }
+    else{
+      params <- c(params, "sigma1", "sigma2") 
+    }
+  }
   #
   if (!multiarm)
     run.data$k <- NULL
