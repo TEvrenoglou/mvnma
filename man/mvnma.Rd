@@ -20,6 +20,7 @@ mvnma(
   lower.rho,
   upper.rho,
   method = "standard",
+  varTE.missing = NULL,
   quiet = FALSE
 )
 
@@ -71,6 +72,12 @@ correlation coefficient. If NULL all bounds are set to 1.}
 fitting. This can be either "standard" (default), referring to the
 standard bivariate model, or "DM", referring to the bivariate model based
 on the DuMouchel method. The argument can be abbreviated.}
+
+\item{varTE.missing}{Assumed (very large) variance for outcomes not reported
+in a study. By default, the largest variance times 1000000 is used. This is
+the same value used for argument \code{seTE.ignore} in
+\code{\link[netmeta]{netimpact}} to mimicking the removal of individual
+studies from the network meta-analysis.}
 
 \item{quiet}{A logical indicating whether to print information on the
 progress of the JAGS model fitting.}
