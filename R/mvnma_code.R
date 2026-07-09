@@ -10,10 +10,6 @@ mvnma_code <- function(n.out, method, multiarm, n.dom) {
            "  # k2 = number of two-arm studies\n",
            "  # n = number of treatments\n\n")
   #
-  txt <- paste0(txt, code_control(n.out, multiarm))
-  #
-  txt <- paste0(txt, "  \n")
-  #
   # Files with variances, covariances and estimates
   #
   txt <- paste0(txt, code_covar_ests(n.out, multiarm))
@@ -29,67 +25,13 @@ mvnma_code <- function(n.out, method, multiarm, n.dom) {
   txt
 }
 
-code_control <- function(n.out, multiarm) {
-  
-  txt <-
-    paste0(
-      "  #\n",
-      "  #\n",
-      "  # (1) Set correlation to zero for studies not reporting one outcome\n",
-      "  #\n",
-      "  #\n\n")
-  #
-  txt <-
-    paste0(txt,
-           "  #\n",
-           "  # Two-arm studies\n",
-           "  #\n")
-  #
-  txt <- paste0(txt, "  for (i in 1:k2) {\n")
-  #
-  for (i in seq_len(n.out - 1)) {
-    for (j in (i + 1):n.out) {
-      txt <-
-        paste0(txt,
-               "    control", i, j, "[i] <- step(9999 - var", i,
-               "[i]) * step(9999 - var", j, "[i])\n")
-    }
-  }
-  #
-  txt <- paste0(txt, "  }\n")
-  #
-  if (multiarm) {
-    #
-    txt <-
-      paste0(txt,
-             "  #\n",
-             "  # Three-arm studies\n",
-             "  #\n")
-    #
-    txt <- paste0(txt, "  for (i in ((k2 + 1):(2 * k - k2))) {\n")
-    #
-    for (i in seq_len(n.out - 1)) {
-      for (j in (i + 1):n.out) {
-        txt <-
-          paste0(txt,
-                 "    control", i, j, "[i] <- step(9999 - var", i,
-                 "[i]) * step(9999 - var", j, "[i])\n")
-      }
-    }
-    #
-    txt <- paste0(txt, "  }\n")
-  }
-  #
-  txt
-}
-
 code_covar_ests <- function(n.out, multiarm) {
   
   txt <-
     paste0(
       "  #\n",
       "  #\n",
-      "  # (2) Variances, covariances and estimates\n",
+      "  # (1) Variances, covariances and estimates\n",
       "  #\n",
       "  #\n  \n")
   #
@@ -131,7 +73,9 @@ code_covar_ests <- function(n.out, multiarm) {
                "    S2[i, ", i, ", ", j, "] <- ",
                "sqrt(S2[i, ", i, ", ", i, "]) * ",
                "sqrt(S2[i, ", j, ", ", j, "]) * ",
-               "control", i, j, "[i] * rho", r, "\n")
+               "control", "[i, ", i, "] * ",
+               "control", "[i, ", j, "] * ",
+               "rho", r, "\n")
     }
   }
   #
@@ -204,7 +148,9 @@ code_covar_ests <- function(n.out, multiarm) {
                  "    S3[i, ", i, ", ", j, "] <- ",
                  "sqrt(S3[i, ", i, ", ", i, "]) * ",
                  "sqrt(S3[i, ", j, ", ", j, "]) * ",
-                 "control", i, j, "[i] * rho", r, "\n")
+                 "control", "[k2 + i, ", i, "] * ",
+                 "control", "[k2 + i, ", j, "] * ",
+                 "rho", r, "\n")
       }
     }
     #
@@ -212,17 +158,18 @@ code_covar_ests <- function(n.out, multiarm) {
     #
     r <- 0
     #
-    for (i in n.out + seq_len(n.out - 1)) {
-      for (j in (i + 1):(2 * n.out)) {
+    for (i in seq_len(n.out - 1)) {
+      for (j in (i + 1):n.out) {
         r <- r + 1
         #
         txt <-
           paste0(txt,
-                 "    S3[i, ", i, ", ", j, "] <- ",
-                 "sqrt(S3[i, ", i, ", ", i, "]) * ",
-                 "sqrt(S3[i, ", j, ", ", j, "]) * ",
-                 "control", i - n.out, j - n.out,
-                 "[i] * rho", r, "\n")
+                 "    S3[i, ", n.out + i, ", ", n.out + j, "] <- ",
+                 "sqrt(S3[i, ", n.out + i, ", ", n.out + i, "]) * ",
+                 "sqrt(S3[i, ", n.out + j, ", ", n.out + j, "]) * ",
+                 "control", "[k2 + i, ", i, "] * ",
+                 "control", "[k2 + i, ", j, "] * ",
+                 "rho", r, "\n")
       }
     }
     #
@@ -242,15 +189,16 @@ code_covar_ests <- function(n.out, multiarm) {
     #
     for (i in seq_len(n.out - 1)) {
       for (j in (i + 1):n.out) {
-        l <- j + n.out
         r <- r + 1
         #
         txt <-
           paste0(txt,
-                 "    S3[i, ", i, ", ", l, "] <- 0.5 * ",
+                 "    S3[i, ", i, ", ", j + n.out, "] <- 0.5 * ",
                  "sqrt(S3[i, ", i, ", ", i, "]) * ",
-                 "sqrt(S3[i, ", l, ", ", l, "]) * ",
-                 "control", i, j, "[i] * rho", r, "\n")
+                 "sqrt(S3[i, ", j + n.out, ", ", j + n.out, "]) * ",
+                 "control", "[k2 + i, ", i, "] * ",
+                 "control", "[k2 + i, ", j, "] * ",
+                 "rho", r, "\n")
       }
     }
     #
@@ -260,17 +208,17 @@ code_covar_ests <- function(n.out, multiarm) {
     #
     for (j in seq_len(n.out - 1)) {
       for (i in (j + 1):n.out){
-        l <- n.out + j
-        #
         r <- r + 1
         #
         txt <-
           paste0(
             txt,
-            "    S3[i, ", i, ", ", l, "] <- 0.5 * ",
+            "    S3[i, ", i, ", ", n.out + j, "] <- 0.5 * ",
             "sqrt(S3[i, ", i, ", ", i, "]) * ",
-            "sqrt(S3[i, ", l, ", ", l, "]) * control",
-            j, i, "[i] * rho", r, "\n")
+            "sqrt(S3[i, ", n.out + j, ", ", n.out + j, "]) * ",
+            "control", "[k2 + i, ", j, "] * ",
+            "control", "[k2 + i, ", i, "] * ",
+            "rho", r, "\n")
       }
     }
     #
@@ -315,7 +263,7 @@ code_means <- function(n.out, multiarm) {
     paste0(
       "  #\n",
       "  #\n",
-      "  # (3) Parameterization of the means\n",
+      "  # (2) Parameterization of the means\n",
       "  #\n",
       "  #\n\n")
   #
@@ -394,7 +342,7 @@ code_priors_standard <- function(n.out) {
     paste0(
       "  #\n",
       "  #\n",
-      "  # (4) Priors (standard model)\n",
+      "  # (3) Priors (standard model)\n",
       "  #\n",
       "  #\n\n")
   #

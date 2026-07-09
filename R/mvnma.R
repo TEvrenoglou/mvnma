@@ -236,8 +236,8 @@ mvnma <- function(...,
                   method = "standard",
                   quiet = FALSE) {
   
-  is_pairwise <- function(x)
-    inherits(x, "pairwise")
+  # Get rid of warning "no visible binding for global variable"
+  studlab <- NULL
   #
   args <- list(...)
   #
@@ -248,7 +248,7 @@ mvnma <- function(...,
   n.i <- seq_len(n.out)
   #
   if (n.out == 1) {
-    if (is_pairwise(args[[1]]))
+    if (inherits(args[[1]], "pairwise"))
       stop("Provide between two and five pairwise objects.",
            call. = FALSE)
     #
@@ -257,7 +257,7 @@ mvnma <- function(...,
            "'netmeta', 'netcomb', or 'discomb'.",
            call. = FALSE)
     #
-    if (!is_pairwise(args[[1]])) {
+    if (!inherits(args[[1]], "pairwise")) {
       n.out <- length(args[[1]])
       n.i <- seq_len(n.out)
       #
@@ -269,7 +269,7 @@ mvnma <- function(...,
   }
   #  
   for (i in n.i) {
-    if (!is_pairwise(args[[i]]))
+    if (!inherits(args[[i]], "pairwise"))
       stop("All elements of argument '...' must be of class ",
            "'pairwise'.",
            call. = FALSE)
@@ -281,7 +281,7 @@ mvnma <- function(...,
   #
   data <- mvdata(args)
   
-  treat_out <- data$treat_out
+  trts.list <- data$trts.list
   #
   chknull(reference.group)
   chklevel(level)
@@ -289,8 +289,9 @@ mvnma <- function(...,
   #
   method <- setchar(method, c("standard", "DM"))
   #
-  # extract number of outcomes  
-  n.out <- ncol(data$var)
+  # Extract number of outcomes
+  #
+  n.out <- ncol(data$var %>% select(-studlab))
   n.cor <- choose(n.out, 2)
   #
   miss.lower <- missing(lower.rho)
@@ -447,13 +448,20 @@ mvnma <- function(...,
   else if (length(outclab) != n.out)
     stop("Please provide labels for all outcomes.")
   
-  trts <- data$labtreat$treat
+  trts <- data$trts
   #
   ref <- unname(which(trts == reference.group))  
   
-  
   multiarm <- ncol(data$T) > 2
   #
+  dat_var <- data$var %>% filter(!duplicated(studlab))
+  rownames(dat_var) <- dat_var$studlab
+  dat_var %<>% select(-studlab)
+  #
+  control_matrix <- 1L * !is.na(dat_var)
+  #
+  data$var[is.na(data$var)] <- 10000
+  
   run.data <- list(
     y = data$y,
     #
@@ -463,11 +471,13 @@ mvnma <- function(...,
     var4 = NA,
     var5 = NA,
     #
+    control = control_matrix,
+    #
     ref = ref,
     #
-    k = data$Ns,
-    k2 = data$N2h,
-    n = data$NT,
+    k = data$k,
+    k2 = data$k2,
+    n = data$n,
     #
     treat1 = data$T[, 1], treat2 = data$T[, 2], treat3 = NA,
     #
@@ -641,7 +651,7 @@ mvnma <- function(...,
   res <- gather_results(fit,
                         outcomes = outclab,
                         trts = trts,
-                        treat_out = treat_out,
+                        trts.list = trts.list,
                         reference.group = reference.group,
                         level = level,
                         n.domain = n.domain,

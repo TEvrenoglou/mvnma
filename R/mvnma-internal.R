@@ -38,10 +38,13 @@ create_T <- function(data, max.arms) {
   for (i in seq_along(studies)) {
     dat.i <- data %>% filter(studlab == studies[i])
     #
-    trts.i <- c(unique(dat.i$label2), unique(dat.i$label1))
+    trts.i <- c(unique(dat.i$id2), unique(dat.i$id1))
     #
     res[i, seq_along(trts.i)] <- trts.i
   }
+  #
+  rownames(res) <- studies
+  colnames(res) <- paste0("id", seq_len(ncol(res)))
   #
   res
 }
@@ -65,9 +68,9 @@ create_data <- function(p, ...) {
   #
   dat1 <- dat2 <- studies <- vector("list")
   #
-  n_outcomes <- length(p)
+  n.out <- length(p)
   #
-  for (i in 1:n_outcomes) {
+  for (i in 1:n.out) {
     p[[i]] %<>% select(studlab, TE, seTE, treat1, treat2)
     p[[i]] <- multi_arm(p[[i]])
     p[[i]]$outcome <- i
@@ -112,7 +115,7 @@ create_data <- function(p, ...) {
     }
   }
   
-  for (i in seq_len(n_outcomes)) {
+  for (i in seq_len(n.out)) {
     dat1[[i]] <- comb_p %>% filter(outcome == i)
     dat2[[i]] <- comb_p %>% filter(outcome != i) 
     #
@@ -155,7 +158,7 @@ create_data <- function(p, ...) {
   res <- as.data.frame(res)
   rownames(res) <- seq_len(nrow(res))
   #
-  res <- add_labels(res)
+  res <- add_ids(res)
   #
   res
 }
@@ -179,24 +182,24 @@ add_arms <- function(x, ...) {
   res
 }
 
-add_labels <- function(data) {
+add_ids <- function(data) {
   all_treats <- unique(c(data$treat1, data$treat2))  
   #
   levels_treats <- as.data.frame(levels(as.factor(all_treats)))
   names(levels_treats) <- c("treat")
   levels_treats$level <- 1:nrow(levels_treats)  
   #
-  data$label1 <- NA
-  data$label2 <- NA
+  data$id1 <- NA
+  data$id2 <- NA
   #
   for (i in 1:nrow(data)) {
     for (j in 1:nrow(levels_treats)) {
       if (data$treat1[i] == levels_treats$treat[j]) {
-        data$label1[i] = levels_treats$level[j]
+        data$id1[i] = levels_treats$level[j]
       }
       #
       if (data$treat2[i] == levels_treats$treat[j]) {
-        data$label2[i] = levels_treats$level[j]
+        data$id2[i] = levels_treats$level[j]
       }
     }
   }  
@@ -207,63 +210,56 @@ add_labels <- function(data) {
 make_jags_data <- function(dat) {
   
   # Get rid of warning "no visible binding for global variable"
-  label <- NULL
-  
-  # Number of studies  
-  Ns <- length(unique(dat$studlab))    
-  
-  # labtreat 
-  
-  labtreat1 <- cbind.data.frame(dat$treat1, dat$label1)
-  labtreat2 <- cbind.data.frame(dat$treat2, dat$label2)
-  #
-  names(labtreat1) <- names(labtreat2) <- c("treat", "label")
-  #
-  labtreat <- rbind.data.frame(labtreat1, labtreat2) %>%
-    distinct() %>% arrange(label)
-  
-  # NT
-  NT <- length(labtreat$treat)
+  outcome <- seTE <- studlab <- TE <- var <- NULL
   
   # Number of outcomes
-  n_outcomes <- length(unique(dat$outcome))
+  n.out <- length(unique(dat$outcome))
+  
+  # Number of studies  
+  k <- length(unique(dat$studlab))    
+  
+  # Treatments
+  trts <- sort(unique(c(dat$treat1, dat$treat2)))
+  
+  # Number of treatments
+  n <- length(trts)
   
   # Arms per study
   arm_data <- dat[!duplicated(dat$studlab), ]
   
   # Number of two-arm studies
-  two_arm <- length(which(arm_data$n.arms == 2))
+  k2 <- sum(arm_data$n.arms == 2, na.rm = TRUE)
   
   treat_data <- create_T(dat, max.arms = max(arm_data$n.arms))
   
-  
   # Extract vector with treatment effects
+  #
   y <- dat$TE
   y <- ifelse(is.na(y), 0, y)
   #
-  dat_out <- var <- treat_out <- vector("list")
-  names_vec <- vector("character")
-  
-  for (i in seq_len(n_outcomes)) {
-    dat_out[[i]] <- dat[dat$outcome == i, ]
+  trts.list <- vector("list", n.out)
+  dat_var <- NULL
+  #
+  for (i in seq_len(n.out)) {
+    dat_var_i <- subset(dat, outcome == i)
     #
-    var[[i]] <- dat_out[[i]]$seTE^2
-    var[[i]] <- ifelse(is.na(var[[i]]), 10000, var[[i]])
+    if (is.null(dat_var))
+      dat_var <- data.frame(studlab = dat_var_i$studlab)
     #
-    names_vec[i] <- paste0("var", i)
+    dat_var_i_complete <- subset(dat_var_i, complete.cases(TE))
+    trts.list[[i]] <- with(dat_var_i_complete, sort(unique(c(treat1, treat2))))
     #
-    dat_out[[i]] <- dat_out[[i]][complete.cases(dat_out[[i]]$TE), ]
-    treat_out[[i]] <- unique(c(dat_out[[i]]$treat1, dat_out[[i]]$treat2))
+    dat_var_i %<>% mutate(var = seTE^2) %>% select(var)
+    #
+    names(dat_var_i) <- paste0("var", i)
+    #
+    dat_var <- cbind(dat_var, dat_var_i)
   }
   #
-  var_f <- list.cbind(var)
-  var_f <- as.data.frame(var_f)
-  names(var_f) <- names_vec
+  res <- list(y = y, var = dat_var, T = treat_data,
+              k = k, k2 = k2, n = n, 
+              trts = trts, trts.list = trts.list)
   #
-  res <- list(y = y, var = var_f, T = treat_data,
-              Ns = Ns, N2h = two_arm, NT = NT, 
-              labtreat = labtreat, treat_out = treat_out)
-  
   res
 }
 
@@ -281,7 +277,7 @@ is.list.pairwise <- function(p, ...) {
 }
 
 gather_results <- function(x, outcomes, trts, reference.group,
-                           level,treat_out, method,n.domain, ...) {
+                           level, trts.list, method,n.domain, ...) {
   res <- as.data.frame(x$BUGSoutput$summary)
   samples <- x$BUGSoutput$sims.list
   #
@@ -297,12 +293,11 @@ gather_results <- function(x, outcomes, trts, reference.group,
   lower.level <- (1 - level) / 2
   upper.level <- 1 - (1 - level) / 2
   #
-  # Make the elements of the list "treat_out" to be every possible treatment if
+  # Make the elements of the list "trts.list" to be every possible treatment if
   # argument 'method == "DM"'
   if (method == "DM") {
-    for (i in 1:length(treat_out)) {
-      treat_out[[i]] <- sort(trts)
-    }
+    for (i in seq_along(trts.list))
+      trts.list[[i]] <- sort(trts)
   }
   #
   basic <- dat_treat <- psi <- rho <- d <-
@@ -321,7 +316,7 @@ gather_results <- function(x, outcomes, trts, reference.group,
     rownames(d[[i]]) <- seq_len(nrow(d[[i]]))
     #
     d[[i]] <- as.data.frame(d[[i]]) %>% 
-      select(any_of(treat_out[[i]]))
+      select(any_of(trts.list[[i]]))
     #
     # Results for basic parameters
     #
@@ -330,7 +325,7 @@ gather_results <- function(x, outcomes, trts, reference.group,
       mutate(lower = NA, upper = NA)
     #
     row.names(basic[[i]]) <- trts
-    basic[[i]] <- basic[[i]][which(row.names(basic[[i]]) %in% treat_out[[i]]), ]
+    basic[[i]] <- basic[[i]][which(row.names(basic[[i]]) %in% trts.list[[i]]), ]
     ##
     for (j in rownames(basic[[i]])) {
       basic[[i]][j, c("lower", "upper")] <-
@@ -364,7 +359,7 @@ gather_results <- function(x, outcomes, trts, reference.group,
     TE.random.i <- seTE.random.i <-
       lower.random.i <- upper.random.i <-
       matrix(NA, nrow = ncol(dmat.i), ncol = ncol(dmat.i),
-             dimnames = list(treat_out[[i]], treat_out[[i]]))
+             dimnames = list(trts.list[[i]], trts.list[[i]]))
     #
     for (j in seq_len(ncol(dmat.i)))
       for (k in seq_len(ncol(dmat.i)))
