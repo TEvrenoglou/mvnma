@@ -34,6 +34,11 @@
 #'   fitting. This can be either "standard" (default), referring to the
 #'   standard bivariate model, or "DM", referring to the bivariate model based
 #'   on the DuMouchel method. The argument can be abbreviated.
+#' @param varTE.missing Assumed (very large) variance for outcomes not reported
+#'   in a study. By default, the largest variance times 1000000 is used. This is
+#'   the same value used for argument \code{seTE.ignore} in
+#'   \code{\link[netmeta]{netimpact}} to mimicking the removal of individual
+#'   studies from the network meta-analysis.
 #' @param quiet A logical indicating whether to print information on the
 #'   progress of the JAGS model fitting.
 #' @param x An object of class \code{\link{mvnma}}.
@@ -234,7 +239,7 @@ mvnma <- function(...,
                   scale.psi,
                   lower.rho, upper.rho,
                   method = "standard",
-                  debug.variance = 10000,
+                  varTE.missing = NULL,
                   quiet = FALSE) {
   
   # Get rid of warning "no visible binding for global variable"
@@ -461,7 +466,12 @@ mvnma <- function(...,
   #
   control_matrix <- 1L * !is.na(dat_var)
   #
-  data$var[is.na(data$var)] <- debug.variance
+  if (is.null(varTE.missing)) {
+    varTE.missing <-
+      1000^2 * max(data$var %>% select(-studlab), na.rm = TRUE)
+  }
+  #
+  data$var[is.na(data$var)] <- varTE.missing
   
   run.data <- list(
     y = data$y,
@@ -668,6 +678,7 @@ mvnma <- function(...,
   attr(res, "model.code") <- model.code
   attr(res, "fit") <- fit
   attr(res, "params") <- params
+  attr(res, "varTE.missing") <- varTE.missing
   #
   class(res) <- "mvnma"
   #
