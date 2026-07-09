@@ -234,6 +234,7 @@ mvnma <- function(...,
                   scale.psi,
                   lower.rho, upper.rho,
                   method = "standard",
+                  debug.variance = 10000,
                   quiet = FALSE) {
   
   # Get rid of warning "no visible binding for global variable"
@@ -460,7 +461,7 @@ mvnma <- function(...,
   #
   control_matrix <- 1L * !is.na(dat_var)
   #
-  data$var[is.na(data$var)] <- 10000
+  data$var[is.na(data$var)] <- debug.variance
   
   run.data <- list(
     y = data$y,

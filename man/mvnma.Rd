@@ -20,6 +20,7 @@ mvnma(
   lower.rho,
   upper.rho,
   method = "standard",
+  debug.variance = 10000,
   quiet = FALSE
 )
 
