@@ -470,6 +470,14 @@ mvnma <- function(...,
     varTE.missing <-
       1000^2 * max(data$var %>% select(-studlab), na.rm = TRUE)
   }
+  else {
+    chknumeric(varTE.missing, min = 0, zero = TRUE, length = 1)
+    #
+    if (varTE.missing < max(data$var %>% select(-studlab), na.rm = TRUE))
+      stop("The value provided for argument 'varTE.missing' must be larger ",
+           "than the largest available variance in the dataset.",
+           .call = FALSE)
+  }
   #
   data$var[is.na(data$var)] <- varTE.missing
   
@@ -639,6 +647,9 @@ mvnma <- function(...,
   # Run Bayesian analysis
   #
   
+  text_conn <- textConnection(model.code)
+  on.exit(close(text_conn), add = TRUE)
+  #
   fit <- jags(
     data = run.data,
     inits = NULL,
@@ -650,7 +661,7 @@ mvnma <- function(...,
     #
     DIC = FALSE,
     #
-    model.file = textConnection(model.code),
+    model.file = text_conn,
     quiet = quiet)
   #
   samples <- fit$BUGSoutput$sims.list
