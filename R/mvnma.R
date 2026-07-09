@@ -34,6 +34,11 @@
 #'   fitting. This can be either "standard" (default), referring to the
 #'   standard bivariate model, or "DM", referring to the bivariate model based
 #'   on the DuMouchel method. The argument can be abbreviated.
+#' @param varTE.missing Assumed (very large) variance for outcomes not reported
+#'   in a study. By default, the largest variance times 1000000 is used. This is
+#'   the same value used for argument \code{seTE.ignore} in
+#'   \code{\link[netmeta]{netimpact}} to mimicking the removal of individual
+#'   studies from the network meta-analysis.
 #' @param quiet A logical indicating whether to print information on the
 #'   progress of the JAGS model fitting.
 #' @param x An object of class \code{\link{mvnma}}.
@@ -234,21 +239,22 @@ mvnma <- function(...,
                   scale.psi,
                   lower.rho, upper.rho,
                   method = "standard",
+                  varTE.missing = NULL,
                   quiet = FALSE) {
   
-  is_pairwise <- function(x)
-    inherits(x, "pairwise")
+  # Get rid of warning "no visible binding for global variable"
+  studlab <- NULL
   #
   args <- list(...)
   #
   n.out <- length(args)
   #
-  chknumeric(n.domain,min=1,max=n.out)
+  chknumeric(n.domain, min = 1, max = n.out)
   n.dom <- n.domain
   n.i <- seq_len(n.out)
   #
   if (n.out == 1) {
-    if (is_pairwise(args[[1]]))
+    if (inherits(args[[1]], "pairwise"))
       stop("Provide between two and five pairwise objects.",
            call. = FALSE)
     #
@@ -257,7 +263,7 @@ mvnma <- function(...,
            "'netmeta', 'netcomb', or 'discomb'.",
            call. = FALSE)
     #
-    if (!is_pairwise(args[[1]])) {
+    if (!inherits(args[[1]], "pairwise")) {
       n.out <- length(args[[1]])
       n.i <- seq_len(n.out)
       #
@@ -269,7 +275,7 @@ mvnma <- function(...,
   }
   #  
   for (i in n.i) {
-    if (!is_pairwise(args[[i]]))
+    if (!inherits(args[[i]], "pairwise"))
       stop("All elements of argument '...' must be of class ",
            "'pairwise'.",
            call. = FALSE)
@@ -281,7 +287,7 @@ mvnma <- function(...,
   #
   data <- mvdata(args)
   
-  treat_out <- data$treat_out
+  trts.list <- data$trts.list
   #
   chknull(reference.group)
   chklevel(level)
@@ -289,8 +295,9 @@ mvnma <- function(...,
   #
   method <- setchar(method, c("standard", "DM"))
   #
-  # extract number of outcomes  
-  n.out <- ncol(data$var)
+  # Extract number of outcomes
+  #
+  n.out <- ncol(data$var %>% select(-studlab))
   n.cor <- choose(n.out, 2)
   #
   miss.lower <- missing(lower.rho)
@@ -447,13 +454,33 @@ mvnma <- function(...,
   else if (length(outclab) != n.out)
     stop("Please provide labels for all outcomes.")
   
-  trts <- data$labtreat$treat
+  trts <- data$trts
   #
   ref <- unname(which(trts == reference.group))  
   
-  
   multiarm <- ncol(data$T) > 2
   #
+  dat_var <- data$var %>% filter(!duplicated(studlab))
+  rownames(dat_var) <- dat_var$studlab
+  dat_var %<>% select(-studlab)
+  #
+  control_matrix <- 1L * !is.na(dat_var)
+  #
+  if (is.null(varTE.missing)) {
+    varTE.missing <-
+      1000^2 * max(data$var %>% select(-studlab), na.rm = TRUE)
+  }
+  else {
+    chknumeric(varTE.missing, min = 0, zero = TRUE, length = 1)
+    #
+    if (varTE.missing < max(data$var %>% select(-studlab), na.rm = TRUE))
+      stop("The value provided for argument 'varTE.missing' must be larger ",
+           "than the largest available variance in the dataset.",
+           .call = FALSE)
+  }
+  #
+  data$var[is.na(data$var)] <- varTE.missing
+  
   run.data <- list(
     y = data$y,
     #
@@ -463,15 +490,17 @@ mvnma <- function(...,
     var4 = NA,
     var5 = NA,
     #
+    control = control_matrix,
+    #
     ref = ref,
     #
-    k = data$Ns,
-    k2 = data$N2h,
-    n = data$NT,
+    k = data$k,
+    k2 = data$k2,
+    n = data$n,
     #
     treat1 = data$T[, 1], treat2 = data$T[, 2], treat3 = NA,
     #
-    prec.psi1 = prec.psi1, prec.psi2=prec.psi2,
+    prec.psi1 = prec.psi1, prec.psi2 = prec.psi2,
     prec.psi3 = NA, prec.psi4 = NA, prec.psi5 = NA,
     #
     lower.rho1 = lower.rho1, upper.rho1 = upper.rho1,
@@ -551,7 +580,7 @@ mvnma <- function(...,
                 "psi1", "psi2",
                 "rho1")
     #
-    model.code <- mvnma_code(n.out, method, multiarm,n.dom)
+    model.code <- mvnma_code(n.out, method, multiarm, n.dom)
   }
   #
   else if (n.out == 3) {
@@ -571,7 +600,7 @@ mvnma <- function(...,
                 "psi1", "psi2", "psi3",
                 "rho1", "rho2", "rho3")
     #
-    model.code <- mvnma_code(n.out, method, multiarm,n.dom)
+    model.code <- mvnma_code(n.out, method, multiarm, n.dom)
   }
   #
   else if (n.out == 4) {
@@ -589,7 +618,7 @@ mvnma <- function(...,
                 "psi1", "psi2", "psi3", "psi4",
                 "rho1", "rho2", "rho3", "rho4", "rho5", "rho6")
     #
-    model.code <- mvnma_code(n.out, method, multiarm,n.dom)
+    model.code <- mvnma_code(n.out, method, multiarm, n.dom)
   }
   #
   else if (n.out == 5) {
@@ -598,15 +627,17 @@ mvnma <- function(...,
                 "rho1", "rho2", "rho3", "rho4", "rho5", "rho6",
                 "rho7", "rho8", "rho9", "rho10")
     #
-    model.code <- mvnma_code(n.out, method, multiarm,n.dom)
+    model.code <- mvnma_code(n.out, method, multiarm, n.dom)
   }
   #
-  if (method == "DM")
-    if(is.null(n.domain)){
-    params <- c(params, "sigma")  
-    }else{
-    params <- c(params, "sigma1","sigma2") 
+  if (method == "DM") {
+    if (is.null(n.domain)) {
+      params <- c(params, "sigma")  
     }
+    else{
+      params <- c(params, "sigma1", "sigma2") 
+    }
+  }
   #
   if (!multiarm)
     run.data$k <- NULL
@@ -616,6 +647,9 @@ mvnma <- function(...,
   # Run Bayesian analysis
   #
   
+  text_conn <- textConnection(model.code)
+  on.exit(close(text_conn), add = TRUE)
+  #
   fit <- jags(
     data = run.data,
     inits = NULL,
@@ -627,7 +661,7 @@ mvnma <- function(...,
     #
     DIC = FALSE,
     #
-    model.file = textConnection(model.code),
+    model.file = text_conn,
     quiet = quiet)
   #
   samples <- fit$BUGSoutput$sims.list
@@ -639,7 +673,7 @@ mvnma <- function(...,
   res <- gather_results(fit,
                         outcomes = outclab,
                         trts = trts,
-                        treat_out = treat_out,
+                        trts.list = trts.list,
                         reference.group = reference.group,
                         level = level,
                         n.domain = n.domain,
@@ -655,6 +689,7 @@ mvnma <- function(...,
   attr(res, "model.code") <- model.code
   attr(res, "fit") <- fit
   attr(res, "params") <- params
+  attr(res, "varTE.missing") <- varTE.missing
   #
   class(res) <- "mvnma"
   #
