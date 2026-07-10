@@ -230,428 +230,232 @@
 #' @export mvnma
 
 mvnma <- function(...,
-                  reference.group = NULL, outclab = NULL,   
+                  #
+                  method = "standard",
                   n.domain = NULL,
+                  #
+                  reference.group = NULL, outclab = NULL,   
+                  #
                   n.chains = 4, n.iter = 10000, 
                   n.burnin = 2000, 
                   n.thin = max(1, floor((n.iter - n.burnin) / 1000)), 
+                  #
                   level = gs("level.ma"),
+                  #
                   scale.psi,
                   lower.rho, upper.rho,
-                  method = "standard",
+                  #
                   varTE.missing = NULL,
                   quiet = FALSE) {
   
   # Get rid of warning "no visible binding for global variable"
   studlab <- NULL
+  
+  
   #
+  #
+  # (1) Extract pairwise() objects
+  #
+  #
+  
   args <- list(...)
   #
-  n.out <- length(args)
-  #
-  chknumeric(n.domain, min = 1, max = n.out)
-  n.dom <- n.domain
-  n.i <- seq_len(n.out)
-  #
-  if (n.out == 1) {
+  if (length(args) == 1) {
     if (inherits(args[[1]], "pairwise"))
       stop("Provide between two and five pairwise objects.",
            call. = FALSE)
     #
     if (!is.list(args[[1]]))
-      stop("All elements of argument '...' must be of classes ",
-           "'netmeta', 'netcomb', or 'discomb'.",
+      stop("All elements of argument '...' must be of class 'pairwise'.",
            call. = FALSE)
     #
-    if (!inherits(args[[1]], "pairwise")) {
-      n.out <- length(args[[1]])
-      n.i <- seq_len(n.out)
-      #
-      args2 <- list()
-      for (i in n.i)
-        args2[[i]] <- args[[1]][[i]]
-    }
+    n.args <- length(args[[1]])
+    #
+    args2 <- vector("list", n.args)
+    #
+    for (i in seq_len(n.args))
+      args2[[i]] <- args[[1]][[i]]
+    #
     args <- args2
   }
+  #
+  n.out <- length(args)
+  n.rho <- choose(n.out, 2)
+  #
+  if (n.out < 2 | n.out > 5)
+    stop("Provide between two and five pairwise objects.",
+         call. = FALSE)
   #  
-  for (i in n.i) {
+  for (i in seq_len(n.out)) {
     if (!inherits(args[[i]], "pairwise"))
       stop("All elements of argument '...' must be of class ",
            "'pairwise'.",
            call. = FALSE)
   }
   #
-  if (n.out < 2 | n.out > 5)
-    stop("Provide between two and five pairwise objects.",
-         call. = FALSE)
+  sm <- vector("character", n.out)
+  reference.groups <- vector("character", n.out)
+  trts_list <- vector("list", n.out)
   #
-  data <- mvdata(args)
+  for (i in seq_len(n.out)) {
+    sm[i] <- attr(args[[i]], "sm")
+    reference.groups[i] <- attr(args[[i]], "reference.group")
+    trts_list[[i]] <- sort(unique(c(args[[i]]$treat1, args[[i]]$treat2)))
+  }
   
-  trts.list <- data$trts.list
+  
   #
-  chknull(reference.group)
-  chklevel(level)
-  chklogical(quiet)
   #
+  # (2) Check and set additional arguments
+  #
+  #
+  
   method <- setchar(method, c("standard", "DM"))
   #
-  # Extract number of outcomes
+  chknumeric(n.domain, min = 1, max = n.out)
   #
-  n.out <- ncol(data$var %>% select(-studlab))
-  n.cor <- choose(n.out, 2)
-  #
-  miss.lower <- missing(lower.rho)
-  miss.upper <- missing(upper.rho)
-  miss.scale.psi <- missing(scale.psi)
-  #
-  if (!miss.lower)
-    chknumeric(lower.rho, min = -1, max = 1, length = n.cor, NA.ok = FALSE)
-  #
-  if (!miss.upper)
-    chknumeric(upper.rho, min = -1, max = 1, length = n.cor, NA.ok = FALSE)
-  #
-  if (!miss.lower & !miss.upper) {
-    if (any(lower.rho >= upper.rho))
-      stop("Values for argument 'lower.rho' must be smaller than values for ",
-           "argument 'upper.rho'.",
+  if (is.null(reference.group)) {
+    if (length(unique(reference.groups)) == 1)
+      reference.group <- unique(reference.groups)
+    else
+      stop("Argument 'reference.group' must be specified as it differs in ",
+           "pairwise() objects:\n  ",
+           paste0("'", reference.groups, "'", collapse = ", "),
            call. = FALSE)
   }
-  
-  #
-  if (!miss.scale.psi)
-    chknumeric(scale.psi,zero = TRUE, min = 0, length = n.out, NA.ok = FALSE)
-  
-  # Create bounds for correlation prior
-  #
-  if (miss.lower)
-    lower.rho1 <- -1
-  else
-    lower.rho1 <- lower.rho[1]
-  #
-  if (miss.upper)
-    upper.rho1 <- 1
-  else
-    upper.rho1 <- upper.rho[1]
-  #
-  if (n.out >= 3) {
-    if (miss.lower) {
-      lower.rho2 <- -1
-      lower.rho3 <- -1
-    }
-    else {
-      lower.rho2 <- lower.rho[2]
-      lower.rho3 <- lower.rho[3]
-    }
-    #
-    if (miss.upper) {
-      upper.rho2 <- 1
-      upper.rho3 <- 1
-    }
-    else {
-      upper.rho2 <- upper.rho[2]
-      upper.rho3 <- upper.rho[3]
-    }
-  }
-  #
-  if (n.out >= 4) {
-    if (miss.lower) {
-      lower.rho4 <- -1
-      lower.rho5 <- -1
-      lower.rho6 <- -1
-    }
-    else {
-      lower.rho4 <- lower.rho[4]
-      lower.rho5 <- lower.rho[5]
-      lower.rho6 <- lower.rho[6]
-    }
-    #
-    if (miss.upper) {
-      upper.rho4 <- 1
-      upper.rho5 <- 1
-      upper.rho6 <- 1
-    }
-    else {
-      upper.rho4 <- upper.rho[4]
-      upper.rho5 <- upper.rho[5]
-      upper.rho6 <- upper.rho[6]
-    }
-  }
-  #
-  if (n.out >= 5) {
-    if (miss.lower) {
-      lower.rho7  <- -1
-      lower.rho8  <- -1
-      lower.rho9  <- -1
-      lower.rho10 <- -1
-    }
-    else {
-      lower.rho7  <- lower.rho[7]
-      lower.rho8  <- lower.rho[8]
-      lower.rho9  <- lower.rho[9]
-      lower.rho10 <- lower.rho[10]
-    }
-    #
-    if (miss.upper) {
-      upper.rho7  <- 1
-      upper.rho8  <- 1
-      upper.rho9  <- 1
-      upper.rho10 <- 1
-    }
-    else {
-      upper.rho7  <- upper.rho[7]
-      upper.rho8  <- upper.rho[8]
-      upper.rho9  <- upper.rho[9]
-      upper.rho10 <- upper.rho[10]
-    }
-  }
-  
-  # Create values for the scale and precision of parameter psi
-  
-  if (miss.scale.psi) {
-    scale.psi1 <- 1
-    scale.psi2 <- 1
-  }  
   else {
-    scale.psi1 <- scale.psi[1]
-    scale.psi2 <- scale.psi[2]
+    reference.group <-
+      setchar(reference.group, sort(unique(unlist(trts_list))))
   }
-  
-  prec.psi1 <- 1 / scale.psi1^2
-  
-  prec.psi2 <- 1 / scale.psi2^2
-  
-  if (n.out >= 3) {
-    if (miss.scale.psi)
-      scale.psi3 <- 1
-    else
-      scale.psi3 <- scale.psi[3]
-    #
-    prec.psi3 <- 1 / scale.psi3^2
-  }
-  
-  if (n.out >= 4) {
-    if (miss.scale.psi)
-      scale.psi4 <- 1
-    else
-      scale.psi4 <- scale.psi[4]
-    #
-    prec.psi4 <- 1 / scale.psi4^2
-  }
-  
-  if (n.out >= 5) {
-    if (miss.scale.psi)
-      scale.psi5 <- 1
-    else
-      scale.psi5 <- scale.psi[5]
-    #
-    prec.psi5 <- 1 / scale.psi5^2
-  }
-  
-  # Create outcome labels if not provided
   #
   if (is.null(outclab))
     outclab <- paste("outcome", seq_len(n.out), sep = "_")  
   else if (length(outclab) != n.out)
     stop("Please provide labels for all outcomes.")
-  
-  trts <- data$trts
   #
-  ref <- unname(which(trts == reference.group))  
-  
-  multiarm <- ncol(data$T) > 2
+  chknumeric(n.chains, min = 1, length = 1)
+  chknumeric(n.iter, min = 1, length = 1)
+  chknumeric(n.burnin, min = 1, length = 1)
+  chknumeric(n.thin, min = 1, length = 1)
   #
-  dat_var <- data$var %>% filter(!duplicated(studlab))
+  chklevel(level)
+  #
+  if (missing(scale.psi))
+    scale.psi <- rep_len(1, n.out)
+  else
+    chknumeric(scale.psi, min = 0, zero = TRUE, length = n.out, NA.ok = FALSE)
+  #
+  prec.psi <- 1 / scale.psi^2
+  #
+  miss.lower.rho <- missing(lower.rho)
+  miss.upper.rho <- missing(upper.rho)
+  #
+  if (miss.lower.rho)
+    lower.rho <- rep_len(-1, n.rho)
+  else
+    chknumeric(lower.rho, min = -1, max = 1, length = n.rho, NA.ok = FALSE)
+  #
+  if (miss.upper.rho)
+    upper.rho <- rep_len(1, n.rho)
+  else
+    chknumeric(upper.rho, min = -1, max = 1, length = n.rho, NA.ok = FALSE)
+  #
+  if (!miss.lower.rho & !miss.upper.rho) {
+    if (any(lower.rho >= upper.rho))
+      stop("Values for argument 'lower.rho' must be smaller than values for ",
+           "argument 'upper.rho'.",
+           call. = FALSE)
+  }
+  #
+  if (!is.null(varTE.missing))
+    chknumeric(varTE.missing, min = 0, zero = TRUE, length = 1)
+  #
+  chklogical(quiet)
+  
+  
+  #
+  #
+  # (3) Create list with JAGS input
+  #
+  #
+  
+  dat <- mvdata(args)
+  #
+  # Check number of extracted outcomes
+  #
+  if (n.out != ncol(dat$var %>% select(-studlab)))
+    stop("Number of variances and outcomes differ.", call. = FALSE)
+  #
+  trts.list <- dat$trts.list
+  trts <- dat$trts
+  #
+  id_reference.group <- unname(which(trts == reference.group))
+  #
+  multiarm <- ncol(dat$treatments) > 2
+  #
+  dat_var <- dat$var %>% filter(!duplicated(studlab))
   rownames(dat_var) <- dat_var$studlab
   dat_var %<>% select(-studlab)
   #
   control_matrix <- 1L * !is.na(dat_var)
   #
+  var_matrix <- as.matrix(dat$var %>% select(-studlab))
+  #
   if (is.null(varTE.missing)) {
-    varTE.missing <-
-      1000^2 * max(data$var %>% select(-studlab), na.rm = TRUE)
+    varTE.missing <- 1000^2 * max(var_matrix, na.rm = TRUE)
   }
   else {
-    chknumeric(varTE.missing, min = 0, zero = TRUE, length = 1)
-    #
-    if (varTE.missing < max(data$var %>% select(-studlab), na.rm = TRUE))
+    if (varTE.missing < max(dat$var %>% select(-studlab), na.rm = TRUE))
       stop("The value provided for argument 'varTE.missing' must be larger ",
            "than the largest available variance in the dataset.",
-           .call = FALSE)
+           call. = FALSE)
   }
   #
-  data$var[is.na(data$var)] <- varTE.missing
-  
-  run.data <- list(
-    y = data$y,
-    #
-    var1 = data$var$var1,
-    var2 = data$var$var2,
-    var3 = NA,
-    var4 = NA,
-    var5 = NA,
-    #
-    control = control_matrix,
-    #
-    ref = ref,
-    #
-    k = data$k,
-    k2 = data$k2,
-    n = data$n,
-    #
-    treat1 = data$T[, 1], treat2 = data$T[, 2], treat3 = NA,
-    #
-    prec.psi1 = prec.psi1, prec.psi2 = prec.psi2,
-    prec.psi3 = NA, prec.psi4 = NA, prec.psi5 = NA,
-    #
-    lower.rho1 = lower.rho1, upper.rho1 = upper.rho1,
-    lower.rho2 = NA, upper.rho2 = NA,
-    lower.rho3 = NA, upper.rho3 = NA,
-    lower.rho4 = NA, upper.rho4 = NA,
-    lower.rho5 = NA, upper.rho5 = NA,
-    lower.rho6 = NA, upper.rho6 = NA,
-    lower.rho7 = NA, upper.rho7 = NA,
-    lower.rho8 = NA, upper.rho8 = NA,
-    lower.rho9 = NA, upper.rho9 = NA,
-    lower.rho10 = NA, upper.rho10 = NA)
+  var_matrix[is.na(var_matrix)] <- varTE.missing
   #
-  if (n.out >= 3) {
-    run.data$var3 <- data$var$var3
+  dat_jags <- list(
+    y = dat$y,
     #
-    run.data$prec.psi3 <- prec.psi3
+    varmat = var_matrix,
+    contmat = control_matrix,
     #
-    run.data$lower.rho2 <- lower.rho2
-    run.data$lower.rho3 <- lower.rho3
+    trtmat = dat$treatments,
     #
-    run.data$upper.rho2 <- upper.rho2
-    run.data$upper.rho3 <- upper.rho3
-  }
-  #
-  if (n.out >= 4) {
-    run.data$var4 <- data$var$var4
+    ref = id_reference.group,
     #
-    run.data$prec.psi4 <- prec.psi4
+    k = dat$k,
+    k2 = dat$k2,
+    n = dat$n,
     #
-    run.data$lower.rho4 <- lower.rho4
-    run.data$lower.rho5 <- lower.rho5
-    run.data$lower.rho6 <- lower.rho6
-    #
-    run.data$upper.rho4 <- upper.rho4
-    run.data$upper.rho5 <- upper.rho5
-    run.data$upper.rho6 <- upper.rho6
-  }
-  #
-  if (n.out >= 5) {
-    run.data$var5 <- data$var$var5
-    #
-    run.data$prec.psi5 <- prec.psi5
-    #
-    run.data$lower.rho7 <- lower.rho7
-    run.data$lower.rho8 <- lower.rho8
-    run.data$lower.rho9 <- lower.rho9
-    run.data$lower.rho10 <- lower.rho10
-    #
-    run.data$upper.rho7 <- upper.rho7
-    run.data$upper.rho8 <- upper.rho8
-    run.data$upper.rho9 <- upper.rho9
-    run.data$upper.rho10 <- upper.rho10
-  }
-  #
-  if (multiarm)
-    run.data$treat3 <- data$T[, 3]
-  else
-    run.data$treat3 <- NULL
-  #
-  if (n.out == 2) {
-    run.data$var3 <- run.data$var4 <- run.data$var5 <- NULL
-    #
-    run.data$prec.psi3 <- run.data$prec.psi4 <- run.data$prec.psi5 <- NULL
-    #
-    run.data$lower.rho2 <- run.data$lower.rho3 <- run.data$lower.rho4 <-
-      run.data$lower.rho5 <- run.data$lower.rho6 <- run.data$lower.rho7 <-
-      run.data$lower.rho8 <- run.data$lower.rho9 <- run.data$lower.rho10 <-
-      NULL
-    #
-    run.data$upper.rho2 <- run.data$upper.rho3 <- run.data$upper.rho4 <-
-      run.data$upper.rho5 <- run.data$upper.rho6 <- run.data$upper.rho7 <-
-      run.data$upper.rho8 <- run.data$upper.rho9 <- run.data$upper.rho10 <-
-      NULL
-    #
-    params <- c("d1", "d2", 
-                "psi1", "psi2",
-                "rho1")
-    #
-    model.code <- mvnma_code(n.out, method, multiarm, n.dom)
-  }
-  #
-  else if (n.out == 3) {
-    run.data$var4 <- run.data$var5 <- NULL
-    #
-    run.data$prec.psi4 <- run.data$prec.psi5 <- NULL
-    #
-    run.data$lower.rho4 <- run.data$lower.rho5 <- run.data$lower.rho6 <-
-      run.data$lower.rho7 <- run.data$lower.rho8 <- run.data$lower.rho9 <-
-      run.data$lower.rho10 <- NULL
-    #
-    run.data$upper.rho4 <- run.data$upper.rho5 <- run.data$upper.rho6 <-
-      run.data$upper.rho7 <- run.data$upper.rho8 <- run.data$upper.rho9 <-
-      run.data$upper.rho10 <- NULL
-    #
-    params <- c("d1", "d2", "d3", 
-                "psi1", "psi2", "psi3",
-                "rho1", "rho2", "rho3")
-    #
-    model.code <- mvnma_code(n.out, method, multiarm, n.dom)
-  }
-  #
-  else if (n.out == 4) {
-    run.data$var5 <- NULL
-    #
-    run.data$prec.psi5 <- NULL
-    #
-    run.data$lower.rho7 <- run.data$lower.rho8 <- run.data$lower.rho9 <-
-      run.data$lower.rho10 <- NULL
-    #
-    run.data$upper.rho7 <- run.data$upper.rho8 <- run.data$upper.rho9 <-
-      run.data$upper.rho10 <- NULL
-    #
-    params <- c("d1", "d2", "d3", "d4", 
-                "psi1", "psi2", "psi3", "psi4",
-                "rho1", "rho2", "rho3", "rho4", "rho5", "rho6")
-    #
-    model.code <- mvnma_code(n.out, method, multiarm, n.dom)
-  }
-  #
-  else if (n.out == 5) {
-    params <- c("d1", "d2", "d3", "d4", "d5",
-                "psi1", "psi2", "psi3", "psi4", "psi5",
-                "rho1", "rho2", "rho3", "rho4", "rho5", "rho6",
-                "rho7", "rho8", "rho9", "rho10")
-    #
-    model.code <- mvnma_code(n.out, method, multiarm, n.dom)
-  }
-  #
-  if (method == "DM") {
-    if (is.null(n.domain)) {
-      params <- c(params, "sigma")  
-    }
-    else{
-      params <- c(params, "sigma1", "sigma2") 
-    }
-  }
+    prec.psi = prec.psi, lower.rho = lower.rho, upper.rho = upper.rho
+  )
   #
   if (!multiarm)
-    run.data$k <- NULL
+    dat_jags$k <- NULL
   
   
   #
-  # Run Bayesian analysis
+  #
+  # (3) Run Bayesian analysis
+  #
   #
   
+  params <- c(paste0("d", seq_len(n.out)), "psi", "rho")
+  #
+  if (method == "DM") {
+    if (is.null(n.domain))
+      params <- c(params, "sigma")
+    else
+      params <- c(params, c("sigma1", "sigma2"))
+  }
+  #
+  model.code <- mvnma_code(n.out, method, multiarm, n.domain)
+  #
   text_conn <- textConnection(model.code)
   on.exit(close(text_conn), add = TRUE)
   #
   fit <- jags(
-    data = run.data,
+    data = dat_jags,
     inits = NULL,
     #
     parameters.to.save = params,
@@ -664,9 +468,10 @@ mvnma <- function(...,
     model.file = text_conn,
     quiet = quiet)
   #
-  samples <- fit$BUGSoutput$sims.list
-  colnames(samples$d1) <- trts
-  colnames(samples$d2) <- trts
+  # Column names set to treatment names
+  #
+  for (i in seq_len(n.out))
+    colnames(fit$BUGSoutput$sims.list[[paste0("d", i)]]) <- trts
   #
   # Manipulate the results and create suitable datasets
   #
@@ -681,10 +486,10 @@ mvnma <- function(...,
   #
   attr(res, "outcomes") <- outclab
   attr(res, "trts") <- trts
-  attr(res,"n.domain") <- n.domain
+  attr(res, "n.domain") <- n.domain
   attr(res, "reference.group") <- reference.group
   attr(res, "level") <- level
-  attr(res, "sm") <- attr(data, "sm")
+  attr(res, "sm") <- attr(dat, "sm")
   attr(res, "method.model") <- method
   attr(res, "model.code") <- model.code
   attr(res, "fit") <- fit
@@ -716,7 +521,7 @@ print.mvnma <- function(x,
   level <- attr(x, "level")
   reference.group <- attr(x, "reference.group")
   method <- attr(x, "method")
-  n.domain <- attr(x,"n.domain")
+  n.domain <- attr(x, "n.domain")
   #
   ci.lab <- paste0(round(100 * level, 1), "%-CI")
   #
@@ -727,13 +532,14 @@ print.mvnma <- function(x,
       x <- x[names(x) != "sigma"]
     }
     else {
-      x <- x[!(names(x) %in% c("sigma1","sigma2"))]
+      x <- x[!(names(x) %in% c("sigma1", "sigma2"))]
     }
   }
+  #
   nam <- names(x)
   
   # Get rid of warning "no visible binding for global variable"
-  lower <- upper <- psi <- NULL
+  lower <- upper <- NULL
   #
   for (i in seq_along(nam)) {
     cat(paste0(if (i > 1) "\n" else "", "Outcome: ", nam[i], "\n\n"))

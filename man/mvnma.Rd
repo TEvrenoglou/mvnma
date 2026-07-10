@@ -8,9 +8,10 @@ single-correlation coefficient model}
 \usage{
 mvnma(
   ...,
+  method = "standard",
+  n.domain = NULL,
   reference.group = NULL,
   outclab = NULL,
-  n.domain = NULL,
   n.chains = 4,
   n.iter = 10000,
   n.burnin = 2000,
@@ -19,7 +20,6 @@ mvnma(
   scale.psi,
   lower.rho,
   upper.rho,
-  method = "standard",
   varTE.missing = NULL,
   quiet = FALSE
 )
@@ -35,15 +35,20 @@ mvnma(
 \arguments{
 \item{\dots}{Additional arguments (ignored)}
 
-\item{reference.group}{A common reference treatment across all outcomes.}
-
-\item{outclab}{An optional argument with labels for each outcome. If NULL,
-the each outcome is labelled as 'outcome_1', 'outcome_2' etc.}
+\item{method}{A character string specifying the method to be used for model
+fitting. This can be either "standard" (default), referring to the
+standard bivariate model, or "DM", referring to the bivariate model based
+on the DuMouchel method. The argument can be abbreviated.}
 
 \item{n.domain}{Integer indicating the position of the last outcome in the 
 first outcome domain (based on the order of the supplied pairwise objects). 
 Used with `method = "DM"` to restrict information sharing within outcome 
 domains. Ignored when `method = "standard"`. Default is `NULL`.}
+
+\item{reference.group}{A common reference treatment across all outcomes.}
+
+\item{outclab}{An optional argument with labels for each outcome. If NULL,
+the each outcome is labelled as 'outcome_1', 'outcome_2' etc.}
 
 \item{n.chains}{Number of Markov chains (default=4).}
 
@@ -67,11 +72,6 @@ correlation coefficient. If NULL all bounds are set to -1.}
 
 \item{upper.rho}{Upper bounds for the Uniform prior(s) used for the
 correlation coefficient. If NULL all bounds are set to 1.}
-
-\item{method}{A character string specifying the method to be used for model
-fitting. This can be either "standard" (default), referring to the
-standard bivariate model, or "DM", referring to the bivariate model based
-on the DuMouchel method. The argument can be abbreviated.}
 
 \item{varTE.missing}{Assumed (very large) variance for outcomes not reported
 in a study. By default, the largest variance times 1000000 is used. This is

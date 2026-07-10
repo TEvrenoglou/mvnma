@@ -52,8 +52,8 @@ code_covar_ests <- function(n.out, multiarm) {
   for (i in seq_len(n.out)) {
     txt <-
       paste0(txt,
-             "    S2[i, ", i, ", ", i, "] <- var", i, "[i] + ",
-             "psi", i, ".sq\n")
+             "    S2[i, ", i, ", ", i, "] <- varmat[i, ", i, "] + ",
+             "psi.sq[", i, "]\n")
   }
   #
   txt <-
@@ -73,9 +73,9 @@ code_covar_ests <- function(n.out, multiarm) {
                "    S2[i, ", i, ", ", j, "] <- ",
                "sqrt(S2[i, ", i, ", ", i, "]) * ",
                "sqrt(S2[i, ", j, ", ", j, "]) * ",
-               "control", "[i, ", i, "] * ",
-               "control", "[i, ", j, "] * ",
-               "rho", r, "\n")
+               "contmat", "[i, ", i, "] * ",
+               "contmat", "[i, ", j, "] * ",
+               "rho[", r, "]\n")
     }
   }
   #
@@ -124,10 +124,9 @@ code_covar_ests <- function(n.out, multiarm) {
     #
     for (i in seq_len(2 * n.out)) {
       txt <-
-        paste0(txt, "    S3[i, ", i, ", ", i, "] <- var", idx[i],
-               "[k2 + 2 * i",
-               if (i <= n.out) " - 1",
-               "] + psi", idx[i], ".sq\n")
+        paste0(txt, "    S3[i, ", i, ", ", i, "] <- ",
+               "varmat[k2 + 2 * i", if (i <= n.out) " - 1", ", ",
+               idx[i], "] + psi.sq[", idx[i], "]\n")
       #
       if (idx[i] == n.out)
         txt <- paste0(txt, "    #\n")
@@ -148,9 +147,9 @@ code_covar_ests <- function(n.out, multiarm) {
                  "    S3[i, ", i, ", ", j, "] <- ",
                  "sqrt(S3[i, ", i, ", ", i, "]) * ",
                  "sqrt(S3[i, ", j, ", ", j, "]) * ",
-                 "control", "[k2 + i, ", i, "] * ",
-                 "control", "[k2 + i, ", j, "] * ",
-                 "rho", r, "\n")
+                 "contmat", "[k2 + i, ", i, "] * ",
+                 "contmat", "[k2 + i, ", j, "] * ",
+                 "rho[", r, "]\n")
       }
     }
     #
@@ -167,9 +166,9 @@ code_covar_ests <- function(n.out, multiarm) {
                  "    S3[i, ", n.out + i, ", ", n.out + j, "] <- ",
                  "sqrt(S3[i, ", n.out + i, ", ", n.out + i, "]) * ",
                  "sqrt(S3[i, ", n.out + j, ", ", n.out + j, "]) * ",
-                 "control", "[k2 + i, ", i, "] * ",
-                 "control", "[k2 + i, ", j, "] * ",
-                 "rho", r, "\n")
+                 "contmat", "[k2 + i, ", i, "] * ",
+                 "contmat", "[k2 + i, ", j, "] * ",
+                 "rho[", r, "]\n")
       }
     }
     #
@@ -196,9 +195,9 @@ code_covar_ests <- function(n.out, multiarm) {
                  "    S3[i, ", i, ", ", j + n.out, "] <- 0.5 * ",
                  "sqrt(S3[i, ", i, ", ", i, "]) * ",
                  "sqrt(S3[i, ", j + n.out, ", ", j + n.out, "]) * ",
-                 "control", "[k2 + i, ", i, "] * ",
-                 "control", "[k2 + i, ", j, "] * ",
-                 "rho", r, "\n")
+                 "contmat", "[k2 + i, ", i, "] * ",
+                 "contmat", "[k2 + i, ", j, "] * ",
+                 "rho[", r, "]\n")
       }
     }
     #
@@ -216,9 +215,9 @@ code_covar_ests <- function(n.out, multiarm) {
             "    S3[i, ", i, ", ", n.out + j, "] <- 0.5 * ",
             "sqrt(S3[i, ", i, ", ", i, "]) * ",
             "sqrt(S3[i, ", n.out + j, ", ", n.out + j, "]) * ",
-            "control", "[k2 + i, ", j, "] * ",
-            "control", "[k2 + i, ", i, "] * ",
-            "rho", r, "\n")
+            "contmat", "[k2 + i, ", j, "] * ",
+            "contmat", "[k2 + i, ", i, "] * ",
+            "rho[", r, "]\n")
       }
     }
     #
@@ -282,7 +281,7 @@ code_means <- function(n.out, multiarm) {
                paste0(" - ", n.out - i)
              else
                strrep(" ", nchar(n.out - 1) + 3),
-             "] <- d", i, "[treat2[i]] - d", i, "[treat1[i]]\n")
+             "] <- d", i, "[trtmat[i, 2]] - d", i, "[trtmat[i, 1]]\n")
   }
   #
   txt <- paste0(txt, "  }\n")
@@ -307,8 +306,8 @@ code_means <- function(n.out, multiarm) {
                else
                  strrep(" ", nchar(2 * n.out - 1) + 3),
                "] <- d",
-               idx[i], "[treat", 2 + (i > n.out), "[k2 + i]] - d",
-               idx[i], "[treat1[k2 + i]]\n")
+               idx[i], "[trtmat[k2 + i, ", 2 + (i > n.out), "]] - ",
+               "d", idx[i], "[trtmat[k2 + i, 1]]\n")
       #
       if (i != 2 * n.out & idx[i] == n.out)
         txt <- paste0(txt, "    #\n")
@@ -532,12 +531,12 @@ code_priors_psi <- function(n.out) {
   txt <- ""
   #
   for (i in seq_len(n.out))
-    txt <- paste0(txt, "  psi", i, ".sq <- psi", i, " * psi", i, "\n")
+    txt <- paste0(txt, "  psi.sq[", i, "] <- psi[", i, "] * psi[", i, "]\n")
   #
   txt <- paste0(txt, "  #\n")
   #
   for (i in seq_len(n.out))
-    txt <- paste0(txt, "  psi", i, "  ~ dnorm(0, prec.psi", i, ")T(0, )\n")
+    txt <- paste0(txt, "  psi[", i, "]  ~ dnorm(0, prec.psi[", i, "])T(0, )\n")
   #
   txt
 }
@@ -547,8 +546,8 @@ code_priors_rho <- function(n.out) {
   #
   for (i in seq_len(choose(n.out, 2)))
     txt <-
-      paste0(txt, "  rho", i, " ~ dunif(lower.rho", i,
-             ", upper.rho", i, ")\n")
+      paste0(txt, "  rho[", i, "] ~ dunif(lower.rho[", i,
+             "], upper.rho[", i, "])\n")
   #
   txt
 }

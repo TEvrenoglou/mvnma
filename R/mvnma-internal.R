@@ -256,7 +256,7 @@ make_jags_data <- function(dat) {
     dat_var <- cbind(dat_var, dat_var_i)
   }
   #
-  res <- list(y = y, var = dat_var, T = treat_data,
+  res <- list(y = y, var = dat_var, treatments = treat_data,
               k = k, k2 = k2, n = n, 
               trts = trts, trts.list = trts.list)
   #
@@ -277,7 +277,9 @@ is.list.pairwise <- function(p, ...) {
 }
 
 gather_results <- function(x, outcomes, trts, reference.group,
-                           level, trts.list, method,n.domain, ...) {
+                           level, trts.list, method,
+                           n.domain, ...) {
+  
   res <- as.data.frame(x$BUGSoutput$summary)
   samples <- x$BUGSoutput$sims.list
   #
@@ -402,13 +404,15 @@ gather_results <- function(x, outcomes, trts, reference.group,
   psi <- psi[[1]]
   row.names(psi) <- outcomes
   #
-  if (method == "DM")
-    if(is.null(n.domain)){
-    sigma <- res %>% filter(grepl("sigma", rnames))
-    }else{
+  if (method == "DM") {
+    if (is.null(n.domain)) {
+      sigma <- res %>% filter(grepl("sigma", rnames))
+    }
+    else {
       sigma1 <- res %>% filter(grepl("sigma1", rnames))
       sigma2 <- res %>% filter(grepl("sigma2", rnames))
     }
+  }
   #
   # Create row.names for cor
   #
@@ -423,72 +427,29 @@ gather_results <- function(x, outcomes, trts, reference.group,
   #
   row.names(cor) <- r.names
   #
-  out1 <- list(basic_estimates = basic[[1]],
-               heterogeneity = psi[1, ],
-               TE.random = TE.random[[1]],
-               seTE.random = seTE.random[[1]],
-               lower.random = lower.random[[1]],
-               upper.random = upper.random[[1]],
-               samples = d[[1]])
+  res <- vector("list", n.out)
   #
-  out2 <- list(basic_estimates = basic[[2]],
-               heterogeneity = psi[2, ],
-               TE.random = TE.random[[2]],
-               seTE.random = seTE.random[[2]],
-               lower.random = lower.random[[2]],
-               upper.random = upper.random[[2]],
-               samples = d[[2]])
-  #
-  res <- list(out1, out2)
-  names(res) <- c(outcomes[1], outcomes[2])
-  #
-  if (n.out >= 3) {
-    out3 <- list(basic_estimates = basic[[3]],
-                 heterogeneity = psi[3, ],
-                 TE.random = TE.random[[3]],
-                 seTE.random = seTE.random[[3]],
-                 lower.random = lower.random[[3]],
-                 upper.random = upper.random[[3]],
-                 samples = d[[3]])
+  for (i in seq_len(n.out)) {
+    res[[i]] <- list(basic_estimates = basic[[i]],
+                     heterogeneity = psi[i, ],
+                     TE.random = TE.random[[i]],
+                     seTE.random = seTE.random[[i]],
+                     lower.random = lower.random[[i]],
+                     upper.random = upper.random[[i]],
+                     samples = d[[i]])
     #
-    res[[3]] <- out3
-    names(res)[3] <- outcomes[3]
-  }
-  #
-  if (n.out >= 4) {
-    out4 <- list(basic_estimates = basic[[4]],
-                 heterogeneity = psi[4, ],
-                 TE.random = TE.random[[4]],
-                 seTE.random = seTE.random[[4]],
-                 lower.random = lower.random[[4]],
-                 upper.random = upper.random[[4]],
-                 samples = d[[4]])
-    #
-    res[[4]] <- out4
-    names(res)[4] <- outcomes[4]
-  }
-  #
-  if (n.out >= 5) {
-    out5 <- list(basic_estimates = basic[[5]],
-                 heterogeneity = psi[5, ],
-                 TE.random = TE.random[[5]],
-                 seTE.random = seTE.random[[5]],
-                 lower.random = lower.random[[5]],
-                 upper.random = upper.random[[5]],
-                 samples = d[[5]])
-    #
-    res[[5]] <- out5
-    names(res)[5] <- outcomes[5]
+    names(res)[i] <- outcomes[i]
   }
   #
   res[[length(res) + 1]] <- cor
   names(res)[length(res)] <- "cor"
   #
   if (method == "DM") {
-    if(is.null(n.domain)){
-    res[[length(res) + 1]] <- sigma
-    names(res)[length(res)] <- "sigma"
-    }else{
+    if (is.null(n.domain)) {
+      res[[length(res) + 1]] <- sigma
+      names(res)[length(res)] <- "sigma"
+    }
+    else {
       res[[length(res) + 1]] <- sigma1
       names(res)[length(res)] <- "sigma1"
       #
