@@ -1,31 +1,5 @@
-catch <- function(argname, matchcall, data, encl)
-  eval(matchcall[[match(argname, names(matchcall))]], data, enclos = encl)
-
-multi_arm <- function(data) {
-  
-  # Get rid of warning "no visible binding for global variable"
-  studlab <- treat2 <- NULL
-  
-  studies <- unique(data$studlab)    
-  #
-  r <- t <- E <- vector("list")
-  
-  for (i in seq_along(studies)) {
-    r[[i]] <- data %>% filter(studlab == studies[i])
-    #
-    if (nrow(r[[i]]) > 2) {
-      t[[i]] <- as.data.frame(table(r[[i]]$treat2))
-      E[[i]] <- t[[i]]$Var1[which(t[[i]]$Freq == max(t[[i]]$Freq))]
-      r[[i]] %<>% filter(treat2 == E[[i]])
-    }
-  }
-  #
-  # df harmonized in terms of treat2 
-  #
-  res <- list.rbind(r)
-  #
-  res
-}
+mvdata <- function(x)
+  make_jags_data(create_data(x))
 
 create_T <- function(data, max.arms) {
   # Get rid of warning "no visible binding for global variable"
@@ -38,7 +12,7 @@ create_T <- function(data, max.arms) {
   for (i in seq_along(studies)) {
     dat.i <- data %>% filter(studlab == studies[i])
     #
-    trts.i <- c(unique(dat.i$id2), unique(dat.i$id1))
+    trts.i <- sort(unique(c(dat.i$id1, dat.i$id2)))
     #
     res[i, seq_along(trts.i)] <- trts.i
   }
@@ -49,32 +23,49 @@ create_T <- function(data, max.arms) {
   res
 }
 
-'%!in%' <- function(x, y)
-  !('%in%'(x, y))
-
-
-#
-# Helpers for mvdata()
-#
-
-create_data <- function(p, ...) {
-  
-  if (!(any(class(p) == "list")))
-    stop("Argument 'p' must be a list of pairwise objects.", 
-         call. = FALSE)
+create_data <- function(p) {
   
   # Get rid of warning "no visible binding for global variable"
-  studlab <- TE <- seTE <- treat1 <- treat2 <- outcome <- n.arms <- NULL
+  studlab <- TE <- seTE <- treat1 <- treat2 <- outcome <- n.arms <- 
+    ref_study <- NULL
   #
   dat1 <- dat2 <- studies <- vector("list")
   #
   n.out <- length(p)
   #
-  for (i in 1:n.out) {
+  for (i in seq_len(n.out)) {
+    #
+    # Rename variable names specified in argument 'varnames' of pairwise()
+    #
+    vn <- attr(p[[i]], "varnames")
+    if (!identical(vn, c("TE", "seTE")))
+      p[[i]] %<>% rename_with(~ c("TE", "seTE"), all_of(vn))
+    #
     p[[i]] %<>% select(studlab, TE, seTE, treat1, treat2)
-    p[[i]] <- multi_arm(p[[i]])
+    #
+    # Outcome number
+    #
     p[[i]]$outcome <- i
-    p[[i]] <- add_arms(p[[i]])
+    #
+    # Add number of treatment arms
+    #
+    tab_narms <- table(p[[i]]$studlab)
+    dat_narms <-
+      data.frame(studlab = names(tab_narms),
+                 n.arms = (1 + sqrt(8 * as.vector(tab_narms) + 1)) / 2)
+    p[[i]] <- merge(p[[i]], dat_narms, by = "studlab",
+                    all.x = TRUE, all.y = FALSE)
+    #
+    # For multi-arm studies only keep comparisons with
+    # - the reference treatment or
+    # - the first alpha-numeric treatment
+    #
+    p[[i]] %<>%
+      group_by(studlab) %>%
+      mutate(ref_study = names(which.max(table(treat2)))) %>%
+      filter(treat2 == ref_study) %>%
+      select(-ref_study) %>%
+      as.data.frame()
   }
   #
   # Combine all pairwise objects
@@ -158,53 +149,13 @@ create_data <- function(p, ...) {
   res <- as.data.frame(res)
   rownames(res) <- seq_len(nrow(res))
   #
-  res <- add_ids(res)
+  # Add IDs for treatment names
+  #
+  trts <- sort(unique(c(res$treat1, res$treat2)))
+  res$id1 <- as.integer(factor(res$treat1, levels = trts))
+  res$id2 <- as.integer(factor(res$treat2, levels = trts))
   #
   res
-}
-
-add_arms <- function(x, ...) {
-  # Get rid of warning "no visible binding for global variable"
-  studlab <- NULL
-  #
-  studies <- unique(x$studlab)
-  #
-  res <- vector("list")
-  #
-  for (i in seq_along(studies)) {
-    res[[i]] <- x %>% filter(studlab == studies[i])
-    #
-    res[[i]]$n.arms <- length(unique(c(res[[i]]$treat1, res[[i]]$treat2)))
-  }
-  #
-  res <- list.rbind(res)  
-  #
-  res
-}
-
-add_ids <- function(data) {
-  all_treats <- unique(c(data$treat1, data$treat2))  
-  #
-  levels_treats <- as.data.frame(levels(as.factor(all_treats)))
-  names(levels_treats) <- c("treat")
-  levels_treats$level <- 1:nrow(levels_treats)  
-  #
-  data$id1 <- NA
-  data$id2 <- NA
-  #
-  for (i in 1:nrow(data)) {
-    for (j in 1:nrow(levels_treats)) {
-      if (data$treat1[i] == levels_treats$treat[j]) {
-        data$id1[i] = levels_treats$level[j]
-      }
-      #
-      if (data$treat2[i] == levels_treats$treat[j]) {
-        data$id2[i] = levels_treats$level[j]
-      }
-    }
-  }  
-  #
-  data
 }
 
 make_jags_data <- function(dat) {
@@ -261,19 +212,6 @@ make_jags_data <- function(dat) {
               trts = trts, trts.list = trts.list)
   #
   res
-}
-
-is.list.pairwise <- function(p, ...) {
-  all_class <- sapply(p, class)
-  #
-  check <- vector()
-  #
-  for (i in 1:ncol(all_class))
-    check[i] <- isTRUE("pairwise" %in% all_class[, i])  
-  #
-  pair <- ifelse(sum(check) >= 2, "pairwise", NA)
-  #
-  pair
 }
 
 gather_results <- function(x, outcomes, trts, reference.group,
@@ -886,3 +824,9 @@ formatCI <- function(lower, upper,
   #
   res
 }
+
+catch <- function(argname, matchcall, data, encl)
+  eval(matchcall[[match(argname, names(matchcall))]], data, enclos = encl)
+
+'%!in%' <- function(x, y)
+  !('%in%'(x, y))
