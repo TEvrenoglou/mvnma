@@ -391,8 +391,6 @@ mvnma <- function(...,
   #
   id_reference.group <- unname(which(trts == reference.group))
   #
-  multiarm <- ncol(dat$treatments) > 2
-  #
   dat_var <- dat$var %>% filter(!duplicated(studlab))
   rownames(dat_var) <- dat_var$studlab
   dat_var %<>% select(-studlab)
@@ -413,25 +411,29 @@ mvnma <- function(...,
   #
   var_matrix[is.na(var_matrix)] <- varTE.missing
   #
+  cat("arms:\n")
+  print(dat$arms)
+  cat("n.studies:\n")
+  print(dat$n.studies)
+  cat("control_matrix:\n")
+  print(tail(control_matrix))
+  print(dim(control_matrix))
+  cat("treatments:\n")
+  print(tail(dat$treatments))
+  #
   dat_jags <- list(
     y = dat$y,
     #
     varmat = var_matrix,
     contmat = control_matrix,
-    #
     trtmat = dat$treatments,
-    #
     ref = id_reference.group,
     #
-    k = dat$k,
-    k2 = dat$k2,
+    n.studies = dat$n.studies,
     n = dat$n,
     #
     prec.psi = prec.psi, lower.rho = lower.rho, upper.rho = upper.rho
   )
-  #
-  if (!multiarm)
-    dat_jags$k <- NULL
   
   
   #
@@ -449,7 +451,7 @@ mvnma <- function(...,
       params <- c(params, c("sigma1", "sigma2"))
   }
   #
-  model.code <- mvnma_code(n.out, method, multiarm, n.domain)
+  model.code <- mvnma_code(n.out, dat$arms, method, n.domain)
   #
   text_conn <- textConnection(model.code)
   on.exit(close(text_conn), add = TRUE)
