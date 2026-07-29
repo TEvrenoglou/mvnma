@@ -175,11 +175,11 @@ make_jags_data <- function(dat) {
   # Number of treatments
   n <- length(trts)
   
-  # Arms per study
+  # Arms per study and number of studies per arms
   arm_data <- dat[!duplicated(dat$studlab), ]
-  
-  # Number of two-arm studies
-  k2 <- sum(arm_data$n.arms == 2, na.rm = TRUE)
+  tab_arms <- table(arm_data$n.arms)
+  arms <- as.integer(names(tab_arms))
+  n.studies <- as.integer(tab_arms)
   
   treat_data <- create_T(dat, max.arms = max(arm_data$n.arms))
   
@@ -208,7 +208,7 @@ make_jags_data <- function(dat) {
   }
   #
   res <- list(y = y, var = dat_var, treatments = treat_data,
-              k = k, k2 = k2, n = n, 
+              arms = arms, n.studies = n.studies, n = n, 
               trts = trts, trts.list = trts.list)
   #
   res
