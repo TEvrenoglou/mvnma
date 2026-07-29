@@ -12,7 +12,7 @@ create_T <- function(data, max.arms) {
   for (i in seq_along(studies)) {
     dat.i <- data %>% filter(studlab == studies[i])
     #
-    trts.i <- sort(unique(c(dat.i$id1, dat.i$id2)))
+    trts.i <- c(unique(dat.i$id2), unique(dat.i$id1))
     #
     res[i, seq_along(trts.i)] <- trts.i
   }
@@ -285,11 +285,6 @@ gather_results <- function(x, outcomes, trts, reference.group,
     # rho
     #
     rho[[i]] <- res %>% filter(grepl("rho", rnames))
-    # ensure the order of outcomes
-    rho[[i]]$out_num <- as.numeric(gsub("rho", "", rownames(rho[[i]])))
-    #
-    rho[[i]] %<>% arrange(out_num)
-    rho[[i]]$out_num <- NULL
     
     #
     # Matrices with all results
