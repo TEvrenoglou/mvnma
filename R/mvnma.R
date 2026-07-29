@@ -2,12 +2,11 @@
 #' single-correlation coefficient model
 #' 
 #' @description
-#' This function fits a Bayesian multivariate network meta-analysis model.
-#' Currently, the function can simultaneously pool up to five outcomes.
-#' Additionally, the studies to be included should be of maximum three arms.
+#' This function fits a Bayesian multivariate network meta-analysis model for
+#' two or more outcomes. Additionally, the studies can have multiple arms.
 #' 
-#' @param \dots Either two to five pairwise objects or a single list with
-#'   two to five pairwise objects.
+#' @param \dots Either two or more pairwise objects or a single list with
+#'   two or more pairwise objects.
 #' @param reference.group A common reference treatment across all outcomes.
 #' @param outclab An optional argument with labels for each outcome. If NULL,
 #'   the each outcome is labelled as 'outcome_1', 'outcome_2' etc.
@@ -56,7 +55,7 @@
 #' an amalgam of within- and across-outcome correlations
 #' (Efthimiou et al., 2015) which is a generalisation of Riley et al. (2008).
 #' 
-#' The function \code{\link{mvnma}} expects two to five outcomes /
+#' The function \code{\link{mvnma}} expects two or more outcomes /
 #' \code{\link[meta]{pairwise}} objects. A common reference treatment across
 #' all outcomes is required to only show comparisons with the reference in
 #' forest plots.
@@ -262,7 +261,7 @@ mvnma <- function(...,
   #
   if (length(args) == 1) {
     if (inherits(args[[1]], "pairwise"))
-      stop("Provide between two and five pairwise objects.",
+      stop("Provide two or more pairwise objects.",
            call. = FALSE)
     #
     if (!is.list(args[[1]]))
@@ -282,8 +281,8 @@ mvnma <- function(...,
   n.out <- length(args)
   n.rho <- choose(n.out, 2)
   #
-  if (n.out < 2 | n.out > 5)
-    stop("Provide between two and five pairwise objects.",
+  if (n.out < 2)
+    stop("Provide two or more pairwise objects.",
          call. = FALSE)
   #  
   for (i in seq_len(n.out)) {
@@ -410,16 +409,6 @@ mvnma <- function(...,
   }
   #
   var_matrix[is.na(var_matrix)] <- varTE.missing
-  #
-  cat("arms:\n")
-  print(dat$arms)
-  cat("n.studies:\n")
-  print(dat$n.studies)
-  cat("control_matrix:\n")
-  print(tail(control_matrix))
-  print(dim(control_matrix))
-  cat("treatments:\n")
-  print(tail(dat$treatments))
   #
   dat_jags <- list(
     y = dat$y,

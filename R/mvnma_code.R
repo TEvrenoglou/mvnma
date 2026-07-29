@@ -156,7 +156,8 @@ code_covar_ests_multiarm <- function(n.out, a, arms) {
   #
   for (p1 in seq_len(n.par - 1)) {
     for (p2 in (p1 + 1):n.par) {
-      txt <- paste0(txt, code_multiarm_covariance(a, n.contr, var_offset,
+      txt <- paste0(txt, code_multiarm_covariance(a,
+                                                  code_study_offset(a, arms),
                                                   pos, p1, p2))
     }
   }
@@ -188,13 +189,12 @@ code_covar_ests_multiarm <- function(n.out, a, arms) {
   txt
 }
 
-code_multiarm_covariance <- function(a, n.contr, var_offset, pos, p1, p2) {
+code_multiarm_covariance <- function(a, study_offset, pos, p1, p2) {
   o1 <- pos$outcome[p1]
   o2 <- pos$outcome[p2]
   c1 <- pos$contrast[p1]
   c2 <- pos$contrast[p2]
-  row1 <- code_multiarm_row(var_offset, n.contr, "i", c1)
-  row2 <- code_multiarm_row(var_offset, n.contr, "i", c2)
+  row <- code_index(study_offset, "i")
   txt <-
     paste0("    S", a, "[i, ", p1, ", ", p2, "] <- ",
            if (c1 == c2) "" else "0.5 * ",
@@ -204,8 +204,8 @@ code_multiarm_covariance <- function(a, n.contr, var_offset, pos, p1, p2) {
   if (o1 != o2) {
     txt <-
       paste0(txt,
-             " * contmat[", row1, ", ", o1, "] * ",
-             "contmat[", row2, ", ", o2, "] * ",
+             " * contmat[", row, ", ", o1, "] * ",
+             "contmat[", row, ", ", o2, "] * ",
              "rho[", code_rho_index(o1, o2, max(pos$outcome)), "]")
   }
   #
@@ -334,7 +334,7 @@ code_study_offset <- function(a, arms) {
   if (!length(prev))
     return("0")
   #
-  paste0("n.studies[", prev, "]", collapse = " + ")
+  paste0("1 * n.studies[", prev, "]", collapse = " + ")
 }
 
 code_priors <- function(n.out, method,n.dom) {

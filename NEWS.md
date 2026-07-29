@@ -1,3 +1,11 @@
+## mvnma, version 0.3-0 (2026-mm-dd)
+
+### Major changes
+
+* R function mvnma() accepts any number of outcomes and studies with more than
+  three arms
+
+
 ## mvnma, version 0.2-0 (2026-07-09)
 
 ### Major changes

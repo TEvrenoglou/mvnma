@@ -106,9 +106,8 @@ list (one for each outcome) which contains:
 }
 }
 \description{
-This function fits a Bayesian multivariate network meta-analysis model.
-Currently, the function can simultaneously pool up to five outcomes.
-Additionally, the studies to be included should be of maximum three arms.
+This function fits a Bayesian multivariate network meta-analysis model for
+two or more outcomes. Additionally, the studies can have multiple arms.
 }
 \details{
 The multivariate network meta-analysis (mvNMA) model supported by this
@@ -116,7 +115,7 @@ package refers to the single correlation coefficient model, interpreted as
 an amalgam of within- and across-outcome correlations
 (Efthimiou et al., 2015) which is a generalisation of Riley et al. (2008).
 
-The function \code{\link{mvnma}} expects two to five outcomes /
+The function \code{\link{mvnma}} expects two or more outcomes /
 \code{\link[meta]{pairwise}} objects. A common reference treatment across
 all outcomes is required to only show comparisons with the reference in
 forest plots.

@@ -182,7 +182,6 @@ make_jags_data <- function(dat) {
   n.studies <- as.integer(tab_arms)
   
   treat_data <- create_T(dat, max.arms = max(arm_data$n.arms))
-  print(head(treat_data))
   
   # Extract vector with treatment effects
   #
