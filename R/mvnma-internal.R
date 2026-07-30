@@ -12,7 +12,10 @@ create_T <- function(data, max.arms) {
   for (i in seq_along(studies)) {
     dat.i <- data %>% filter(studlab == studies[i])
     #
-    trts.i <- c(unique(dat.i$id2), unique(dat.i$id1))
+    reference.i <- unique(dat.i$id2) # reference treatment
+    comparators.i <- unique(dat.i$id1) # one or more comparator treatments
+    #
+    trts.i <- c(reference.i, comparators.i)
     #
     res[i, seq_along(trts.i)] <- trts.i
   }
@@ -347,7 +350,7 @@ gather_results <- function(x, outcomes, trts, reference.group,
     }
   }
   #
-  # Create row.names for cor
+  # Create row names for cor
   #
   r1 <- t(combn(seq_along(outcomes), 2))
   r.names <- vector("numeric", nrow(cor))
