@@ -15,6 +15,8 @@
 #' first outcome domain (based on the order of the supplied pairwise objects). 
 #' Used with `method = "DM"` to restrict information sharing within outcome 
 #' domains. Ignored when `method = "standard"`. Default is `NULL`.
+#' @param method.psi A character string specifying the type of model to be fitted. Options are
+#' "random" (default) for a random-effects model and "common" for a common-effect model. Can be abbreviated.
 #' @param n.thin Thinning rate. Default is equal to
 #'   \code{max(1, floor((n.iter - n.burnin) / 1000))}.
 #' @param n.iter Number of iterations (default: 10000).
@@ -25,6 +27,9 @@
 #'   used for the heterogeneity parameters within each outcome. If NULL, all
 #'   values are set to 1. If specified, it should have a length equal to the
 #'   number of outcomes.
+#' @param psi.preset Prespecified value for the between-study heterogeneity parameter. Default is `NULL`.
+#' If specified, it is a numeric vector with length equal to the number of outcomes, which will overwrite arguments
+#' `scale.psi` and `method.psi`.
 #' @param lower.rho Lower bounds for the Uniform prior(s) used for the
 #'   correlation coefficient. If NULL all bounds are set to -1.
 #' @param upper.rho Upper bounds for the Uniform prior(s) used for the
@@ -231,6 +236,7 @@
 mvnma <- function(...,
                   #
                   method = "standard",
+                  method.psi = "random",
                   n.domain = NULL,
                   #
                   reference.group = NULL, outclab = NULL,   
@@ -242,6 +248,7 @@ mvnma <- function(...,
                   level = gs("level.ma"),
                   #
                   scale.psi,
+                  psi.preset = NULL,
                   lower.rho, upper.rho,
                   #
                   varTE.missing = NULL,
@@ -310,6 +317,7 @@ mvnma <- function(...,
   #
   
   method <- setchar(method, c("standard", "DM"))
+  method.psi <- setchar(method.psi, c("random", "common"))
   #
   chknumeric(n.domain, min = 1, max = n.out)
   #
@@ -344,7 +352,15 @@ mvnma <- function(...,
   else
     chknumeric(scale.psi, min = 0, zero = TRUE, length = n.out, NA.ok = FALSE)
   #
+  if(method.psi == "random")
   prec.psi <- 1 / scale.psi^2
+  else
+    prec.psi <- NULL
+  #
+  if(!is.null(psi.preset)){
+    chknumeric(psi.preset, min = 0, zero = FALSE, length = n.out, NA.ok = FALSE)
+    prec.psi <- NULL
+    }
   #
   miss.lower.rho <- missing(lower.rho)
   miss.upper.rho <- missing(upper.rho)
@@ -421,9 +437,10 @@ mvnma <- function(...,
     n.studies = dat$n.studies,
     n = dat$n,
     #
-    prec.psi = prec.psi, lower.rho = lower.rho, upper.rho = upper.rho
+    prec.psi = prec.psi,lower.rho = lower.rho, upper.rho = upper.rho
   )
   
+  dat_jags <- Filter(Negate(is.null), dat_jags)
   
   #
   #
@@ -440,7 +457,7 @@ mvnma <- function(...,
       params <- c(params, c("sigma1", "sigma2"))
   }
   #
-  model.code <- mvnma_code(n.out, dat$arms, method, n.domain)
+  model.code <- mvnma_code(n.out, dat$arms, method, n.domain, psi.preset, method.psi)
   #
   text_conn <- textConnection(model.code)
   on.exit(close(text_conn), add = TRUE)
@@ -486,6 +503,16 @@ mvnma <- function(...,
   attr(res, "fit") <- fit
   attr(res, "params") <- params
   attr(res, "varTE.missing") <- varTE.missing
+  # new
+  attr(res, "scale.psi") <- scale.psi
+  attr(res,"pair.objects") <- args
+  attr(res, "n.chains") <- n.chains
+  attr(res, "n.iter") <- n.iter
+  attr(res,"n.burnin") <- n.burnin
+  attr(res,"lower.rho") <- lower.rho
+  attr(res,"upper.rho") <- upper.rho
+  attr(res,"n.domain") <- n.domain
+  #
   #
   class(res) <- "mvnma"
   #
