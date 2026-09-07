@@ -2,8 +2,12 @@
 
 ### Major changes
 
-* R function mvnma() accepts any number of outcomes and studies with more than
-  three arms
+* mvnma()
+   - accepts any number of outcomes and studies with more than three arms
+   - has a new argument to specify either a random-effects or a common effect model
+   - has a new argument to fit the multivariate NMA model with pre-specified values of heterogeneity
+
+* New functions nodesplit(), print.nodesplit() and forest.nodesplit() are added to enable consistency checks using the node splitting method.    
 
 
 ## mvnma, version 0.2-0 (2026-07-09)

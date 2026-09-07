@@ -15,10 +15,11 @@ Maintainer: Theodoros Evrenoglou <theodoros.evrenoglou@uniklinik-freiburg.de>
 URL: https://github.com/TEvrenoglou/mvnma
 Description: Tools to conduct Bayesian multivariate network meta-analysis providing
  - the single correlation coefficient model by Efthimiou et al. (2015) <doi:10.1093/biostatistics/kxu030>;
+ - per-outcome consistency checks using the node-splitting method (Dias et al., 2010) <doi:10.1002/sim.3767>;
  - per-outcome treatment hierarchies using the surface under the cumulative ranking curve (SUCRA), the probability of best value, or median (or mean) ranks (Salanti et al., 2011) <doi:10.1016/j.jclinepi.2010.03.016>;
  - across-outcomes benefit-risk assessment using the VišeKriterijumska Optimizacija I Kompromisno Rešenje (VIKOR) method (Opricovic & Tzeng, 2004) <doi:10.1016/S0377-2217(03)00020-1>;
  - convergence checks using trace plots, density plots, or the R-hat statistic;
- - forest plots of treatment estimates, scatter plots of per-outcome rankings, Hasse diagrams (Carlsen & Bruggemann, 2014) <doi:10.1002/cem.2569> to visualize the partial order of the treatments across all outcomes.
+ - forest plots of treatment estimates and consistency checks, scatter plots of per-outcome rankings, Hasse diagrams (Carlsen & Bruggemann, 2014) <doi:10.1002/cem.2569> to visualize the partial order of the treatments across all outcomes.
 License: GPL (>= 2)
 Encoding: UTF-8
 NeedsCompilation: no
