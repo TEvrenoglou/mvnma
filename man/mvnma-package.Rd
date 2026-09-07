@@ -50,6 +50,8 @@ The R package \bold{mvnma} provides the following functions:
 \itemize{
 \item Function \code{\link{mvnma}} to perform a Bayesian multivariate
   network meta-analysis.
+\item Function \code{\link{nodesplit}} to perform local checks for inconsistency
+ using the node-splitting method.
 \item Function \code{\link{mvrank}} to get outcome-specific treatment
  rankings.
 \item Function \code{\link{vikor}} to rank treatments across all outcomes
@@ -136,6 +138,16 @@ Graphical methods and numerical summaries for presenting results
 from multiple-treatment meta-analysis: an overview and tutorial.
 \emph{Journal of Clinical Epidemiology},
 \bold{64}, 163--71
+
+#' Dias S, Welton NJ, Caldwell DM, Ades AE (2010):
+Checking consistency in mixed treatment comparison meta-analysis.
+\emph{Statistics in Medicine},
+\bold{29}, 932--44
+
+König J, Krahn U, Binder H (2013):
+Visualizing the flow of evidence in network meta-analysis and characterizing mixed treatment comparisons
+\emph{Statistics in Medicine},
+\bold{32}, 5414--29
 }
 \seealso{
 Useful links:
