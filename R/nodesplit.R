@@ -339,10 +339,13 @@ print.nodesplit <- function(x,
     
     dat.i <- x[[i]]
     
-    bt.i <- backtransf && !is.null(sm) && !is.na(sm[i]) &&
-      sm[i] %in% c("RR", "OR")
+    bt.i <- backtransf && !is.null(sm) && !is.na(sm[i])
     #
-    tobt <- function(z) if (bt.i) exp(z) else z
+    tobt <- function(z) if (bt.i) backtransf(z, sm[i]) else z
+    #
+    # ratio measures: the difference is a ratio of ratios
+    rel.i <- !is.null(sm) && !is.na(sm[i]) &&
+      (is_relative_effect(sm[i]) | sm[i] == "VE")
     
     if (is.null(dat.i) || nrow(dat.i) == 0) {
       cat("No comparison with both direct and indirect evidence.\n")
@@ -421,7 +424,7 @@ print.nodesplit <- function(x,
     }
     if (diff) {
       #
-      diff.lab <- if (bt.i) "RoR" else "Diff"
+      diff.lab <- if (backtransf && rel.i) "RoR" else "Diff"
       
       out$diff <- formatN(tobt(dat.i$diff), digits = digits, text.NA = text.NA)
       names.out <- c(names.out, diff.lab)
@@ -477,9 +480,11 @@ print.nodesplit <- function(x,
         #
         if (is.null(dat.i) || nrow(dat.i) == 0)
           next
-        bt.i <- backtransf && !is.null(sm) && !is.na(sm[i]) && sm[i] %in% c("RR", "OR")
+        rel.i <- !is.null(sm) && !is.na(sm[i]) &&
+          (is_relative_effect(sm[i]) | sm[i] == "VE")
         #
-        labels.used <- union(labels.used, if (bt.i) "RoR" else "Diff")
+        labels.used <- union(labels.used,
+                             if (backtransf && rel.i) "RoR" else "Diff")
       }
       #
       if ("Diff" %in% labels.used)

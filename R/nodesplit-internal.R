@@ -762,3 +762,7 @@ formatPT <- function(x, lab = FALSE, labval = "p", noblanks = FALSE,
   
   res
 }
+
+# Copied from meta (unexported); see meta:::is_relative_effect
+is_relative_effect <- function(x)
+  x %in% c("HR", "OR", "RR", "IRR", "ROM", "DOR")
