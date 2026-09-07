@@ -155,7 +155,7 @@
 #' load(.fname)
 #' 
 #' # Local checks for inconsistency 
-#' print(nodesplit(mvnma_all))
+#' print(nodesplit(mvnma12),backtransf = FALSE)
 #'  
 #' @export nodesplit    
 

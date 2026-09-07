@@ -202,7 +202,7 @@ always refer to the original scale.
 load(.fname)
 
 # Local checks for inconsistency 
-print(nodesplit(mvnma_all))
+print(nodesplit(mvnma12),backtransf = FALSE)
  
 }
 \references{
