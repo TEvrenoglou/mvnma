@@ -1,5 +1,16 @@
-mvdata <- function(x)
-  make_jags_data(create_data(x))
+mvdata <- function(x){
+#
+  create.data <- create_data(x)  
+  #
+  sm <- attr(create.data, "sm")
+  #
+  jags.data <- make_jags_data(create.data)
+  #
+  attr(jags.data, "sm") <- sm
+  #
+  jags.data
+}
+  
 
 create_T <- function(data, max.arms) {
   # Get rid of warning "no visible binding for global variable"
@@ -32,11 +43,15 @@ create_data <- function(p) {
   studlab <- TE <- seTE <- treat1 <- treat2 <- outcome <- n.arms <- 
     ref_study <- NULL
   #
-  dat1 <- dat2 <- studies <- vector("list")
+  dat1 <- dat2 <- studies  <- vector("list")
+  #
+  sm <- vector("character")
   #
   n.out <- length(p)
   #
   for (i in seq_len(n.out)) {
+    # save information on treatment effect
+    sm[i] <- attr(p[[i]], "sm")
     #
     # Rename variable names specified in argument 'varnames' of pairwise()
     #
@@ -157,6 +172,8 @@ create_data <- function(p) {
   trts <- sort(unique(c(res$treat1, res$treat2)))
   res$id1 <- as.integer(factor(res$treat1, levels = trts))
   res$id2 <- as.integer(factor(res$treat2, levels = trts))
+  #
+  attr(res, "sm") <- sm
   #
   res
 }
@@ -693,7 +710,6 @@ is_wholenumber <- function(x, tol = .Machine$double.eps^0.5) {
   #
   res
 }
-
 formatN <- function(x, digits = 2, text.NA = "--", big.mark = "",
                     format.whole.numbers = TRUE,
                     monospaced = FALSE) {
@@ -828,3 +844,4 @@ catch <- function(argname, matchcall, data, encl)
 
 '%!in%' <- function(x, y)
   !('%in%'(x, y))
+
