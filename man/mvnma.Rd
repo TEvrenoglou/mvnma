@@ -9,6 +9,7 @@ single-correlation coefficient model}
 mvnma(
   ...,
   method = "standard",
+  method.psi = "random",
   n.domain = NULL,
   reference.group = NULL,
   outclab = NULL,
@@ -18,6 +19,7 @@ mvnma(
   n.thin = max(1, floor((n.iter - n.burnin)/1000)),
   level = gs("level.ma"),
   scale.psi,
+  psi.preset = NULL,
   lower.rho,
   upper.rho,
   varTE.missing = NULL,
@@ -39,6 +41,9 @@ mvnma(
 fitting. This can be either "standard" (default), referring to the
 standard bivariate model, or "DM", referring to the bivariate model based
 on the DuMouchel method. The argument can be abbreviated.}
+
+\item{method.psi}{A character string specifying the type of model to be fitted. Options are
+"random" (default) for a random-effects model and "common" for a common-effect model. Can be abbreviated.}
 
 \item{n.domain}{Integer indicating the position of the last outcome in the 
 first outcome domain (based on the order of the supplied pairwise objects). 
@@ -66,6 +71,10 @@ for network estimates.}
 used for the heterogeneity parameters within each outcome. If NULL, all
 values are set to 1. If specified, it should have a length equal to the
 number of outcomes.}
+
+\item{psi.preset}{Prespecified value for the between-study heterogeneity parameter. Default is `NULL`.
+If specified, it is a numeric vector with length equal to the number of outcomes, which will overwrite arguments
+`scale.psi` and `method.psi`.}
 
 \item{lower.rho}{Lower bounds for the Uniform prior(s) used for the
 correlation coefficient. If NULL all bounds are set to -1.}
