@@ -1,4 +1,4 @@
-mvnma_code <- function(n.out, arms = 2, method, n.dom) {
+mvnma_code <- function(n.out, arms = 2, method, n.dom, psi.preset, method.psi) {
   
   chknumeric(n.out, min = 2, length = 1)
   method <- setchar(method, c("standard", "DM"))
@@ -18,7 +18,7 @@ mvnma_code <- function(n.out, arms = 2, method, n.dom) {
   #
   txt <- paste0(txt, "\n")
   #
-  txt <- paste0(txt, code_priors(n.out, method,n.dom))
+  txt <- paste0(txt, code_priors(n.out, method,n.dom,psi.preset,method.psi))
   #
   txt <- paste0(txt, "}\n")
   #
@@ -337,7 +337,7 @@ code_study_offset <- function(a, arms) {
   paste0("1 * n.studies[", prev, "]", collapse = " + ")
 }
 
-code_priors <- function(n.out, method,n.dom) {
+code_priors <- function(n.out, method,n.dom, psi.preset, method.psi) {
   if (method == "standard")
     txt <- code_priors_standard(n.out)
   else
@@ -345,7 +345,7 @@ code_priors <- function(n.out, method,n.dom) {
   #
   txt <- paste0(txt, "  #\n")
   #
-  txt <- paste0(txt, code_priors_psi(n.out))
+  txt <- paste0(txt, code_priors_psi(n.out,psi.preset, method.psi))
   #
   txt <- paste0(txt, "  #\n")
   #
@@ -546,7 +546,7 @@ code_priors_dumouchel <- function(n.out,n.dom) {
   txt
 }
 
-code_priors_psi <- function(n.out) {
+code_priors_psi <- function(n.out,psi.preset=NULL,method.psi) {
   txt <- ""
   #
   for (i in seq_len(n.out))
@@ -554,8 +554,17 @@ code_priors_psi <- function(n.out) {
   #
   txt <- paste0(txt, "  #\n")
   #
-  for (i in seq_len(n.out))
+  for (i in seq_len(n.out)){
+    if(is.null(psi.preset)){
+    if(method.psi == "random"){
     txt <- paste0(txt, "  psi[", i, "]  ~ dnorm(0, prec.psi[", i, "])T(0, )\n")
+    }else{
+      txt <- paste0(txt, "  psi[", i, "] = 0 \n")  
+    }
+    }else{
+      txt <- paste0(txt, "  psi[", i, "] = ", psi.preset[i], "\n")  
+    }
+  }
   #
   txt
 }
