@@ -2,19 +2,10 @@
 % Please edit documentation in R/VIKOR.R
 \name{vikor.mvrank}
 \alias{vikor.mvrank}
-\alias{vikor.matrix}
-\alias{vikor}
-\alias{print.vikor}
 \title{Rank treatments across all outcomes using the VišeKriterijumska Optimizacija
 I Kompromisno Rešenje (VIKOR) multi-criteria decision analysis method}
 \usage{
 \method{vikor}{mvrank}(x, weights = NULL, v = 0.5, ...)
-
-\method{vikor}{matrix}(x, weights = NULL, v = 0.5, ...)
-
-vikor(x, ...)
-
-\method{print}{vikor}(x, digits = 4, ...)
 }
 \arguments{
 \item{x}{An object of class \code{\link{mvrank}} or a matrix.}
@@ -28,9 +19,6 @@ making process. Following guidance from the multi-criteria decision
 analysis field it is set to 0.5.}
 
 \item{\dots}{Additional arguments (ignored).}
-
-\item{digits}{A numeric specifying the number of digits to print the
-ranking matrix Q.}
 }
 \value{
 The function returns a 'vikor' object. This consists of three ranking lists
@@ -62,7 +50,7 @@ Rešenje (VIKOR) to produce an amalgamated ranking list across
 all outcomes (Opricovic & Tzeng, 2004).
 
 The standard VIKOR approach is applied when the \code{method} argument is
-set to \code{"sucra"} or \code{"pBV"} in \code{\link{mvrank}}.
+set to \code{"sucra"} or \code{"pbest"} in \code{\link{mvrank}}.
 
 A fuzzy VIKOR method (Opricovic, 2011) is applied when outcome-specific
 rankings are expressed in terms of median ranks and 95\% credible intervals.
@@ -122,4 +110,7 @@ Opricovic S (2011):
 Fuzzy VIKOR with an application to water resources planning. 
 \emph{Expert Systems with Applications}, 
 \bold{38}, 12983--90
+}
+\seealso{
+\code{\link[netmeta]{print.vikor}}
 }

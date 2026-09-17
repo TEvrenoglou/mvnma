@@ -189,11 +189,10 @@ splittable.comparisons <- function(x, combine = c("any", "all", "list")) {
 # ---------------------------------------------------------------------------
 # Node-splitting for a single treatment comparison
 # ---------------------------------------------------------------------------
-pair.nodesplit <- function(x, treat1, treat2, 
+netsplit_pair <- function(x, treat1, treat2, 
                            method.direct = "pairwise", 
                            tol.direct = 5e-04, ...){
   
-  #
   method.model <- attr(x, "method.model")
   n.domain <- attr(x,"n.domain")
   outcomes <- attr(x, "outcomes")
@@ -211,9 +210,9 @@ pair.nodesplit <- function(x, treat1, treat2,
   # model to the direct evidence or by an outcome-specific pairwise
   # meta-analysis with heterogeneity fixed at the multivariate estimate
   dir <- if (method.direct == "pairwise")
-    direct.metagen(x, treat1 = treat1, treat2 = treat2, ...)
+    direct_metagen(x, treat1 = treat1, treat2 = treat2, ...)
   else
-    direct.mvnma(x, treat1 = treat1, treat2 = treat2, ...)
+    direct_mvnma(x, treat1 = treat1, treat2 = treat2, ...)
   
   # which outcomes were actually fitted, and where each sits in `dir`
   keep.out <- attr(dir, "keep")
@@ -221,8 +220,8 @@ pair.nodesplit <- function(x, treat1, treat2,
   if (is.null(keep.out))
     keep.out <- rep(TRUE, length(outcomes))
   #
-  # direct.mvnma() drops outcomes without direct evidence from the model fit,
-  # so results must be mapped back by position; direct.metagen() returns one
+  # direct_mvnma() drops outcomes without direct evidence from the model fit,
+  # so results must be mapped back by position; direct_metagen() returns one
   # element per outcome and needs no mapping
   pos <- if (method.direct == "pairwise")
     seq_along(keep.out)
@@ -234,6 +233,9 @@ pair.nodesplit <- function(x, treat1, treat2,
   # attributes, same reason `outcomes`/`level` are captured from `x` early)
   direct.data <- attr(dir, "direct.data")
   n.studies   <- attr(dir, "n.studies")
+  
+  # Get rid of warning "no visible binding for global variable"
+  lower <- upper <- NULL
   
   # keep only outcome treatment effect estimates for mvnma
   x <- x[names(x) != "cor"]
@@ -290,16 +292,17 @@ pair.nodesplit <- function(x, treat1, treat2,
                                   "lower" = study.TE - z.crit*study.seTE,
                                   "upper" = study.TE + z.crit*study.seTE)
       }
-    } else if (!keep.out[i] || length(dir) == 0 ||
+    }
+    else if (!keep.out[i] || length(dir) == 0 ||
                all(is.na(dir[[pos[i]]]$basic_estimates))) {
       
       direct[[i]] <- data.frame("mean"=NA,"sd"=NA,"lower"=NA,"upper"=NA)  
       
-    } else {
+    }
+    else {
       
       direct[[i]] <- dir[[pos[i]]]$basic_estimates[complete.cases(dir[[pos[i]]]$basic_estimates$mean),]  
-      direct[[i]] <- direct[[i]] %>% 
-        select(mean,sd,lower,upper)
+      direct[[i]] <- direct[[i]] %>% select(mean, sd, lower, upper)
       
     }
     ## get mvnma estimate for full analysis
@@ -361,13 +364,13 @@ pair.nodesplit <- function(x, treat1, treat2,
 
 # ---------------------------------------------------------------------------
 # Direct estimates for a single comparison: multivariate refit
-# (direct.mvnma) or outcome-specific pairwise meta-analysis (direct.metagen)
+# (direct_mvnma) or outcome-specific pairwise meta-analysis (direct_metagen)
 # ---------------------------------------------------------------------------
 
 # direct estimate from a re-fit of the multivariate model
-direct.mvnma <- function(x, treat1, treat2, ...){
+direct_mvnma <- function(x, treat1, treat2, ...){
   
-  data.dir <- direct.pair(x, t1 = treat1, t2 = treat2)
+  data.dir <- direct_pair(x, t1 = treat1, t2 = treat2)
   
   psi.preset <- extract_het(x)
   
@@ -380,7 +383,7 @@ direct.mvnma <- function(x, treat1, treat2, ...){
   # Outcomes for which this comparison is directly informed. mvnma() cannot be
   # given an empty pairwise object, so outcomes without any direct evidence are
   # dropped from the model fit; their direct estimate is set to NA in
-  # pair.nodesplit().
+  # netsplit_pair().
   keep <- n.studies > 0
   
   names(data.dir) <- NULL
@@ -438,7 +441,7 @@ direct.mvnma <- function(x, treat1, treat2, ...){
   }
   
   # attach the raw per-outcome direct-comparison data, the study counts and the
-  # outcomes actually fitted, so that pair.nodesplit() can map results back
+  # outcomes actually fitted, so that netsplit_pair() can map results back
   attr(fit, "direct.data") <- data.dir
   attr(fit, "n.studies")   <- n.studies
   attr(fit, "keep")        <- keep
@@ -449,9 +452,9 @@ direct.mvnma <- function(x, treat1, treat2, ...){
 
 # direct estimate from an outcome-specific pairwise meta-analysis (default)
 
-direct.metagen <- function(x, treat1, treat2, ...) {
+direct_metagen <- function(x, treat1, treat2, ...) {
   
-  data.dir <- direct.pair(x, t1 = treat1, t2 = treat2)
+  data.dir <- direct_pair(x, t1 = treat1, t2 = treat2)
   
   psi <- extract_het(x)
   
@@ -508,18 +511,19 @@ direct.metagen <- function(x, treat1, treat2, ...) {
   fit
 }
 
-# create data to calculate direct estimate for a given pair (t1,t2)
-direct.pair <- function(x, t1, t2){
+# create data to calculate direct estimate for a given pair (t1, t2)
+direct_pair <- function(x, t1, t2){
   
-  if (!inherits(x, "mvnma")) {
-    stop("x should be an object of class mvnma")
-  }
+  chkclass(x, "mvnma")
   
   pair.objects <- attr(x, "pair.objects")
   outcomes     <- attr(x, "outcomes")
   n.out        <- length(outcomes)
-  
+  #
   data.dir <- vector("list", n.out)
+  
+  # Get rid of warning "no visible binding for global variable"
+  studlab <- treat1 <- treat2 <- TE <- seTE <- NULL
   
   for (i in seq_len(n.out)) {
     
@@ -623,7 +627,7 @@ extract_het <- function(x,...){
   return(het)
 }
 
-# helpers from R package meta used in print.nodesplit
+# helpers from R package meta used in print.netsplit
 # Copied from meta (unexported); see meta:::formatPT
 
 formatPT <- function(x, lab = FALSE, labval = "p", noblanks = FALSE,

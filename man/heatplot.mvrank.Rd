@@ -81,7 +81,7 @@ A \code{ggplot} object.
 This function produces a heatplot displaying the results of function
 \code{\link{mvrank}}. The graph can be used to visualize the ranking output
 when the method used to rank the treatments is either the surface under the
-cumulative ranking curve (SUCRA) or the probability of best value (pBV).
+cumulative ranking curve (SUCRA) or the probability of being best (pbest).
 }
 \examples{
 # Locate file "mvnma_examples.rda" with mvnma() results

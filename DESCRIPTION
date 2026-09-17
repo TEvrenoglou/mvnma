@@ -1,8 +1,8 @@
 Package: mvnma
 Title: Multivariate Network Meta-Analysis using Bayesian Methods
 Version: 0.3-0
-Date: 2026-07-29
-Depends: R (>= 4.0.0), meta (>= 8.3-0), netmeta (>= 3.4-0)
+Date: 2026-09-17
+Depends: R (>= 4.0.0), meta (>= 8.5-0), netmeta (>= 3.7-0)
 Imports: R2jags, coda, dplyr, magrittr, matrixStats, rlist, ggplot2, forcats
 Authors@R: c(person("Theodoros", "Evrenoglou",
                     role = c("aut", "cre"),
@@ -23,4 +23,4 @@ Description: Tools to conduct Bayesian multivariate network meta-analysis provid
 License: GPL (>= 2)
 Encoding: UTF-8
 NeedsCompilation: no
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0

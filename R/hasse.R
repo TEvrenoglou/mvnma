@@ -56,9 +56,14 @@
 
 hasse.mvrank <- function(x, ...) {
   
-  if (!(attr(x, "method") %in% c("SUCRA", "pBV")))
+  chkclass(x, "mvrank")
+  x <- updateversion(x)
+  #
+  method <- attr(x, "method")
+  #
+  if (!(method %in% c("SUCRA", "pbest")))
     stop("Hasse diagram can only be produced for ",
-         "'method = \"SUCRA\"' and 'method = \"pBV\"'.",
+         "'method = \"SUCRA\"' and 'method = \"pbest\"'.",
          call. = FALSE)
   
   # Get rid of warning "no visible binding for global variable"

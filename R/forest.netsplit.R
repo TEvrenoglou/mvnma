@@ -7,7 +7,7 @@
 #' that has been node-split. A separate forest plot is produced for each
 #' outcome.
 #' 
-#' @param x An object of class \code{nodesplit}.
+#' @param x An object of class \code{netsplit}.
 #' @param outcome An optional character vector or numeric vector selecting
 #'   the outcome(s) to plot. By default, a forest plot is produced for every
 #'   outcome with at least one comparison providing both direct and indirect
@@ -77,7 +77,7 @@
 #' between outcomes. An outcome is skipped, with a warning, if it holds no
 #' such comparison or if argument \code{show} selects none of them.
 #'
-#' Estimates are stored in the \code{nodesplit} object on the original
+#' Estimates are stored in the \code{netsplit} object on the original
 #' scale, so argument \code{backtransf} controls the scale used in the
 #' forest plot.
 #'
@@ -92,53 +92,53 @@
 #' invisibly, with one element per selected outcome. Each element holds the
 #' estimates plotted for that outcome, on the original scale. Skipped
 #' outcomes are \code{NULL}.
-#' @seealso \code{\link{nodesplit}}
+#' @seealso \code{\link{netsplit.mvnma}}
 #' 
 #' @examples
 #' \dontrun{
 #' .fname <- system.file("extdata/mvnma_examples.rda", package = "mvnma")
 #' load(.fname)
 #' 
-#' ns <- nodesplit(mvnma_all)
+#' ns <- netsplit(mvnma_all)
 #' forest(ns)
 #' }
 #' 
-#' @method forest nodesplit
+#' @method forest netsplit.mvnma
 #' @export
 
-forest.nodesplit <- function(x,
-                             outcome = NULL,
-                             show = "both",
-                             subgroup = "comparison",
-                             overall = TRUE,
-                             direct = TRUE,
-                             indirect = TRUE,
-                             sortvar = NULL,
-                             subset = NULL,
-                             text.overall = "mvNMA estimate",
-                             text.direct = "Direct estimate",
-                             text.indirect = "Indirect estimate",
-                             type.overall,
-                             type.direct,
-                             type.indirect,
-                             col.square = "gray",
-                             col.square.lines = col.square,
-                             col.diamond = "gray",
-                             col.diamond.lines = "black",
-                             equal.size = TRUE,
-                             leftcols,
-                             leftlabs,
-                             rightcols = c("effect", "ci"),
-                             rightlabs = NULL,
-                             digits = gs("digits.forest"),
-                             digits.prop = max(gs("digits.pval") - 2, 2),
-                             backtransf = gs("backtransf"),
-                             lab.NA = "",
-                             smlab,
-                             file = NULL,
-                             ...) {
+forest.netsplit.mvnma <- function(x,
+                                  outcome = NULL,
+                                  show = "both",
+                                  subgroup = "comparison",
+                                  overall = TRUE,
+                                  direct = TRUE,
+                                  indirect = TRUE,
+                                  sortvar = NULL,
+                                  subset = NULL,
+                                  text.overall = "mvNMA estimate",
+                                  text.direct = "Direct estimate",
+                                  text.indirect = "Indirect estimate",
+                                  type.overall,
+                                  type.direct,
+                                  type.indirect,
+                                  col.square = "gray",
+                                  col.square.lines = col.square,
+                                  col.diamond = "gray",
+                                  col.diamond.lines = "black",
+                                  equal.size = TRUE,
+                                  leftcols,
+                                  leftlabs,
+                                  rightcols = c("effect", "ci"),
+                                  rightlabs = NULL,
+                                  digits = gs("digits.forest"),
+                                  digits.prop = max(gs("digits.pval") - 2, 2),
+                                  backtransf = gs("backtransf"),
+                                  lab.NA = "",
+                                  smlab,
+                                  file = NULL,
+                                  ...) {
   
-  chkclass(x, "nodesplit")
+  chkclass(x, "netsplit.mvnma")
   #
   chklogical(overall)
   chklogical(direct)

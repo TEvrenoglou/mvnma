@@ -18,8 +18,8 @@ small treatment effects indicate a beneficial ("desirable") or harmful
 
 \item{method}{The ranking method to be used. Three methods are currently
 supported. The SUCRA method (specified as \code{method = "SUCRA"}) is the
-default approach. The probability of best value method (specified as
-\code{method = "pBV"}) and the mean and median ranks (specified as
+default approach. The probability of being best method (specified as
+\code{method = "pbest"}) and the mean and median ranks (specified as
 \code{method = "ranks"}) are also supported.}
 
 \item{digits}{Minimal number of significant digits, see
@@ -29,7 +29,7 @@ default approach. The probability of best value method (specified as
 }
 \value{
 The function returns an 'mvrank' object which is a list consisting of
-a data frame with the variables 'treatment' and either 'SUCRA' or 'pBV'
+a data frame with the variables 'treatment' and either 'SUCRA' or 'pbest'
 for each outcome in the multivariate network meta-analysis.
 }
 \description{
@@ -43,7 +43,7 @@ function. Two ranking methods (argument \code{method}) are currently
 supported (Salanti et al., 2011):
 \itemize{
 \item Surface under the cumulative ranking curve (SUCRA) method,
-\item Probability of best value (pBV) method.
+\item Probability of being best (pbest) method.
 }
 }
 \examples{
@@ -58,12 +58,12 @@ ranks_sucra <- mvrank(mvnma_all,
 ranks_sucra
 
 \donttest{
-# Rank treatments using pBV
-ranks_pBV <- mvrank(mvnma_all,
+# Rank treatments using pbest
+ranks_pbest <- mvrank(mvnma_all,
   small.values = c("undes", "undes", "des", "des", "des"),
-  method = "pBV")
+  method = "pbest")
 #
-ranks_pBV         
+ranks_pbest         
 
 # Rank treatments using mean and median ranks
 ranks_mean_median <- mvrank(mvnma_all,

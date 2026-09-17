@@ -6,7 +6,7 @@
 #' treatment. Within each metric, lower values represent better treatment
 #' performance.
 #' 
-#' @param x An object of class \code{\link{vikor}}.
+#' @param x An object of class \code{\link{vikor.mvrank}}.
 #' @param sort A character specifying the order of treatments on the x-axis.
 #'   By default, the order is according to the Q-metric (\code{"Q"}). Ordering
 #'   treatments according to the S (\code{"S"}) and R (\code{"R"}) metrics is
@@ -65,6 +65,7 @@ linechart <- function(x,
                       ...) {
   
   chkclass(x, "vikor")
+  x <- updateversion(x)
   #
   sort <- setchar(sort, c("Q" , "S", "R"))
   exclude <- setchar(exclude, val = c("none", "Q", "S", "R"))

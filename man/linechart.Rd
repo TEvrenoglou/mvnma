@@ -15,7 +15,7 @@ linechart(
 )
 }
 \arguments{
-\item{x}{An object of class \code{\link{vikor}}.}
+\item{x}{An object of class \code{\link{vikor.mvrank}}.}
 
 \item{sort}{A character specifying the order of treatments on the x-axis.
 By default, the order is according to the Q-metric (\code{"Q"}). Ordering

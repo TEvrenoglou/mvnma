@@ -33,19 +33,19 @@
 #' \itemize{
 #' \item Function \code{\link{mvnma}} to perform a Bayesian multivariate
 #'   network meta-analysis.
-#' \item Function \code{\link{nodesplit}} to perform local checks for inconsistency
-#'  using the node-splitting method.
+#' \item Function \code{\link{netsplit.mvnma}} to perform local checks for
+#'   inconsistency using the node-splitting method.
 #' \item Function \code{\link{mvrank}} to get outcome-specific treatment
-#'  rankings.
-#' \item Function \code{\link{vikor}} to rank treatments across all outcomes
-#'   using the VIKOR multi-criteria decision analysis method. Additionally,
-#'   the function evaluates the concrete conditions defined by the VIKOR method
-#'   and identifies the set of treatments that offer the best compromise
-#'   between benefits and harms across all outcomes.
+#'   rankings.
+#' \item Function \code{\link{vikor.mvrank}} to rank treatments across all
+#'   outcomes using the VIKOR multi-criteria decision analysis method.
+#'   Additionally, the function evaluates the concrete conditions defined by
+#'   the VIKOR method and identifies the set of treatments that offer the best
+#'   compromise between benefits and harms across all outcomes.
 #' \item Function \code{\link{forest.mvnma}} to visualize the results of the
 #'   mvNMA model in terms of treatment effect estimates.
-#' \item Function \code{\link{forest.nodesplit}} to visualize the results of the
-#'   node-splitting consistency checks.
+#' \item Function \code{\link{forest.netsplit.mvnma}} to visualize the results
+#'   of the node-splitting consistency checks.
 #' \item Function \code{\link{plot.mvrank}} to visualize per outcome ranking
 #'   results for any pair of outcomes.
 #' \item Function \code{\link{hasse.mvrank}} to visualize the partial order of
@@ -144,14 +144,14 @@
 #' @importFrom R2jags jags
 #' @importFrom coda as.mcmc as.mcmc.list
 #' @importFrom meta forest gs metagen pairwise backtransf
-#' @importFrom netmeta hasse netposet rankogram heatplot
+#' @importFrom netmeta hasse netposet rankogram heatplot netsplit vikor
 #' @importFrom matrixStats colSds
 #' @importFrom dplyr %>% all_of any_of arrange bind_rows bind_cols desc distinct filter group_by mutate rename select pull n_distinct rename_with
 #' @importFrom magrittr %<>%
 #' @importFrom rlist list.cbind list.rbind
 #' @importFrom graphics text
-#' @importFrom stats complete.cases quantile relevel
-#' @importFrom utils combn packageVersion
+#' @importFrom stats complete.cases quantile relevel pnorm qnorm runif sd
+#' @importFrom utils combn packageVersion capture.output modifyList
 #' @importFrom ggplot2 ggplot aes geom_tile geom_line geom_point geom_text scale_fill_gradient guides guide_colourbar guide_legend labs xlab ylab ylim scale_y_discrete theme theme_void theme_minimal element_text element_blank
 #' @importFrom forcats fct_rev
 #' @export as.mcmc

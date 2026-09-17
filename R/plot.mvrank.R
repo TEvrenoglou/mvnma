@@ -49,6 +49,7 @@ plot.mvrank <- function(x, which = 1:2, pos = 1,
                         ...) {
   
   chkclass(x, "mvrank")
+  x <- updateversion(x)
   #
   n.outcome <- length(names(x))
   common_trts <- attr(x, "common_trts")

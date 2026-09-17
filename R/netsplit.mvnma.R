@@ -1,7 +1,8 @@
-#' Node-splitting for multivariate network meta-analysis
+#' Split direct and indirect evidence in multivariate network meta-analysis
 #' 
-#' @description This function performs local inconsistency checks using the node-splitting method.
-#'
+#' @description This function performs local inconsistency checks using the
+#'   node-splitting method.
+#' 
 #' @param x An object of class \code{\link{mvnma}}.
 #' @param method.direct A character string indicating how direct estimates
 #'   are obtained, either \code{"pairwise"} (outcome-specific pairwise
@@ -43,7 +44,7 @@
 #'   results for \code{sm = "OR"} are printed as odds ratios rather than log
 #'   odds ratios, and the difference between the direct and indirect
 #'   estimate is printed as a ratio of ratios. Estimates are always stored on
-#'   the original scale in the \code{nodesplit} object; only the printed
+#'   the original scale in the \code{netsplit} object; only the printed
 #'   output is affected. Standard errors and z-values are never back
 #'   transformed.
 #' @param k A logical indicating whether the number of studies providing
@@ -104,7 +105,7 @@
 #' always refer to the original scale.
 #' 
 #' @return
-#' An object of class \code{nodesplit}; a list with one data frame per
+#' An object of class \code{netsplit}; a list with one data frame per
 #' outcome, with one row per treatment comparison and the following columns:
 #' \item{comparison}{Treatment comparison.}
 #' \item{k}{Number of studies providing direct evidence.}
@@ -155,19 +156,19 @@
 #' load(.fname)
 #' 
 #' # Local checks for inconsistency 
-#' print(nodesplit(mvnma12),backtransf = FALSE)
-#'  
-#' @export nodesplit    
+#' print(netsplit(mvnma12), backtransf = FALSE)
+#' 
+#' @rdname netsplit.mvnma
+#' @method netsplit mvnma
+#' @export
 
-nodesplit <- function(x,
-                      method.direct = c("pairwise", "multivariate"),
-                      tol.direct = 5e-04,
-                      seed = NULL,quiet = TRUE, 
-                      ...){
+netsplit.mvnma <- function(x,
+                           method.direct = c("pairwise", "multivariate"),
+                           tol.direct = 0.0005,
+                           seed = NULL, quiet = TRUE,
+                           ...) {
   
-  if (!inherits(x, "mvnma")) {
-    stop("x should be an object of class mvnma")
-  }
+  chkclass(x, "mvnma")
   #
   chklogical(quiet)
   chknumeric(tol.direct, min = 0, max = 1, length = 1)
@@ -178,7 +179,7 @@ nodesplit <- function(x,
     oldopts <- options(jags.pb = "none")
     on.exit(options(oldopts), add = TRUE)
   }
-  
+    
   if (!is.null(seed)) {
     if (!exists(".Random.seed", envir = .GlobalEnv))
       runif(1)
@@ -206,6 +207,9 @@ nodesplit <- function(x,
     return(invisible(NULL))
   }
   
+  # Get rid of warning "no visible binding for global variable"
+  comparison <- NULL
+  
   split.any$comp <- paste0(split.any$treat1, ":", split.any$treat2)
   
   r <- vector("list", nrow(split.any))
@@ -217,7 +221,7 @@ nodesplit <- function(x,
       # to r[[i]] persists
       invisible(capture.output(
         suppressMessages(suppressWarnings(
-          r[[i]] <- pair.nodesplit(x,
+          r[[i]] <- netsplit_pair(x,
                                    treat1 = split.any$treat1[i],
                                    treat2 = split.any$treat2[i],
                                    method.direct = method.direct,
@@ -227,7 +231,7 @@ nodesplit <- function(x,
       ))
     }
     else {
-      r[[i]] <- pair.nodesplit(x,
+      r[[i]] <- netsplit_pair(x,
                                treat1 = split.any$treat1[i],
                                treat2 = split.any$treat2[i],
                                method.direct = method.direct,
@@ -265,39 +269,39 @@ nodesplit <- function(x,
   
   attr(res, "level") <- attr(x, "level")
   attr(res, "sm") <- sm
-  class(res) <- "nodesplit"
+  class(res) <- "netsplit.mvnma"
   
   res
   
 }
 
-#' @rdname nodesplit
-#' @method print nodesplit
+#' @rdname netsplit.mvnma
+#' @method print netsplit.mvnma
 #' @export
 
-print.nodesplit <- function(x,
-                            backtransf = gs("backtransf"),
-                            digits = gs("digits"),
-                            digits.se = gs("digits.se"),
-                            digits.pval = gs("digits.pval"),
-                            digits.stat = gs("digits.stat"),
-                            digits.prop = max(gs("digits.pval") - 2, 2),
-                            print.se = FALSE,
-                            ci = TRUE,
-                            k = TRUE,
-                            prop = TRUE,
-                            overall = TRUE,
-                            direct = TRUE,
-                            indirect = TRUE,
-                            diff = TRUE,
-                            z = TRUE,
-                            test = TRUE,
-                            scientific.pval = gs("scientific.pval"),
-                            text.NA = gs("lab.NA"),
-                            legend = TRUE,
-                            ...) {
+print.netsplit.mvnma <- function(x,
+                                 backtransf = gs("backtransf"),
+                                 digits = gs("digits"),
+                                 digits.se = gs("digits.se"),
+                                 digits.pval = gs("digits.pval"),
+                                 digits.stat = gs("digits.stat"),
+                                 digits.prop = max(gs("digits.pval") - 2, 2),
+                                 print.se = FALSE,
+                                 ci = TRUE,
+                                 k = TRUE,
+                                 prop = TRUE,
+                                 overall = TRUE,
+                                 direct = TRUE,
+                                 indirect = TRUE,
+                                 diff = TRUE,
+                                 z = TRUE,
+                                 test = TRUE,
+                                 scientific.pval = gs("scientific.pval"),
+                                 text.NA = gs("lab.NA"),
+                                 legend = TRUE,
+                                 ...) {
   
-  chkclass(x, "nodesplit")
+  chkclass(x, "netsplit.mvnma")
   #
   chknumeric(digits, min = 0, length = 1)
   chknumeric(digits.se, min = 0, length = 1)

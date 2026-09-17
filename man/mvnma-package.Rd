@@ -37,19 +37,19 @@ The R package \bold{mvnma} provides the following functions:
 \itemize{
 \item Function \code{\link{mvnma}} to perform a Bayesian multivariate
   network meta-analysis.
-\item Function \code{\link{nodesplit}} to perform local checks for inconsistency
- using the node-splitting method.
+\item Function \code{\link{netsplit.mvnma}} to perform local checks for
+  inconsistency using the node-splitting method.
 \item Function \code{\link{mvrank}} to get outcome-specific treatment
- rankings.
-\item Function \code{\link{vikor}} to rank treatments across all outcomes
-  using the VIKOR multi-criteria decision analysis method. Additionally,
-  the function evaluates the concrete conditions defined by the VIKOR method
-  and identifies the set of treatments that offer the best compromise
-  between benefits and harms across all outcomes.
+  rankings.
+\item Function \code{\link{vikor.mvrank}} to rank treatments across all
+  outcomes using the VIKOR multi-criteria decision analysis method.
+  Additionally, the function evaluates the concrete conditions defined by
+  the VIKOR method and identifies the set of treatments that offer the best
+  compromise between benefits and harms across all outcomes.
 \item Function \code{\link{forest.mvnma}} to visualize the results of the
   mvNMA model in terms of treatment effect estimates.
-\item Function \code{\link{forest.nodesplit}} to visualize the results of the
-  node-splitting consistency checks.
+\item Function \code{\link{forest.netsplit.mvnma}} to visualize the results
+  of the node-splitting consistency checks.
 \item Function \code{\link{plot.mvrank}} to visualize per outcome ranking
   results for any pair of outcomes.
 \item Function \code{\link{hasse.mvrank}} to visualize the partial order of

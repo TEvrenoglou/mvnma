@@ -11,8 +11,8 @@
 #'   ("undesirable") effect, can be abbreviated.
 #' @param method The ranking method to be used. Three methods are currently
 #'   supported. The SUCRA method (specified as \code{method = "SUCRA"}) is the
-#'   default approach. The probability of best value method (specified as
-#'   \code{method = "pBV"}) and the mean and median ranks (specified as
+#'   default approach. The probability of being best method (specified as
+#'   \code{method = "pbest"}) and the mean and median ranks (specified as
 #'   \code{method = "ranks"}) are also supported.
 #' @param digits Minimal number of significant digits, see
 #'   \code{print.default}.
@@ -25,12 +25,12 @@
 #' supported (Salanti et al., 2011):
 #' \itemize{
 #' \item Surface under the cumulative ranking curve (SUCRA) method,
-#' \item Probability of best value (pBV) method.
+#' \item Probability of being best (pbest) method.
 #' }
 #'  
 #' @return
 #' The function returns an 'mvrank' object which is a list consisting of
-#' a data frame with the variables 'treatment' and either 'SUCRA' or 'pBV'
+#' a data frame with the variables 'treatment' and either 'SUCRA' or 'pbest'
 #' for each outcome in the multivariate network meta-analysis.
 #' 
 #' @references
@@ -52,12 +52,12 @@
 #' ranks_sucra
 #' 
 #' \donttest{
-#' # Rank treatments using pBV
-#' ranks_pBV <- mvrank(mvnma_all,
+#' # Rank treatments using pbest
+#' ranks_pbest <- mvrank(mvnma_all,
 #'   small.values = c("undes", "undes", "des", "des", "des"),
-#'   method = "pBV")
+#'   method = "pbest")
 #' #
-#' ranks_pBV         
+#' ranks_pbest         
 #' 
 #' # Rank treatments using mean and median ranks
 #' ranks_mean_median <- mvrank(mvnma_all,
@@ -74,8 +74,15 @@ mvrank <- function(x, small.values, method = "SUCRA") {
   chkclass(x, "mvnma")
   #
   small.values <- setchar(small.values, c("undesirable", "desirable"))
-  method <- setchar(method, c("SUCRA", "pBV", "ranks"))
+  #
+  method <- setchar(method, c("SUCRA", "pbest", "ranks", "pBV"))
+  if (any(method == "pBV")) {
+    warning("Argument 'method = \"pBV\"' replaced by  'method = \"pbest\"'.",
+            call. = FALSE)
+    method[method == "pBV"] <- "pbest"
+  }
   chkchar(method, length = 1)
+  #
   method.model <- attr(x, "method.model")
   n.domain <- attr(x,"n.domain")
   #
@@ -96,8 +103,7 @@ mvrank <- function(x, small.values, method = "SUCRA") {
   common_trts <- Reduce(intersect, colname_list)
   
   # Get rid of warning "no visible binding for global variable"
-  #
-  treatment <- pBV <- SUCRA <- Freq <- median_rank <- mean_rank <-
+  treatment <- pbest <- SUCRA <- Freq <- median_rank <- mean_rank <-
     lower.CrI <- upper.CrI <- NULL
   
   # Extract samples and create rankograms for each outcome
@@ -122,21 +128,21 @@ mvrank <- function(x, small.values, method = "SUCRA") {
     rank_out[[i]] <- rankogram(d[[i]], small.values = small.values[i])
     rank_out_common[[i]] <- rankogram(d_common[[i]], small.values = small.values[i])
     #
-    if (method == "pBV") {
-      ranks.i <- data.frame(pBV = rank_out[[i]]$ranking.matrix.random[, 1])
+    if (method == "pbest") {
+      ranks.i <- data.frame(pbest = rank_out[[i]]$ranking.matrix.random[, 1])
       #
       ranks.i$treatment <- row.names(ranks.i)
       row.names(ranks.i) <- NULL
       #
-      ranks.i %<>% select(treatment, pBV) %>% arrange(desc(pBV))
+      ranks.i %<>% select(treatment, pbest) %>% arrange(desc(pbest))
       
       # recalculate only for the common treatments
-      ranks.i.common <- data.frame(pBV = rank_out_common[[i]]$ranking.matrix.random[, 1])
+      ranks.i.common <- data.frame(pbest = rank_out_common[[i]]$ranking.matrix.random[, 1])
       #
       ranks.i.common$treatment <- row.names(ranks.i.common)
       row.names(ranks.i.common) <- NULL
       #
-      ranks.i.common %<>% select(treatment, pBV) %>% arrange(desc(pBV))
+      ranks.i.common %<>% select(treatment, pbest) %>% arrange(desc(pbest))
     }
     else if (method == "SUCRA") {
       ranks.i <- rank_out[[i]]$ranking.random
@@ -236,6 +242,7 @@ mvrank <- function(x, small.values, method = "SUCRA") {
 print.mvrank <- function(x, digits = gs("digits"), ...) {
   
   chkclass(x, "mvrank")
+  x <- updateversion(x)
   #
   chknumeric(digits, min = 0, length = 1)
   #

@@ -6,7 +6,7 @@
 #' probabilistic ranking metrics:
 #' \itemize{
 #' \item Surface Under the Cumulative Ranking curve (SUCRA), or
-#' \item probability of best value (pBV).
+#' \item probability of being best (pbest).
 #' }
 #' 
 #' @param x An object of class \code{\link{mvrank}}.
@@ -30,8 +30,8 @@
 #' The spie chart is a modified pie chart in which each sector corresponds to
 #' a treatment and its radius is proportional to a ranking metric, so that
 #' sector area encodes treatment performance (Daly et al., 2020). This function
-#' constructs one spie chart per outcome using SUCRA or probability of best
-#' values (pBV) metrics, where each metric determines the radius of the
+#' constructs one spie chart per outcome using SUCRA or probability of being
+#' best (pbest) metrics, where each metric determines the radius of the
 #' corresponding sector.
 #' 
 #' An amalgamated treatment hierarchy across outcomes is then derived by
@@ -58,11 +58,12 @@
 spiechart.mvrank <- function(x, weights = NULL, ...) {
   
   chkclass(x, "mvrank")
+  x <- updateversion(x)
   #
   trts <- sort(attr(x, "common_trts"))
   outcomes <- names(x)
-  
-  if (attr(x, "method") %in% c("SUCRA", "pBV")) {
+  #
+  if (attr(x, "method") %in% c("SUCRA", "pbest")) {
     # Get rid of warning "no visible binding for global variable"
     treatment <- NULL
     
@@ -87,8 +88,9 @@ spiechart.mvrank <- function(x, weights = NULL, ...) {
     res <- spiechart_internal(rankings, weights)
   }
   else
-    stop("Spie chart area can only be calculated for method SUCRA and pBV")
-  
+    stop("Spie chart area can only be calculated for method SUCRA or pbest.",
+         call. = FALSE)
+    
   class(res) <- c("spiechart", class(res))
   attr(res, "weights") <- weights
   #

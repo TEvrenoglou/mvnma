@@ -2,81 +2,102 @@
 
 S3method(as.mcmc,mvnma)
 S3method(forest,mvnma)
-S3method(forest,nodesplit)
+S3method(forest,netsplit.mvnma)
 S3method(hasse,mvrank)
 S3method(heatplot,mvrank)
+S3method(netsplit,mvnma)
 S3method(plot,mvrank)
 S3method(print,mvnma)
 S3method(print,mvrank)
-S3method(print,nodesplit)
+S3method(print,netsplit.mvnma)
 S3method(print,spiechart)
-S3method(print,vikor)
 S3method(spiechart,mvrank)
-S3method(vikor,matrix)
 S3method(vikor,mvrank)
 export(as.mcmc)
 export(linechart)
 export(mvnma)
 export(mvrank)
-export(nodesplit)
 export(spiechart)
-export(vikor)
 importFrom(R2jags,jags)
-importFrom(coda,as.mcmc)
-importFrom(coda,as.mcmc.list)
-importFrom(dplyr,"%>%")
-importFrom(dplyr,all_of)
-importFrom(dplyr,any_of)
-importFrom(dplyr,arrange)
-importFrom(dplyr,bind_cols)
-importFrom(dplyr,bind_rows)
-importFrom(dplyr,desc)
-importFrom(dplyr,distinct)
-importFrom(dplyr,filter)
-importFrom(dplyr,group_by)
-importFrom(dplyr,mutate)
-importFrom(dplyr,n_distinct)
-importFrom(dplyr,pull)
-importFrom(dplyr,rename)
-importFrom(dplyr,rename_with)
-importFrom(dplyr,select)
+importFrom(coda,
+  as.mcmc,
+  as.mcmc.list
+)
+importFrom(dplyr,
+  "%>%",
+  all_of,
+  any_of,
+  arrange,
+  bind_cols,
+  bind_rows,
+  desc,
+  distinct,
+  filter,
+  group_by,
+  mutate,
+  n_distinct,
+  pull,
+  rename,
+  rename_with,
+  select
+)
 importFrom(forcats,fct_rev)
-importFrom(ggplot2,aes)
-importFrom(ggplot2,element_blank)
-importFrom(ggplot2,element_text)
-importFrom(ggplot2,geom_line)
-importFrom(ggplot2,geom_point)
-importFrom(ggplot2,geom_text)
-importFrom(ggplot2,geom_tile)
-importFrom(ggplot2,ggplot)
-importFrom(ggplot2,guide_colourbar)
-importFrom(ggplot2,guide_legend)
-importFrom(ggplot2,guides)
-importFrom(ggplot2,labs)
-importFrom(ggplot2,scale_fill_gradient)
-importFrom(ggplot2,scale_y_discrete)
-importFrom(ggplot2,theme)
-importFrom(ggplot2,theme_minimal)
-importFrom(ggplot2,theme_void)
-importFrom(ggplot2,xlab)
-importFrom(ggplot2,ylab)
-importFrom(ggplot2,ylim)
+importFrom(ggplot2,
+  aes,
+  element_blank,
+  element_text,
+  geom_line,
+  geom_point,
+  geom_text,
+  geom_tile,
+  ggplot,
+  guide_colourbar,
+  guide_legend,
+  guides,
+  labs,
+  scale_fill_gradient,
+  scale_y_discrete,
+  theme,
+  theme_minimal,
+  theme_void,
+  xlab,
+  ylab,
+  ylim
+)
 importFrom(graphics,text)
 importFrom(magrittr,"%<>%")
 importFrom(matrixStats,colSds)
-importFrom(meta,backtransf)
-importFrom(meta,forest)
-importFrom(meta,gs)
-importFrom(meta,metagen)
-importFrom(meta,pairwise)
-importFrom(netmeta,hasse)
-importFrom(netmeta,heatplot)
-importFrom(netmeta,netposet)
-importFrom(netmeta,rankogram)
-importFrom(rlist,list.cbind)
-importFrom(rlist,list.rbind)
-importFrom(stats,complete.cases)
-importFrom(stats,quantile)
-importFrom(stats,relevel)
-importFrom(utils,combn)
-importFrom(utils,packageVersion)
+importFrom(meta,
+  backtransf,
+  forest,
+  gs,
+  metagen,
+  pairwise
+)
+importFrom(netmeta,
+  hasse,
+  heatplot,
+  netposet,
+  netsplit,
+  rankogram,
+  vikor
+)
+importFrom(rlist,
+  list.cbind,
+  list.rbind
+)
+importFrom(stats,
+  complete.cases,
+  pnorm,
+  qnorm,
+  quantile,
+  relevel,
+  runif,
+  sd
+)
+importFrom(utils,
+  capture.output,
+  combn,
+  modifyList,
+  packageVersion
+)

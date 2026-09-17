@@ -4,7 +4,7 @@
 #' This function produces a heatplot displaying the results of function
 #' \code{\link{mvrank}}. The graph can be used to visualize the ranking output
 #' when the method used to rank the treatments is either the surface under the
-#' cumulative ranking curve (SUCRA) or the probability of best value (pBV).
+#' cumulative ranking curve (SUCRA) or the probability of being best (pbest).
 #' 
 #' @param x An object of class \code{\link{mvrank}}.
 #' @param sort An optional argument to define an outcome to be used as a
@@ -87,12 +87,13 @@ heatplot.mvrank <- function(x,
                             ...) {
   
   chkclass(x, "mvrank")
+  x <- updateversion(x)
   #
   method <- attr(x, "method")
   #
-  if (!(method %in% c("SUCRA", "pBV")))
+  if (!(method %in% c("SUCRA", "pbest")))
     stop("Heatplot can only be produced for mvnma object created with ",
-         "'method = \"SUCRA\"' or \"pBV\".",
+         "'method = \"SUCRA\"' or \"pbest\".",
          call. = FALSE)
   
   outcome <- treatment <- val <- NULL
