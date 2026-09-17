@@ -9,7 +9,7 @@ single-correlation coefficient model}
 mvnma(
   ...,
   method = "standard",
-  method.psi = "random",
+  pooled = "random",
   n.domain = NULL,
   reference.group = NULL,
   outclab = NULL,
@@ -39,11 +39,12 @@ mvnma(
 
 \item{method}{A character string specifying the method to be used for model
 fitting. This can be either "standard" (default), referring to the
-standard bivariate model, or "DM", referring to the bivariate model based
-on the DuMouchel method. The argument can be abbreviated.}
+standard model, or "DM", referring to the DuMouchel model. The argument
+can be abbreviated. Set to "standard" for a single outcome.}
 
-\item{method.psi}{A character string specifying the type of model to be fitted. Options are
-"random" (default) for a random-effects model and "common" for a common-effect model. Can be abbreviated.}
+\item{pooled}{A character string indicating whether the common effects
+(\code{"common"}) or random effects (\code{"random"}, default) model should
+be considered. Can be abbreviated.}
 
 \item{n.domain}{Integer indicating the position of the last outcome in the 
 first outcome domain (based on the order of the supplied pairwise objects). 
@@ -53,7 +54,7 @@ domains. Ignored when `method = "standard"`. Default is `NULL`.}
 \item{reference.group}{A common reference treatment across all outcomes.}
 
 \item{outclab}{An optional argument with labels for each outcome. If NULL,
-the each outcome is labelled as 'outcome_1', 'outcome_2' etc.}
+outcomes are labelled as 'outcome_1', 'outcome_2', etc.}
 
 \item{n.chains}{Number of Markov chains (default=4).}
 
@@ -67,20 +68,23 @@ the each outcome is labelled as 'outcome_1', 'outcome_2' etc.}
 \item{level}{The level used to calculate confidence intervals
 for network estimates.}
 
-\item{scale.psi}{Values for the scale parameter(s) of the Half-Normal prior
+\item{scale.psi}{Values for the scale parameter(s) of the half-normal prior
 used for the heterogeneity parameters within each outcome. If NULL, all
 values are set to 1. If specified, it should have a length equal to the
 number of outcomes.}
 
-\item{psi.preset}{Prespecified value for the between-study heterogeneity parameter. Default is `NULL`.
-If specified, it is a numeric vector with length equal to the number of outcomes, which will overwrite arguments
-`scale.psi` and `method.psi`.}
+\item{psi.preset}{Pre-specified value for the between-study heterogeneity
+parameter (default: `NULL`). If specified, it must be a numeric vector
+of length equal to the number of outcomes, which will overwrite arguments
+`scale.psi` and `pooled`.}
 
-\item{lower.rho}{Lower bounds for the Uniform prior(s) used for the
-correlation coefficient. If NULL all bounds are set to -1.}
+\item{lower.rho}{Lower bounds for the uniform prior(s) used for the
+correlation coefficient. If NULL, all bounds are set to -1. Input to this
+argument is ignored for a single outcome.}
 
-\item{upper.rho}{Upper bounds for the Uniform prior(s) used for the
-correlation coefficient. If NULL all bounds are set to 1.}
+\item{upper.rho}{Upper bounds for the uniform prior(s) used for the
+correlation coefficient. If NULL, all bounds are set to 1. Input to this
+argument is ignored for a single outcome.}
 
 \item{varTE.missing}{Assumed (very large) variance for outcomes not reported
 in a study. By default, the largest variance times 1000000 is used. This is
@@ -104,9 +108,9 @@ printed.}
 }
 \value{
 The function returns an 'mvnma' object. This consists of the results for each
-outcome and the correlation coefficient estimates between the combined
-outcomes. The outcome-specific estimates are expressed in the format of a
-list (one for each outcome) which contains:
+outcome and, for more than one outcome, the correlation coefficient estimates
+between the combined outcomes. The outcome-specific estimates are expressed
+in the format of a list (one for each outcome) which contains:
 \itemize{
 \item The basic estimates (i.e. treatment vs. reference.group) for each
   outcome.
@@ -116,7 +120,8 @@ list (one for each outcome) which contains:
 }
 \description{
 This function fits a Bayesian multivariate network meta-analysis model for
-two or more outcomes. Additionally, the studies can have multiple arms.
+two or more outcomes. It can also be used to fit a univariate network
+meta-analysis model. Additionally, the studies can have multiple arms.
 }
 \details{
 The multivariate network meta-analysis (mvNMA) model supported by this
@@ -124,10 +129,11 @@ package refers to the single correlation coefficient model, interpreted as
 an amalgam of within- and across-outcome correlations
 (Efthimiou et al., 2015) which is a generalisation of Riley et al. (2008).
 
-The function \code{\link{mvnma}} expects two or more outcomes /
+The function \code{\link{mvnma}} expects one or more outcomes /
 \code{\link[meta]{pairwise}} objects. A common reference treatment across
 all outcomes is required to only show comparisons with the reference in
-forest plots.
+forest plots. For a single \code{\link[meta]{pairwise}} object, a univariate
+network meta-analysis is conducted.
 
 The Bayesian multivariate network meta-analysis model fitted in the
 \bold{mvnma} package assumes uniform priors for the between-outcome
@@ -150,7 +156,8 @@ Alternatively, `method = "DM"` specifies the DuMouchel prior, which assumes
 constant relative treatment effects across outcomes and enables information 
 sharing (DuMouchel & Harris, 1983). This may improve precision but can
 introduce bias when outcomes from different domains (e.g., efficacy and
-safety) are analyzed jointly.
+safety) are analyzed jointly. Note, the DuMouchel model is not available for
+a single outcome.
 
 The argument `n.domain` can be used to restrict information sharing to 
 predefined outcome domains. It indicates the position (based on the order 
@@ -261,6 +268,17 @@ for (i in outc) {
   cat(paste0("\nOutcome: ", i, "\n\n"))
   print(round(exp(mvnma_all[[i]]$TE.random), 2))
 }
+
+# Results for a univariate Bayesian network meta-analysis
+set.seed(1941)
+bnma1 <- mvnma(pw1,
+  reference.group = "Placebo", outclab = outcomes[1],
+  n.iter = 100, n.burnin = 20)
+bnma1
+
+# Results for a univariate frequentist network meta-analysis
+nma1 <- netmeta(pw1, reference.group = "Placebo")
+print(nma1, backtransf = FALSE)
 }
 
 }

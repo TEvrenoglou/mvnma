@@ -3,41 +3,46 @@
 #' 
 #' @description
 #' This function fits a Bayesian multivariate network meta-analysis model for
-#' two or more outcomes. Additionally, the studies can have multiple arms.
+#' two or more outcomes. It can also be used to fit a univariate network
+#' meta-analysis model. Additionally, the studies can have multiple arms.
 #' 
-#' @param \dots Either two or more pairwise objects or a single list with
-#'   two or more pairwise objects.
+#' @param \dots Either one or more pairwise objects or a single list with
+#'   one or more pairwise objects.
 #' @param reference.group A common reference treatment across all outcomes.
 #' @param outclab An optional argument with labels for each outcome. If NULL,
-#'   the each outcome is labelled as 'outcome_1', 'outcome_2' etc.
+#'   outcomes are labelled as 'outcome_1', 'outcome_2', etc.
 #' @param n.chains Number of Markov chains (default=4). 
 #' @param n.domain Integer indicating the position of the last outcome in the 
-#' first outcome domain (based on the order of the supplied pairwise objects). 
-#' Used with `method = "DM"` to restrict information sharing within outcome 
-#' domains. Ignored when `method = "standard"`. Default is `NULL`.
-#' @param method.psi A character string specifying the type of model to be fitted. Options are
-#' "random" (default) for a random-effects model and "common" for a common-effect model. Can be abbreviated.
+#'   first outcome domain (based on the order of the supplied pairwise objects). 
+#'   Used with `method = "DM"` to restrict information sharing within outcome 
+#'   domains. Ignored when `method = "standard"`. Default is `NULL`.
+#' @param pooled A character string indicating whether the common effects
+#'   (\code{"common"}) or random effects (\code{"random"}, default) model should
+#'   be considered. Can be abbreviated.
 #' @param n.thin Thinning rate. Default is equal to
 #'   \code{max(1, floor((n.iter - n.burnin) / 1000))}.
 #' @param n.iter Number of iterations (default: 10000).
 #' @param n.burnin Number of iterations for burn-in (default: 2000).
 #' @param level The level used to calculate confidence intervals
 #'   for network estimates.
-#' @param scale.psi Values for the scale parameter(s) of the Half-Normal prior
+#' @param scale.psi Values for the scale parameter(s) of the half-normal prior
 #'   used for the heterogeneity parameters within each outcome. If NULL, all
 #'   values are set to 1. If specified, it should have a length equal to the
 #'   number of outcomes.
-#' @param psi.preset Prespecified value for the between-study heterogeneity parameter. Default is `NULL`.
-#' If specified, it is a numeric vector with length equal to the number of outcomes, which will overwrite arguments
-#' `scale.psi` and `method.psi`.
-#' @param lower.rho Lower bounds for the Uniform prior(s) used for the
-#'   correlation coefficient. If NULL all bounds are set to -1.
-#' @param upper.rho Upper bounds for the Uniform prior(s) used for the
-#'   correlation coefficient. If NULL all bounds are set to 1.
+#' @param psi.preset Prespecified value for the between-study heterogeneity
+#'   parameter (default: `NULL`). If specified, it must be a numeric vector
+#'   of length equal to the number of outcomes, which will overwrite arguments
+#'   `scale.psi` and `pooled`.
+#' @param lower.rho Lower bounds for the uniform prior(s) used for the
+#'   correlation coefficient. If NULL, all bounds are set to -1. Input to this
+#'   argument is ignored for a single outcome.
+#' @param upper.rho Upper bounds for the uniform prior(s) used for the
+#'   correlation coefficient. If NULL, all bounds are set to 1. Input to this
+#'   argument is ignored for a single outcome.
 #' @param method A character string specifying the method to be used for model
 #'   fitting. This can be either "standard" (default), referring to the
-#'   standard bivariate model, or "DM", referring to the bivariate model based
-#'   on the DuMouchel method. The argument can be abbreviated.
+#'   standard model, or "DM", referring to the DuMouchel model. The argument
+#'   can be abbreviated. Set to "standard" for a single outcome.
 #' @param varTE.missing Assumed (very large) variance for outcomes not reported
 #'   in a study. By default, the largest variance times 1000000 is used. This is
 #'   the same value used for argument \code{seTE.ignore} in
@@ -60,10 +65,11 @@
 #' an amalgam of within- and across-outcome correlations
 #' (Efthimiou et al., 2015) which is a generalisation of Riley et al. (2008).
 #' 
-#' The function \code{\link{mvnma}} expects two or more outcomes /
+#' The function \code{\link{mvnma}} expects one or more outcomes /
 #' \code{\link[meta]{pairwise}} objects. A common reference treatment across
 #' all outcomes is required to only show comparisons with the reference in
-#' forest plots.
+#' forest plots. For a single \code{\link[meta]{pairwise}} object, a univariate
+#' network meta-analysis is conducted.
 #' 
 #' The Bayesian multivariate network meta-analysis model fitted in the
 #' \bold{mvnma} package assumes uniform priors for the between-outcome
@@ -86,7 +92,8 @@
 #' constant relative treatment effects across outcomes and enables information 
 #' sharing (DuMouchel & Harris, 1983). This may improve precision but can
 #' introduce bias when outcomes from different domains (e.g., efficacy and
-#' safety) are analyzed jointly.
+#' safety) are analyzed jointly. Note, the DuMouchel model is not available for
+#' a single outcome.
 #' 
 #' The argument `n.domain` can be used to restrict information sharing to 
 #' predefined outcome domains. It indicates the position (based on the order 
@@ -103,9 +110,9 @@
 #'  
 #' @return
 #' The function returns an 'mvnma' object. This consists of the results for each
-#' outcome and the correlation coefficient estimates between the combined
-#' outcomes. The outcome-specific estimates are expressed in the format of a
-#' list (one for each outcome) which contains:
+#' outcome and, for more than one outcome, the correlation coefficient estimates
+#' between the combined outcomes. The outcome-specific estimates are expressed
+#' in the format of a list (one for each outcome) which contains:
 #' \itemize{
 #' \item The basic estimates (i.e. treatment vs. reference.group) for each
 #'   outcome.
@@ -229,6 +236,17 @@
 #'   cat(paste0("\nOutcome: ", i, "\n\n"))
 #'   print(round(exp(mvnma_all[[i]]$TE.random), 2))
 #' }
+#' 
+#' # Results for a univariate Bayesian network meta-analysis
+#' set.seed(1941)
+#' bnma1 <- mvnma(pw1,
+#'   reference.group = "Placebo", outclab = outcomes[1],
+#'   n.iter = 100, n.burnin = 20)
+#' bnma1
+#' 
+#' # Results for a univariate frequentist network meta-analysis
+#' nma1 <- netmeta(pw1, reference.group = "Placebo")
+#' print(nma1, backtransf = FALSE)
 #' }
 #' 
 #' @export mvnma
@@ -236,7 +254,7 @@
 mvnma <- function(...,
                   #
                   method = "standard",
-                  method.psi = "random",
+                  pooled = "random",
                   n.domain = NULL,
                   #
                   reference.group = NULL, outclab = NULL,   
@@ -266,11 +284,7 @@ mvnma <- function(...,
   
   args <- list(...)
   #
-  if (length(args) == 1) {
-    if (inherits(args[[1]], "pairwise"))
-      stop("Provide two or more pairwise objects.",
-           call. = FALSE)
-    #
+  if (length(args) == 1 && !(inherits(args[[1]], "pairwise"))) {
     if (!is.list(args[[1]]))
       stop("All elements of argument '...' must be of class 'pairwise'.",
            call. = FALSE)
@@ -288,8 +302,8 @@ mvnma <- function(...,
   n.out <- length(args)
   n.rho <- choose(n.out, 2)
   #
-  if (n.out < 2)
-    stop("Provide two or more pairwise objects.",
+  if (n.out < 1)
+    stop("Provide one or more pairwise objects.",
          call. = FALSE)
   #  
   for (i in seq_len(n.out)) {
@@ -317,7 +331,15 @@ mvnma <- function(...,
   #
   
   method <- setchar(method, c("standard", "DM"))
-  method.psi <- setchar(method.psi, c("random", "common"))
+  chkchar(method, length = 1)
+  #
+  if (n.out == 1 & method == "DM") {
+    warning("Argument 'method' set to \"standard\" for single outcome.",
+            call. = FALSE)
+    method <- "standard"
+  }
+  #
+  pooled <- setchar(pooled, c("random", "common"))
   #
   chknumeric(n.domain, min = 1, max = n.out)
   #
@@ -352,30 +374,52 @@ mvnma <- function(...,
   else
     chknumeric(scale.psi, min = 0, zero = TRUE, length = n.out, NA.ok = FALSE)
   #
-  if(method.psi == "random")
-  prec.psi <- 1 / scale.psi^2
+  if (pooled == "random")
+    prec.psi <- 1 / scale.psi^2
   else
     prec.psi <- NULL
   #
-  if(!is.null(psi.preset)){
+  if (!is.null(psi.preset)) {
     chknumeric(psi.preset, min = 0, zero = FALSE, length = n.out, NA.ok = FALSE)
     prec.psi <- NULL
-    }
+  }
   #
   miss.lower.rho <- missing(lower.rho)
   miss.upper.rho <- missing(upper.rho)
   #
-  if (miss.lower.rho)
-    lower.rho <- rep_len(-1, n.rho)
-  else
-    chknumeric(lower.rho, min = -1, max = 1, length = n.rho, NA.ok = FALSE)
+  if (miss.lower.rho) {
+    if (n.out == 1)
+      lower.rho <- NULL
+    else
+      lower.rho <- rep_len(-1, n.rho)
+  }
+  else {
+    if (n.out == 1) {
+      warning("Input to argument 'lower.rho' ignored for a single outcome.",
+              call. = FALSE)
+      lower.rho <- NULL
+    }
+    else
+      chknumeric(lower.rho, min = -1, max = 1, length = n.rho, NA.ok = FALSE)
+  }
   #
-  if (miss.upper.rho)
-    upper.rho <- rep_len(1, n.rho)
-  else
-    chknumeric(upper.rho, min = -1, max = 1, length = n.rho, NA.ok = FALSE)
+  if (miss.upper.rho) {
+    if (n.out == 1)
+      upper.rho <- NULL
+    else
+      upper.rho <- rep_len(1, n.rho)
+  }
+  else {
+    if (n.out == 1) {
+      warning("Input to argument 'upper.rho' ignored for a single outcome.",
+              call. = FALSE)
+      upper.rho <- NULL
+    }
+    else
+      chknumeric(upper.rho, min = -1, max = 1, length = n.rho, NA.ok = FALSE)
+  }
   #
-  if (!miss.lower.rho & !miss.upper.rho) {
+  if (!miss.lower.rho & !miss.upper.rho & n.out > 1) {
     if (any(lower.rho >= upper.rho))
       stop("Values for argument 'lower.rho' must be smaller than values for ",
            "argument 'upper.rho'.",
@@ -430,14 +474,14 @@ mvnma <- function(...,
     y = dat$y,
     #
     varmat = var_matrix,
-    contmat = control_matrix,
+    contmat = if (n.out > 1) control_matrix else NULL,
     trtmat = dat$treatments,
     ref = id_reference.group,
     #
     n.studies = dat$n.studies,
     n = dat$n,
     #
-    prec.psi = prec.psi,lower.rho = lower.rho, upper.rho = upper.rho
+    prec.psi = prec.psi, lower.rho = lower.rho, upper.rho = upper.rho
   )
   
   dat_jags <- Filter(Negate(is.null), dat_jags)
@@ -448,7 +492,7 @@ mvnma <- function(...,
   #
   #
   
-  params <- c(paste0("d", seq_len(n.out)), "psi", "rho")
+  params <- c(paste0("d", seq_len(n.out)), "psi", if (n.out > 1) "rho")
   #
   if (method == "DM") {
     if (is.null(n.domain))
@@ -457,7 +501,8 @@ mvnma <- function(...,
       params <- c(params, c("sigma1", "sigma2"))
   }
   #
-  model.code <- mvnma_code(n.out, dat$arms, method, n.domain, psi.preset, method.psi)
+  model.code <-
+    mvnma_code(n.out, dat$arms, method, n.domain, psi.preset, pooled)
   #
   text_conn <- textConnection(model.code)
   on.exit(close(text_conn), add = TRUE)

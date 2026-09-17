@@ -3,14 +3,21 @@
 ### Major changes
 
 * mvnma():
-  - accepts any number of outcomes and studies with more than three arms
-  - new argument to specify either a random-effects or a common-effect model
-  - new argument to fit the multivariate NMA model with pre-specified values of
-    heterogeneity
+  - accepts one or more outcomes and studies with two or more arms
+  - a common-effects model can be fitted
+  - between-study heterogeneity parameter(s) can be prespecified
 
 * New functions netsplit.mvnma(), print.netsplit.mvnma(), and
-  forest.netsplit.mvnma() to enable consistency checks using the node-splitting
+  forest.netsplit.mvnma() support consistency checks using the node-splitting
   method.
+
+### User-visible changes
+
+* mvnma():
+  - new argument 'pooled' to fit a common-effects or random-effects model
+  - new argument 'psi.preset' to prespecify the between-study heterogeneity
+    parameter(s)
+
 
 ## mvnma, version 0.2-0 (2026-07-09)
 

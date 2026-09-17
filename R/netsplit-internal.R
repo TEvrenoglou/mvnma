@@ -67,17 +67,12 @@ splittable.comparisons <- function(x, combine = c("any", "all", "list")) {
   else
     Reduce(intersect, keys)
   
-  if (length(sel) == 0) {
-    return(data.frame(treat1 = character(0),
-                      treat2 = character(0),
-                      stringsAsFactors = FALSE))
-  }
+  if (length(sel) == 0)
+    return(data.frame(treat1 = character(0), treat2 = character(0)))
   
   parts <- do.call(rbind, strsplit(sel, " \001 ", fixed = TRUE))
   
-  res <- data.frame(treat1 = parts[, 1],
-                    treat2 = parts[, 2],
-                    stringsAsFactors = FALSE)
+  res <- data.frame(treat1 = parts[, 1], treat2 = parts[, 2])
   
   res <- res[order(res$treat1, res$treat2), , drop = FALSE]
   row.names(res) <- NULL
@@ -111,9 +106,7 @@ splittable.comparisons <- function(x, combine = c("any", "all", "list")) {
     keep <- keep & !is.na(d$seTE)
   
   data.frame(studlab = studlab[keep],
-             treat1  = pmin(t1, t2)[keep],
-             treat2  = pmax(t1, t2)[keep],
-             stringsAsFactors = FALSE)
+             treat1  = pmin(t1, t2)[keep], treat2  = pmax(t1, t2)[keep])
 }
 
 
@@ -189,9 +182,8 @@ splittable.comparisons <- function(x, combine = c("any", "all", "list")) {
 # ---------------------------------------------------------------------------
 # Node-splitting for a single treatment comparison
 # ---------------------------------------------------------------------------
-netsplit_pair <- function(x, treat1, treat2, 
-                           method.direct = "pairwise", 
-                           tol.direct = 5e-04, ...){
+netsplit_pair <- function(x, treat1, treat2, univariate = TRUE,
+                          tol.direct = 0.0005, ...) {
   
   method.model <- attr(x, "method.model")
   n.domain <- attr(x,"n.domain")
@@ -200,16 +192,17 @@ netsplit_pair <- function(x, treat1, treat2,
   #
   level <- attr(x, "level")
   #
-  method.direct <- setchar(method.direct, c("pairwise", "multivariate"))
+  chklogical(univariate)
   #
   # z-critical value for the chosen confidence level - computed once and
   # reused below instead of being recomputed on every use
   z.crit <- qnorm(1 - (1 - level) / 2)
   
-  # calculate the direct estimate, either by re-fitting the multivariate
+  # Calculate the direct estimate, either by re-fitting the multivariate
   # model to the direct evidence or by an outcome-specific pairwise
   # meta-analysis with heterogeneity fixed at the multivariate estimate
-  dir <- if (method.direct == "pairwise")
+  #
+  dir <- if (univariate)
     direct_metagen(x, treat1 = treat1, treat2 = treat2, ...)
   else
     direct_mvnma(x, treat1 = treat1, treat2 = treat2, ...)
@@ -223,10 +216,10 @@ netsplit_pair <- function(x, treat1, treat2,
   # direct_mvnma() drops outcomes without direct evidence from the model fit,
   # so results must be mapped back by position; direct_metagen() returns one
   # element per outcome and needs no mapping
-  pos <- if (method.direct == "pairwise")
-    seq_along(keep.out)
+  if (univariate)
+    pos <- seq_along(keep.out)
   else
-    cumsum(keep.out)
+    pos <- cumsum(keep.out)
   #
   # per-outcome direct-comparison data and study counts, pulled off `dir`
   # *before* it gets subsetted below (subsetting drops non-standard
@@ -271,10 +264,12 @@ netsplit_pair <- function(x, treat1, treat2,
       # no direct evidence for this comparison in this outcome
       direct[[i]] <- data.frame("mean"=NA,"sd"=NA,"lower"=NA,"upper"=NA)
       
-    } else if (!is.null(direct.data) && !is.null(n.studies) && n.studies[i] == 1) {
+    }
+    else if (!is.null(direct.data) && !is.null(n.studies) &&
+             n.studies[i] == 1) {
       
       # direct.data keeps rows with missing estimates; under
-      # method.direct = "pairwise" a single study can be one non-missing row
+      # univariate = TRUE a single study can be one non-missing row
       # among several, so select it explicitly
       sel <- !is.na(direct.data[[i]]$TE) & !is.na(direct.data[[i]]$seTE)
       #
@@ -294,7 +289,7 @@ netsplit_pair <- function(x, treat1, treat2,
       }
     }
     else if (!keep.out[i] || length(dir) == 0 ||
-               all(is.na(dir[[pos[i]]]$basic_estimates))) {
+             all(is.na(dir[[pos[i]]]$basic_estimates))) {
       
       direct[[i]] <- data.frame("mean"=NA,"sd"=NA,"lower"=NA,"upper"=NA)  
       
@@ -425,18 +420,15 @@ direct_mvnma <- function(x, treat1, treat2, ...){
   
   fit.args <- modifyList(fit.args, list(...))
   
-  if (is.null(fit.args$lower.rho)) fit.args$lower.rho <- -1
-  if (is.null(fit.args$upper.rho)) fit.args$upper.rho <- 1
+  if (n.rho > 0) {
+    if (is.null(fit.args$lower.rho)) fit.args$lower.rho <- -1
+    if (is.null(fit.args$upper.rho)) fit.args$upper.rho <- 1
+  }
   
-  # mvnma() requires at least two pairwise objects
-  if (sum(keep) >= 2) {
+  if (sum(keep) >= 1) {
     fit <- do.call(mvnma, c(data.dir[keep], fit.args))
   }
   else {
-    if (any(n.studies > 1))
-      warning("Comparison '", treat1, ":", treat2, "' is directly informed ",
-              "in fewer than two outcomes; no model-based direct estimate ",
-              "available.", call. = FALSE)
     fit <- list()
   }
   

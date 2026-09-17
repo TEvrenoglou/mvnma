@@ -274,8 +274,7 @@ forest.netsplit.mvnma <- function(x,
                  upper = dat.i$mvnma.ub,
                  k = NA, prop = NA,
                  evidence = text.overall,
-                 type.study = type.overall,
-                 stringsAsFactors = FALSE)
+                 type.study = type.overall)
     #
     dat.direct <-
       data.frame(comparison = dat.i$comparison,
@@ -286,8 +285,7 @@ forest.netsplit.mvnma <- function(x,
                  k = dat.i$k,
                  prop = formatPT(dat.i$prop, digits = digits.prop),
                  evidence = text.direct,
-                 type.study = type.direct,
-                 stringsAsFactors = FALSE)
+                 type.study = type.direct)
     #
     dat.indirect <-
       data.frame(comparison = dat.i$comparison,
@@ -297,10 +295,9 @@ forest.netsplit.mvnma <- function(x,
                  upper = dat.i$indirect.ub,
                  k = NA, prop = NA,
                  evidence = text.indirect,
-                 type.study = type.indirect,
-                 stringsAsFactors = FALSE)
+                 type.study = type.indirect)
     
-    # colours
+    # Colours
     #
     dat.overall$col.estimate <-
       if (type.overall == "square") col.square else col.diamond
@@ -403,7 +400,7 @@ forest.netsplit.mvnma <- function(x,
         file.i <- file
     }
     
-    # meta-analysis object holding the estimates to plot
+    # Meta-analysis object holding the estimates to plot
     #
     if (subgroup == "comparison")
       m <- suppressWarnings(

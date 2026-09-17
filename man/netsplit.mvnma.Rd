@@ -7,7 +7,7 @@
 \usage{
 \method{netsplit}{mvnma}(
   x,
-  method.direct = c("pairwise", "multivariate"),
+  univariate = TRUE,
   tol.direct = 5e-04,
   seed = NULL,
   quiet = TRUE,
@@ -41,12 +41,11 @@
 \arguments{
 \item{x}{An object of class \code{\link{mvnma}}.}
 
-\item{method.direct}{A character string indicating how direct estimates
-are obtained, either \code{"pairwise"} (outcome-specific pairwise
-meta-analysis) or \code{"multivariate"} (re-fit the multivariate network
-meta-analysis model to the direct evidence). In both cases the
-between-study heterogeneity is fixed at the value estimated by the
-multivariate model.Can be abbreviated.}
+\item{univariate}{A logical indicating how direct estimates are
+obtained, either from univariate, outcome-specific, pairwise meta-analysis
+(\code{univariate = TRUE}, default) or from multivariate network
+meta-analyses. Under the random effects model, the between-study
+heterogeneity is taken from the object \code{x} for both cases.}
 
 \item{tol.direct}{A numeric defining the maximum deviation of the direct
 evidence proportion from 0 or 1 to classify a comparison as providing
@@ -55,14 +54,14 @@ reported for such comparisons.}
 
 \item{seed}{An optional numeric value used to set the random number
 generator before fitting the node-splitting models, in order to obtain
-reproducible results. Only relevant for \code{method.direct =
-"multivariate"}, where direct estimates are obtained from an MCMC model
-fit. The state of the random number generator is restored on exit.}
+reproducible results. Only relevant for \code{univarite = FALSE}, where
+direct estimates are obtained from an MCMC model fit. The state of the
+random number generator is restored on exit.}
 
 \item{quiet}{A logical indicating whether to print information on the
 progress of the JAGS model fitting. Only relevant for
-\code{method.direct = "multivariate"}, where direct estimates are
-obtained from an MCMC model fit.}
+\code{univarite = FALSE}, where direct estimates are obtained from an
+MCMC model fit.}
 
 \item{\dots}{Additional arguments (ignored).}
 
@@ -131,7 +130,7 @@ values.}
 \item{legend}{A logical indicating whether a legend should be printed.}
 }
 \value{
-An object of class \code{netsplit}; a list with one data frame per
+An object of class \code{netsplit.mvnma}; a list with one data frame per
 outcome, with one row per treatment comparison and the following columns:
 \item{comparison}{Treatment comparison.}
 \item{k}{Number of studies providing direct evidence.}
@@ -177,7 +176,7 @@ all studies in the network.
 For each qualifying comparison, the direct estimate is obtained from the
 studies directly comparing the two treatments, either by an
 outcome-specific pairwise meta-analysis or by re-fitting the multivariate
-model to the direct evidence (see argument \code{method.direct}). The
+model to the direct evidence (see argument \code{univariate}). The
 indirect estimate is then derived by back-calculation from the
 multivariate network meta-analysis estimate and the direct estimate,
 using the direct evidence proportion, that is, the ratio of the network

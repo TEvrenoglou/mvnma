@@ -10,7 +10,7 @@ mvdata <- function(x){
   #
   jags.data
 }
-  
+ 
 
 create_T <- function(data, max.arms) {
   # Get rid of warning "no visible binding for global variable"
@@ -127,6 +127,12 @@ create_data <- function(p) {
   for (i in seq_len(n.out)) {
     dat1[[i]] <- comb_p %>% filter(outcome == i)
     dat2[[i]] <- comb_p %>% filter(outcome != i) 
+    # There are no missing-outcome rows to create in a univariate NMA
+    if (nrow(dat2[[i]]) == 0) {
+      dat2[[i]] <- list()
+      studies[[i]] <- integer()
+      next
+    }
     #
     dat2[[i]]$TE <- dat2[[i]]$seTE <- NA
     dat2[[i]]$new_outcome <- i
@@ -304,7 +310,8 @@ gather_results <- function(x, outcomes, trts, reference.group,
     #
     # rho
     #
-    rho[[i]] <- res %>% filter(grepl("rho", rnames))
+    if (n.out > 1)
+      rho[[i]] <- res %>% filter(grepl("rho", rnames))
     
     #
     # Matrices with all results
@@ -349,11 +356,6 @@ gather_results <- function(x, outcomes, trts, reference.group,
   #
   # Prepare output
   #
-  cor <- rho[[1]]
-  #
-  cor %<>% select(mean, sd, "2.5%", "97.5%", Rhat, n.eff) %>%
-    rename(lower = "2.5%", upper = "97.5%")
-  #
   psi <- psi[[1]]
   row.names(psi) <- outcomes
   #
@@ -366,20 +368,6 @@ gather_results <- function(x, outcomes, trts, reference.group,
       sigma2 <- res %>% filter(grepl("sigma2", rnames))
     }
   }
-  #
-  # Create row names for cor
-  #
-  r1 <- t(combn(seq_along(outcomes), 2))
-  r.names <- vector("numeric", nrow(cor))
-  #
-  for (i in seq_along(r.names)) {
-    for (j in seq_len(ncol(r1))) {
-      r.names[i] <- paste(outcomes[r1[i, 1]], outcomes[r1[i, 2]], sep = "/")    
-    }
-  }
-  #
-  row.names(cor) <- r.names
-  #
   res <- vector("list", n.out)
   #
   for (i in seq_len(n.out)) {
@@ -394,8 +382,27 @@ gather_results <- function(x, outcomes, trts, reference.group,
     names(res)[i] <- outcomes[i]
   }
   #
-  res[[length(res) + 1]] <- cor
-  names(res)[length(res)] <- "cor"
+  if (n.out > 1) {
+    cor <- rho[[1]]
+    cor %<>% select(mean, sd, "2.5%", "97.5%", Rhat, n.eff) %>%
+      rename(lower = "2.5%", upper = "97.5%")
+    #
+    # Create row names for cor
+    #
+    r1 <- t(combn(seq_along(outcomes), 2))
+    r.names <- vector("numeric", nrow(cor))
+    #
+    for (i in seq_along(r.names)) {
+      for (j in seq_len(ncol(r1))) {
+        r.names[i] <- paste(outcomes[r1[i, 1]], outcomes[r1[i, 2]], sep = "/")
+      }
+    }
+    #
+    row.names(cor) <- r.names
+    #
+    res[[length(res) + 1]] <- cor
+    names(res)[length(res)] <- "cor"
+  }
   #
   if (method == "DM") {
     if (is.null(n.domain)) {
@@ -844,4 +851,3 @@ catch <- function(argname, matchcall, data, encl)
 
 '%!in%' <- function(x, y)
   !('%in%'(x, y))
-

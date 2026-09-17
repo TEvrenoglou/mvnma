@@ -4,25 +4,24 @@
 #'   node-splitting method.
 #' 
 #' @param x An object of class \code{\link{mvnma}}.
-#' @param method.direct A character string indicating how direct estimates
-#'   are obtained, either \code{"pairwise"} (outcome-specific pairwise
-#'   meta-analysis) or \code{"multivariate"} (re-fit the multivariate network
-#'   meta-analysis model to the direct evidence). In both cases the
-#'   between-study heterogeneity is fixed at the value estimated by the
-#'   multivariate model.Can be abbreviated.
+#' @param univariate A logical indicating how direct estimates are
+#'   obtained, either from univariate, outcome-specific, pairwise meta-analysis
+#'   (\code{univariate = TRUE}, default) or from multivariate network
+#'   meta-analyses. Under the random effects model, the between-study
+#'   heterogeneity is taken from the object \code{x} for both cases.
 #' @param tol.direct A numeric defining the maximum deviation of the direct
 #'   evidence proportion from 0 or 1 to classify a comparison as providing
 #'   only indirect or direct evidence, respectively. No indirect estimate is
 #'   reported for such comparisons.
 #' @param seed An optional numeric value used to set the random number
 #'   generator before fitting the node-splitting models, in order to obtain
-#'   reproducible results. Only relevant for \code{method.direct =
-#'   "multivariate"}, where direct estimates are obtained from an MCMC model
-#'   fit. The state of the random number generator is restored on exit.
+#'   reproducible results. Only relevant for \code{univarite = FALSE}, where
+#'   direct estimates are obtained from an MCMC model fit. The state of the
+#'   random number generator is restored on exit.
 #' @param quiet A logical indicating whether to print information on the
 #'   progress of the JAGS model fitting. Only relevant for
-#'   \code{method.direct = "multivariate"}, where direct estimates are
-#'   obtained from an MCMC model fit.
+#'   \code{univarite = FALSE}, where direct estimates are obtained from an
+#'   MCMC model fit.
 #' @param digits Minimal number of significant digits for treatment
 #'   estimates and confidence intervals, see \code{print.default}.
 #' @param digits.se Minimal number of significant digits for standard
@@ -84,7 +83,7 @@
 #' For each qualifying comparison, the direct estimate is obtained from the
 #' studies directly comparing the two treatments, either by an
 #' outcome-specific pairwise meta-analysis or by re-fitting the multivariate
-#' model to the direct evidence (see argument \code{method.direct}). The
+#' model to the direct evidence (see argument \code{univariate}). The
 #' indirect estimate is then derived by back-calculation from the
 #' multivariate network meta-analysis estimate and the direct estimate,
 #' using the direct evidence proportion, that is, the ratio of the network
@@ -105,7 +104,7 @@
 #' always refer to the original scale.
 #' 
 #' @return
-#' An object of class \code{netsplit}; a list with one data frame per
+#' An object of class \code{netsplit.mvnma}; a list with one data frame per
 #' outcome, with one row per treatment comparison and the following columns:
 #' \item{comparison}{Treatment comparison.}
 #' \item{k}{Number of studies providing direct evidence.}
@@ -162,24 +161,21 @@
 #' @method netsplit mvnma
 #' @export
 
-netsplit.mvnma <- function(x,
-                           method.direct = c("pairwise", "multivariate"),
-                           tol.direct = 0.0005,
-                           seed = NULL, quiet = TRUE,
-                           ...) {
+netsplit.mvnma <- function(x, univariate = TRUE, tol.direct = 0.0005,
+                           seed = NULL, quiet = TRUE, ...) {
   
   chkclass(x, "mvnma")
   #
   chklogical(quiet)
   chknumeric(tol.direct, min = 0, max = 1, length = 1)
   #
-  method.direct <- match.arg(method.direct)
+  chklogical(univariate)
   #
   if (quiet) {
     oldopts <- options(jags.pb = "none")
     on.exit(options(oldopts), add = TRUE)
   }
-    
+  
   if (!is.null(seed)) {
     if (!exists(".Random.seed", envir = .GlobalEnv))
       runif(1)
@@ -219,24 +215,26 @@ netsplit.mvnma <- function(x,
     if (quiet) {
       # capture.output() evaluates in the calling frame, so the assignment
       # to r[[i]] persists
-      invisible(capture.output(
-        suppressMessages(suppressWarnings(
-          r[[i]] <- netsplit_pair(x,
-                                   treat1 = split.any$treat1[i],
-                                   treat2 = split.any$treat2[i],
-                                   method.direct = method.direct,
-                                   tol.direct = tol.direct)
-                                    ## ins
-        ))
-      ))
+      invisible(
+        capture.output(
+          suppressMessages(
+            suppressWarnings(
+              r[[i]] <- netsplit_pair(x,
+                                      treat1 = split.any$treat1[i],
+                                      treat2 = split.any$treat2[i],
+                                      univariate = univariate,
+                                      tol.direct = tol.direct)
+            )
+          )
+        )
+      )
     }
     else {
       r[[i]] <- netsplit_pair(x,
-                               treat1 = split.any$treat1[i],
-                               treat2 = split.any$treat2[i],
-                               method.direct = method.direct,
-                               tol.direct = tol.direct)
-                               ## ins
+                              treat1 = split.any$treat1[i],
+                              treat2 = split.any$treat2[i],
+                              univariate = univariate,
+                              tol.direct = tol.direct)
     }
   }
   
@@ -249,9 +247,10 @@ netsplit.mvnma <- function(x,
     rownames(d) <- NULL
     d
   })
+  #
   names(res) <- name.outcome
   
-  # keep only splittable comparisons for each outcome
+  # Keep only split table comparisons for each outcome
   for (i in seq_along(res)) {
     
     if (nrow(split.outcome[[i]]) == 0) {
@@ -274,6 +273,7 @@ netsplit.mvnma <- function(x,
   res
   
 }
+
 
 #' @rdname netsplit.mvnma
 #' @method print netsplit.mvnma
@@ -454,13 +454,12 @@ print.netsplit.mvnma <- function(x,
       names.out <- c(names.out, "p-value")
     }
     
-    out <- as.data.frame(out, stringsAsFactors = FALSE)
+    out <- as.data.frame(out)
     names(out) <- names.out
     #
     out[is.na(out)] <- text.NA
     
-    prmatrix(out, quote = FALSE, right = TRUE,
-             rowlab = rep("", nrow(out)))
+    prmatrix(out, quote = FALSE, right = TRUE, rowlab = rep("", nrow(out)))
   }
   
   if (legend) {
