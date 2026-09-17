@@ -73,7 +73,7 @@ used for the heterogeneity parameters within each outcome. If NULL, all
 values are set to 1. If specified, it should have a length equal to the
 number of outcomes.}
 
-\item{psi.preset}{Pre-specified value for the between-study heterogeneity
+\item{psi.preset}{Prespecified value for the between-study heterogeneity
 parameter (default: `NULL`). If specified, it must be a numeric vector
 of length equal to the number of outcomes, which will overwrite arguments
 `scale.psi` and `pooled`.}
@@ -277,7 +277,7 @@ bnma1 <- mvnma(pw1,
 bnma1
 
 # Results for a univariate frequentist network meta-analysis
-nma1 <- netmeta(pw1, reference.group = "Placebo")
+nma1 <- netmeta(pw1, reference.group = "Placebo", common = FALSE)
 print(nma1, backtransf = FALSE)
 }
 

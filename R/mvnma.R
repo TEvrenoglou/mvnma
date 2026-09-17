@@ -245,7 +245,7 @@
 #' bnma1
 #' 
 #' # Results for a univariate frequentist network meta-analysis
-#' nma1 <- netmeta(pw1, reference.group = "Placebo")
+#' nma1 <- netmeta(pw1, reference.group = "Placebo", common = FALSE)
 #' print(nma1, backtransf = FALSE)
 #' }
 #' 
