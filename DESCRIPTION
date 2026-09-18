@@ -1,6 +1,6 @@
 Package: mvnma
 Title: Multivariate Network Meta-Analysis using Bayesian Methods
-Version: 0.3-0
+Version: 0.3-1
 Date: 2026-09-18
 Depends: R (>= 4.0.0), meta (>= 8.5-0), netmeta (>= 3.7-0)
 Imports: R2jags, coda, dplyr, magrittr, matrixStats, rlist, ggplot2, forcats
