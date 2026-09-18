@@ -29,9 +29,22 @@
 #' }
 #'  
 #' @return
-#' The function returns an 'mvrank' object which is a list consisting of
-#' a data frame with the variables 'treatment' and either 'SUCRA' or 'pbest'
-#' for each outcome in the multivariate network meta-analysis.
+#' The function returns an object of class \code{mvrank}. It is a list
+#' containing the following components:
+#' \item{ranks}{A named list containing one data frame for each outcome. The
+#'   data frame contains the treatment rankings. For \code{method = "SUCRA"}
+#'   or \code{method = "pbest"}, it contains the variables \code{treatment}
+#'   and the corresponding ranking measure. For \code{method = "ranks"}, it
+#'   contains \code{treatment}, \code{median_rank}, \code{mean_rank},
+#'   \code{lower.CrI}, and \code{upper.CrI}.}
+#' \item{trts}{All treatments occurring in the outcome-specific rankings.}
+#' \item{ranks.shared}{A named list containing rankings recalculated using
+#'   only treatments shared by all outcomes.}
+#' \item{trts.shared}{Treatments occurring in every outcome.}
+#' \item{outcomes}{Outcome labels.}
+#' \item{method}{The ranking method used.}
+#' \item{call, version}{The matched function call and package version used to
+#'   create the object.}
 #' 
 #' @references
 #' Salanti G, Ades AE, Ioannidis JP (2011):
@@ -83,24 +96,14 @@ mvrank <- function(x, small.values, method = "SUCRA") {
   }
   chkchar(method, length = 1)
   #
-  method.model <- attr(x, "method.model")
-  n.domain <- attr(x,"n.domain")
+  method.model <- x$method.model
+  n.domain <- x$n.domain
   #
-  x <- x[names(x) != "cor"]
-  #
-  if (method.model == "DM") {
-    if (is.null(n.domain)) {
-      x <- x[names(x) != "sigma"]
-    }
-    else{
-      x <- x[!(names(x) %in% c("sigma1", "sigma2"))]
-    }
-  }
-  #
-  outcomes <- attr(x, "names")
+  outcomes <- x$outcomes
+  x <- x[outcomes]
   #
   colname_list <- lapply(x, function(k) colnames(k$samples))
-  common_trts <- Reduce(intersect, colname_list)
+  trts.common <- Reduce(intersect, colname_list)
   
   # Get rid of warning "no visible binding for global variable"
   treatment <- pbest <- SUCRA <- Freq <- median_rank <- mean_rank <-
@@ -110,19 +113,19 @@ mvrank <- function(x, small.values, method = "SUCRA") {
   #
   n.out <- length(outcomes)
   #
-  d <- d_common <- n.trts <- trts <- rank_out <- rank_out_common <-
+  d <- d_common <- n.trts <- trts.list <- rank_out <- rank_out_common <-
     ranks <- ranks.common <- quant <- quant_common <-
     rnk <- rnk_common <- vector("list", n.out)
   #
   for (i in seq_len(n.out)) {
     d[[i]] <- x[[i]]$samples
     n.trts[[i]] <- ncol(d[[i]])
-    trts[[i]] <- colnames(d[[i]])
-    if(length(setdiff(trts[[i]],common_trts))==0){
+    trts.list[[i]] <- colnames(d[[i]])
+    if(length(setdiff(trts.list[[i]], trts.common)) == 0){
       d_common[[i]] <- d[[i]]  
     }
     else{
-      d_common[[i]] <- d[[i]] %>% select(common_trts)
+      d_common[[i]] <- d[[i]] %>% select(trts.common)
     }
     
     rank_out[[i]] <- rankogram(d[[i]], small.values = small.values[i])
@@ -224,13 +227,18 @@ mvrank <- function(x, small.values, method = "SUCRA") {
   names(ranks.common) <- outcomes
   class(ranks.common) <- "mvrank"
   #
-  # common_trts <- as.data.frame(table(unlist(trts))) %>% filter(Freq == n.out)
-  # common_trts <- common_trts$Var1
+  ranks <- list(
+    ranks = ranks,
+    trts = sort(unique(unlist(trts.list))),
+    ranks.shared = ranks.common,
+    trts.shared = trts.common,
+    outcomes = outcomes,
+    method = method,
+    call = match.call(),
+    version = packageDescription("mvnma")$Version
+  )
   #
-  attr(ranks, "common_trts") <- common_trts
-  attr(ranks, "method") <- method
-  attr(ranks, "ranks.common.trts") <- ranks.common
-  #
+  class(ranks) <- "mvrank"
   ranks
 }
 
@@ -246,11 +254,12 @@ print.mvrank <- function(x, digits = gs("digits"), ...) {
   #
   chknumeric(digits, min = 0, length = 1)
   #
-  nam <- names(x)
+  nam <- x$outcomes
   
   # Get rid of warning "no visible binding for global variable"
-  treatment <- NULL
+  treatment <- upper.CrI <- NULL
   #
+  x <- x$ranks
   for (i in seq_along(nam)) {
     cat(paste0(if (i > 1) "\n" else "", "Outcome: ", nam[i], "\n\n"))
     #
@@ -262,6 +271,19 @@ print.mvrank <- function(x, digits = gs("digits"), ...) {
     #
     for (j in nam.i)
       dat.i[[j]] <- formatN(dat.i[[j]], digits = digits)
+    if (all(c("lower.CrI", "upper.CrI") %in% names(dat.i))) {
+      dat.i$lower.CrI <- formatCI(dat.i$lower.CrI, dat.i$upper.CrI)
+      dat.i %<>% select(-upper.CrI)
+      dat.i$spacer1 <- ""
+      dat.i$spacer2 <- ""
+      dat.i <- dat.i[c("median_rank", "spacer1", "mean_rank", "spacer2",
+                       "lower.CrI")]
+      names(dat.i) <- c("median_rank", "", "mean_rank", "", "lower.CrI")
+      names(dat.i)[names(dat.i) == "lower.CrI"] <- "95% CrI for rank"
+    }
+    names(dat.i)[names(dat.i) == "pbest"] <- "P(best)"
+    names(dat.i)[names(dat.i) == "median_rank"] <- "Median rank"
+    names(dat.i)[names(dat.i) == "mean_rank"] <- "Mean rank"
     #
     prmatrix(dat.i, quote = FALSE, right = TRUE)
   }

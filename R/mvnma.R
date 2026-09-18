@@ -109,16 +109,35 @@
 #' The argument `n.domain` is ignored when `method = "standard"`.
 #'  
 #' @return
-#' The function returns an 'mvnma' object. This consists of the results for each
-#' outcome and, for more than one outcome, the correlation coefficient estimates
-#' between the combined outcomes. The outcome-specific estimates are expressed
-#' in the format of a list (one for each outcome) which contains:
-#' \itemize{
-#' \item The basic estimates (i.e. treatment vs. reference.group) for each
-#'   outcome.
-#' \item The heterogeneity estimates for each outcome 
-#' \item The posterior samples corresponding to the basic estimates.
-#' }
+#' The function returns an object of class \code{mvnma}. It is a list containing
+#' the following components:
+#' \item{outcome-specific elements}{One element for each outcome, named
+#'   according to \code{outclab}. Each element is a list containing
+#'   \code{basic_estimates}, \code{heterogeneity}, \code{TE.random},
+#'   \code{seTE.random}, \code{lower.random}, \code{upper.random}, and
+#'   \code{samples}.}
+#' \item{cor}{A data frame with posterior estimates of the between-outcome
+#'   correlation coefficients. This element is present only when more than one
+#'   outcome is analysed.}
+#' \item{sigma, sigma1, sigma2}{Between-outcome heterogeneity parameters from
+#'   the DuMouchel model. These elements are present only when
+#'   \code{method = "DM"}.}
+#' \item{outcomes}{Outcome labels.}
+#' \item{trts}{All treatments in the network.}
+#' \item{n.domain, reference.group, level, sm}{Values corresponding to the
+#'   arguments \code{n.domain}, \code{reference.group}, \code{level}, and
+#'   the summary measure used for the analysis.}
+#' \item{method.model}{The model specified by \code{method}.}
+#' \item{model.code}{The JAGS model code used for fitting.}
+#' \item{fit}{The fitted JAGS model object.}
+#' \item{params}{The parameters monitored in the MCMC analysis.}
+#' \item{varTE.missing, scale.psi, pair.objects}{Values corresponding to the
+#'   arguments \code{varTE.missing} and \code{scale.psi}, and the input
+#'   \code{pairwise} objects.}
+#' \item{n.chains, n.iter, n.burnin, lower.rho, upper.rho}{MCMC settings and
+#'   correlation-prior bounds used for the analysis.}
+#' \item{call, version}{The matched function call and package version used to
+#'   create the object.}
 #' 
 #' @seealso \code{\link[meta]{pairwise}}
 #' 
@@ -204,7 +223,7 @@
 #' forest(mvnma12)
 #' 
 #' # Print odds ratios for efficacy outcomes
-#' outc <- names(mvnma12)[names(mvnma12) != "cor"]
+#' outc <- mvnma12$outcomes
 #' #
 #' for (i in outc) {
 #'   cat(paste0("\nOutcome: ", i, "\n\n"))
@@ -230,7 +249,7 @@
 #' forest(mvnma_all)
 #' 
 #' # Print odds ratios for all outcomes
-#' outc <- names(mvnma_all)[names(mvnma_all) != "cor"]
+#' outc <- mvnma_all$outcomes
 #' #
 #' for (i in outc) {
 #'   cat(paste0("\nOutcome: ", i, "\n\n"))
@@ -537,27 +556,28 @@ mvnma <- function(...,
                         n.domain = n.domain,
                         method = method)
   #
-  attr(res, "outcomes") <- outclab
-  attr(res, "trts") <- trts
-  attr(res, "n.domain") <- n.domain
-  attr(res, "reference.group") <- reference.group
-  attr(res, "level") <- level
-  attr(res, "sm") <- attr(dat, "sm")
-  attr(res, "method.model") <- method
-  attr(res, "model.code") <- model.code
-  attr(res, "fit") <- fit
-  attr(res, "params") <- params
-  attr(res, "varTE.missing") <- varTE.missing
-  # new
-  attr(res, "scale.psi") <- scale.psi
-  attr(res,"pair.objects") <- args
-  attr(res, "n.chains") <- n.chains
-  attr(res, "n.iter") <- n.iter
-  attr(res,"n.burnin") <- n.burnin
-  attr(res,"lower.rho") <- lower.rho
-  attr(res,"upper.rho") <- upper.rho
-  attr(res,"n.domain") <- n.domain
-  #
+  res <- c(res,
+           list(outcomes = outclab,
+                trts = trts,
+                n.domain = n.domain,
+                reference.group = reference.group,
+                level = level,
+                sm = attr(dat, "sm"),
+                method.model = method,
+                model.code = model.code,
+                fit = fit,
+                params = params,
+                varTE.missing = varTE.missing,
+                scale.psi = scale.psi,
+                pair.objects = args,
+                n.chains = n.chains,
+                n.iter = n.iter,
+                n.burnin = n.burnin,
+                lower.rho = lower.rho,
+                upper.rho = upper.rho,
+                #
+                call = match.call(),
+                version = packageDescription("mvnma")$Version))
   #
   class(res) <- "mvnma"
   #
@@ -581,23 +601,14 @@ print.mvnma <- function(x,
   chknumeric(digits.sd, min = 0, length = 1)
   chklogical(print.sd)
   #
-  level <- attr(x, "level")
-  reference.group <- attr(x, "reference.group")
-  method <- attr(x, "method")
-  n.domain <- attr(x, "n.domain")
+  level <- x$level
+  reference.group <- x$reference.group
+  method <- x$method.model
+  n.domain <- x$n.domain
   #
   ci.lab <- paste0(round(100 * level, 1), "%-CI")
   #
-  x <- x[names(x) != "cor"]
-  #
-  if (method == "DM") {
-    if (is.null(n.domain)) {
-      x <- x[names(x) != "sigma"]
-    }
-    else {
-      x <- x[!(names(x) %in% c("sigma1", "sigma2"))]
-    }
-  }
+  x <- x[x$outcomes]
   #
   nam <- names(x)
   

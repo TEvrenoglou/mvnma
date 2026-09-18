@@ -1,3 +1,26 @@
+## mvnma, version 0.4-0 (2026-mm-dd)
+
+### User-visible changes
+
+* Metadata for `mvnma`, `mvrank`, and `netsplit.mvnma` objects is now stored in
+  named list elements rather than attributes.
+
+* `mvrank` objects now contain separate `ranks` and `ranks.shared` components,
+  together with `trts` and `trts.shared`.
+
+* print.mvrank():
+  - uses clearer labels for ranking summaries: `P(best)`, `Median rank`,
+    `Mean rank`, and `95% CrI for rank`
+  - combines the lower and upper credible limits into a single displayed
+    credible-interval column.
+
+### Internal changes
+
+* Added migration support for objects created with previous package versions.
+
+* Refactored downstream functions to use the new result-object structures.
+
+
 ## mvnma, version 0.3-0 (2026-09-17)
 
 ### Major changes

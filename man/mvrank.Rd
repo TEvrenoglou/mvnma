@@ -28,9 +28,22 @@ default approach. The probability of being best method (specified as
 \item{\dots}{Additional arguments (ignored)}
 }
 \value{
-The function returns an 'mvrank' object which is a list consisting of
-a data frame with the variables 'treatment' and either 'SUCRA' or 'pbest'
-for each outcome in the multivariate network meta-analysis.
+The function returns an object of class \code{mvrank}. It is a list
+containing the following components:
+\item{ranks}{A named list containing one data frame for each outcome. The
+  data frame contains the treatment rankings. For \code{method = "SUCRA"}
+  or \code{method = "pbest"}, it contains the variables \code{treatment}
+  and the corresponding ranking measure. For \code{method = "ranks"}, it
+  contains \code{treatment}, \code{median_rank}, \code{mean_rank},
+  \code{lower.CrI}, and \code{upper.CrI}.}
+\item{trts}{All treatments occurring in the outcome-specific rankings.}
+\item{ranks.shared}{A named list containing rankings recalculated using
+  only treatments shared by all outcomes.}
+\item{trts.shared}{Treatments occurring in every outcome.}
+\item{outcomes}{Outcome labels.}
+\item{method}{The ranking method used.}
+\item{call, version}{The matched function call and package version used to
+  create the object.}
 }
 \description{
 Produces outcome-specific treatment rankings in multivariate

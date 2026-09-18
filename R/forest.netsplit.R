@@ -228,8 +228,9 @@ forest.netsplit.mvnma <- function(x,
   
   missing.smlab <- missing(smlab)
   
-  sm.all <- attr(x, "sm")
-  nam <- names(x)
+  sm.all <- x$sm
+  nam <- x$outcomes
+  x <- x[nam]
   
   # select outcomes
   #
@@ -461,4 +462,3 @@ forest.netsplit.mvnma <- function(x,
   
   invisible(res)
 }
-

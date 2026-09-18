@@ -51,8 +51,9 @@ plot.mvrank <- function(x, which = 1:2, pos = 1,
   chkclass(x, "mvrank")
   x <- updateversion(x)
   #
-  n.outcome <- length(names(x))
-  common_trts <- attr(x, "common_trts")
+  outcomes.all <- x$outcomes
+  n.outcome <- length(outcomes.all)
+  trts.shared <- x$trts.shared
   #
   chknumeric(which, min = 1, max = n.outcome, length = 2)
   chknumeric(cex.point, min = 0, zero = TRUE)
@@ -67,19 +68,19 @@ plot.mvrank <- function(x, which = 1:2, pos = 1,
   # Get rid of warning "no visible binding for global variable"
   treat <- NULL
   
-  outcomes <- names(x)[c(first, second)]
+  outcomes <- outcomes.all[c(first, second)]
   #
-  dat1 <- x[[first]]
+  dat1 <- x$ranks[[outcomes.all[first]]]
   names(dat1)[1:2] <- c("treat", "rank1")
   dat1$out1 <- outcomes[1]
   #
-  dat1 %<>% filter(treat %in% common_trts)
+  dat1 %<>% filter(treat %in% trts.shared)
   
-  dat2 <- x[[second]]
+  dat2 <- x$ranks[[outcomes.all[second]]]
   names(dat2)[1:2] <- c("treat", "rank2")
   dat2$out2 <- outcomes[2]
   #
-  dat2 %<>% filter(treat %in% common_trts)
+  dat2 %<>% filter(treat %in% trts.shared)
   #
   dat <- merge(dat1, dat2, by = "treat", all.x = TRUE, all.y = TRUE)
   #

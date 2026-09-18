@@ -851,3 +851,10 @@ catch <- function(argname, matchcall, data, encl)
 
 '%!in%' <- function(x, y)
   !('%in%'(x, y))
+
+replaceNULL <- function(x, replace = NA) {
+  if (is.null(x))
+    return(replace)
+  x
+}
+

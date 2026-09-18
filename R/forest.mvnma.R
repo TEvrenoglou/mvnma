@@ -58,7 +58,7 @@
 
 forest.mvnma <- function(x, backtransf = FALSE,
                          #
-                         separate = n_distinct(attr(x, "sm")) > 1,
+                          separate = n_distinct(x$sm) > 1,
                          #
                          leftcols = "studlab", leftlabs,
                          rightcols = c("effect", "ci"), rightlabs,
@@ -81,21 +81,13 @@ forest.mvnma <- function(x, backtransf = FALSE,
   chklogical(separate)
   chkchar(text.outcome, length = 1)
   #
-  method.model <- attr(x, "method.model")
-  reference.group <- attr(x, "reference.group")
-  n.domain <- attr(x,"n.domain")
-  sm <- attr(x, "sm")
+  method.model <- x$method.model
+  reference.group <- x$reference.group
+  n.domain <- x$n.domain
+  sm <- x$sm
   #
-  x <- x[names(x) != "cor"]
-  #
-  if (method.model == "DM") {
-    if (is.null(n.domain)) {
-      x <- x[names(x) != "sigma"]
-    }
-    else{
-      x <- x[!(names(x) %in% c("sigma1", "sigma2"))]
-    }
-  }
+  outcomes <- x$outcomes
+  x <- x[outcomes]
   #
   n.out <- length(x)
   #
@@ -122,7 +114,7 @@ forest.mvnma <- function(x, backtransf = FALSE,
     row.names(ests[[i]]) <- NULL
     #
     ests[[i]] %<>% select(treat, mean, sd, lower, upper)
-    ests[[i]]$outcome <- attr(x, "names")[i]
+    ests[[i]]$outcome <- outcomes[i]
   }
   
   # Create forest plot(s)

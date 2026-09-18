@@ -7,7 +7,7 @@
 \method{forest}{mvnma}(
   x,
   backtransf = FALSE,
-  separate = n_distinct(attr(x, "sm")) > 1,
+  separate = n_distinct(x$sm) > 1,
   leftcols = "studlab",
   leftlabs,
   rightcols = c("effect", "ci"),

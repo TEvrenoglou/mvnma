@@ -99,5 +99,6 @@ importFrom(utils,
   capture.output,
   combn,
   modifyList,
+  packageDescription,
   packageVersion
 )

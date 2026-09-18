@@ -60,18 +60,18 @@ spiechart.mvrank <- function(x, weights = NULL, ...) {
   chkclass(x, "mvrank")
   x <- updateversion(x)
   #
-  trts <- sort(attr(x, "common_trts"))
-  outcomes <- names(x)
+  trts <- sort(x$trts.shared)
+  outcomes <- x$outcomes
   #
-  if (attr(x, "method") %in% c("SUCRA", "pbest")) {
+  if (x$method %in% c("SUCRA", "pbest")) {
     # Get rid of warning "no visible binding for global variable"
     treatment <- NULL
     
     s <- vector("list")
     #
-    x.common <- attr(x,"ranks.common")
+  x.common <- x$ranks.shared
     #
-    for (i in seq_len(length(x))) {
+    for (i in seq_along(outcomes)) {
       dat.i <- x.common[[i]] %>% 
         filter(treatment %in% trts) %>% 
         arrange(treatment)

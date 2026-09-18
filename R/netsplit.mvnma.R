@@ -104,8 +104,11 @@
 #' always refer to the original scale.
 #' 
 #' @return
-#' An object of class \code{netsplit.mvnma}; a list with one data frame per
-#' outcome, with one row per treatment comparison and the following columns:
+#' An object of class \code{netsplit.mvnma}. It is a list containing the
+#' following components:
+#' \item{outcome-specific elements}{One data frame for each outcome, named
+#'   according to the outcome labels. Each row corresponds to a treatment
+#'   comparison and contains the following columns:}
 #' \item{comparison}{Treatment comparison.}
 #' \item{k}{Number of studies providing direct evidence.}
 #' \item{prop}{Direct evidence proportion. Reported even when it falls
@@ -125,6 +128,9 @@
 #'   direct and indirect evidence.}
 #' \item{sign}{A logical indicating whether the disagreement is statistically
 #'   significant.}
+#' \item{outcomes}{Outcome labels.}
+#' \item{level}{Confidence level used for the confidence limits.}
+#' \item{sm}{Summary measure used for the treatment effects.}
 #'
 #' All estimates are on the original scale, that is, not back transformed
 #' (see argument \code{backtransf}). Outcomes without any treatment
@@ -184,11 +190,11 @@ netsplit.mvnma <- function(x, univariate = TRUE, tol.direct = 0.0005,
     set.seed(seed)
   }
   
-  pairs <- attr(x, "pair.objects")
+  pairs <- x$pair.objects
   
-  name.outcome <- attr(x, "outcomes")
+  name.outcome <- x$outcomes
   
-  sm <- attr(x, "sm")
+  sm <- x$sm
   
   split.outcome <- splittable.comparisons(pairs, "list")
   
@@ -266,8 +272,9 @@ netsplit.mvnma <- function(x, univariate = TRUE, tol.direct = 0.0005,
     
   }
   
-  attr(res, "level") <- attr(x, "level")
-  attr(res, "sm") <- sm
+  res <- c(res, list(outcomes = name.outcome,
+                     level = x$level,
+                     sm = sm))
   class(res) <- "netsplit.mvnma"
   
   res
@@ -323,8 +330,8 @@ print.netsplit.mvnma <- function(x,
   chklogical(scientific.pval)
   chklogical(legend)
   #
-  level <- attr(x, "level")
-  sm <- attr(x, "sm")
+  level <- x$level
+  sm <- x$sm
   #
   if (is.null(level))
     level <- 0.95
@@ -335,7 +342,8 @@ print.netsplit.mvnma <- function(x,
   oldopts <- options(width = 200)
   on.exit(options(oldopts))
   
-  nam <- names(x)
+  nam <- x$outcomes
+  x <- x[nam]
   
   for (i in seq_along(nam)) {
     

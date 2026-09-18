@@ -151,7 +151,7 @@
 #' @importFrom rlist list.cbind list.rbind
 #' @importFrom graphics text
 #' @importFrom stats complete.cases quantile relevel pnorm qnorm runif sd
-#' @importFrom utils combn packageVersion capture.output modifyList
+#' @importFrom utils combn packageVersion packageDescription capture.output modifyList
 #' @importFrom ggplot2 ggplot aes geom_tile geom_line geom_point geom_text scale_fill_gradient guides guide_colourbar guide_legend labs xlab ylab ylim scale_y_discrete theme theme_void theme_minimal element_text element_blank
 #' @importFrom forcats fct_rev
 #' @export as.mcmc

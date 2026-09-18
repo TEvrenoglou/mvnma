@@ -130,8 +130,11 @@ values.}
 \item{legend}{A logical indicating whether a legend should be printed.}
 }
 \value{
-An object of class \code{netsplit.mvnma}; a list with one data frame per
-outcome, with one row per treatment comparison and the following columns:
+An object of class \code{netsplit.mvnma}. It is a list containing the
+following components:
+\item{outcome-specific elements}{One data frame for each outcome, named
+  according to the outcome labels. Each row corresponds to a treatment
+  comparison and contains the following columns:}
 \item{comparison}{Treatment comparison.}
 \item{k}{Number of studies providing direct evidence.}
 \item{prop}{Direct evidence proportion. Reported even when it falls
@@ -151,6 +154,9 @@ outcome, with one row per treatment comparison and the following columns:
   direct and indirect evidence.}
 \item{sign}{A logical indicating whether the disagreement is statistically
   significant.}
+\item{outcomes}{Outcome labels.}
+\item{level}{Confidence level used for the confidence limits.}
+\item{sm}{Summary measure used for the treatment effects.}
 
 All estimates are on the original scale, that is, not back transformed
 (see argument \code{backtransf}). Outcomes without any treatment

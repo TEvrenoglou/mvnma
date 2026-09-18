@@ -89,7 +89,8 @@ heatplot.mvrank <- function(x,
   chkclass(x, "mvrank")
   x <- updateversion(x)
   #
-  method <- attr(x, "method")
+  method <- x$method
+  outcomes <- x$outcomes
   #
   if (!(method %in% c("SUCRA", "pbest")))
     stop("Heatplot can only be produced for mvnma object created with ",
@@ -107,9 +108,9 @@ heatplot.mvrank <- function(x,
   #
   dat.ranks <- vector("list")
   
-  for (i in 1:length(x)) {
-    dat.ranks[[i]] <- x[[i]] 
-    dat.ranks[[i]]$outcome <- names(x)[i]
+  for (i in seq_along(outcomes)) {
+    dat.ranks[[i]] <- x$ranks[[outcomes[i]]]
+    dat.ranks[[i]]$outcome <- outcomes[i]
   }
   #
   dat.ranks <- bind_rows(dat.ranks)
@@ -118,7 +119,7 @@ heatplot.mvrank <- function(x,
   # a numeric value
   #
   if (is.null(sort)) {
-    sort <-  names(x)[1]
+    sort <- outcomes[1]
     order <- dat.ranks %>% filter(outcome==sort)
   }
   else {
@@ -131,16 +132,16 @@ heatplot.mvrank <- function(x,
            "numeric value of length 1.", call. = FALSE)
     }
     else if (is.character(sort)) {
-      sort <- setchar(sort, names(x))
+      sort <- setchar(sort, outcomes)
       order <- dat.ranks %>% filter(outcome == sort)
     }
     else if (is.numeric(sort)) {
-      if (sort > length(x)) {
-        stop("Argument 'sort' must be a number between ", 1," and ", length(x),
+      if (sort > length(outcomes)) {
+        stop("Argument 'sort' must be a number between ", 1," and ", length(outcomes),
              ".", call. = FALSE)
       }
       #
-      sort <- names(x)[sort] 
+      sort <- outcomes[sort]
       order <- dat.ranks %>% filter(outcome==sort)
     }
   }
@@ -151,7 +152,7 @@ heatplot.mvrank <- function(x,
   #
   dat.ranks$treatment <- factor(dat.ranks$treatment, levels = order)
   #
-  dat.ranks$outcome <- factor(dat.ranks$outcome, levels = names(x))
+  dat.ranks$outcome <- factor(dat.ranks$outcome, levels = outcomes)
   #
   dat.ranks$outcome <- relevel(dat.ranks$outcome, ref = sort)
   #

@@ -111,18 +111,19 @@ vikor.mvrank <- function(x, weights = NULL, v = 0.5, ...) {
   chkclass(x, "mvrank")
   x <- updateversion(x)
   #
-  trts <- sort(attr(x, "common_trts"))
-  outcomes <- names(x)
+  trts <- sort(x$trts.shared)
+  outcomes <- x$outcomes
+  x.outcomes <- x[outcomes]
   
-  if (attr(x, "method") %in% c("SUCRA", "pbest")) {
+  if (x$method %in% c("SUCRA", "pbest")) {
     # Get rid of warning "no visible binding for global variable"
     treatment <- NULL
     
     s <- vector("list")
     #
-    x.common <- attr(x,"ranks.common")
+    x.common <- x$ranks.shared
     #
-    for (i in seq_len(length(x))) {
+    for (i in seq_along(outcomes)) {
       dat.i <- x.common[[i]] %>% 
         filter(treatment %in% trts) %>% 
         arrange(treatment)
@@ -140,12 +141,12 @@ vikor.mvrank <- function(x, weights = NULL, v = 0.5, ...) {
     res <- vikor_internal(rankings, weights = weights, v = v)
   }
   else {
-    decision <- performance_fuzzy(x,trts)
+    decision <- performance_fuzzy(x$ranks, trts)
     res <- fuzzy_vikor_internal(decision, weights = weights,v = v )
   }
   #
   class(res) <- c("vikor", class(res))
-  attr(res, "ranking.method") <- attr(x, "method")
+  attr(res, "ranking.method") <- x$method
   #
   res
 }

@@ -107,16 +107,35 @@ deviations}
 printed.}
 }
 \value{
-The function returns an 'mvnma' object. This consists of the results for each
-outcome and, for more than one outcome, the correlation coefficient estimates
-between the combined outcomes. The outcome-specific estimates are expressed
-in the format of a list (one for each outcome) which contains:
-\itemize{
-\item The basic estimates (i.e. treatment vs. reference.group) for each
-  outcome.
-\item The heterogeneity estimates for each outcome 
-\item The posterior samples corresponding to the basic estimates.
-}
+The function returns an object of class \code{mvnma}. It is a list containing
+the following components:
+\item{outcome-specific elements}{One element for each outcome, named
+  according to \code{outclab}. Each element is a list containing
+  \code{basic_estimates}, \code{heterogeneity}, \code{TE.random},
+  \code{seTE.random}, \code{lower.random}, \code{upper.random}, and
+  \code{samples}.}
+\item{cor}{A data frame with posterior estimates of the between-outcome
+  correlation coefficients. This element is present only when more than one
+  outcome is analysed.}
+\item{sigma, sigma1, sigma2}{Between-outcome heterogeneity parameters from
+  the DuMouchel model. These elements are present only when
+  \code{method = "DM"}.}
+\item{outcomes}{Outcome labels.}
+\item{trts}{All treatments in the network.}
+\item{n.domain, reference.group, level, sm}{Values corresponding to the
+  arguments \code{n.domain}, \code{reference.group}, \code{level}, and
+  the summary measure used for the analysis.}
+\item{method.model}{The model specified by \code{method}.}
+\item{model.code}{The JAGS model code used for fitting.}
+\item{fit}{The fitted JAGS model object.}
+\item{params}{The parameters monitored in the MCMC analysis.}
+\item{varTE.missing, scale.psi, pair.objects}{Values corresponding to the
+  arguments \code{varTE.missing} and \code{scale.psi}, and the input
+  \code{pairwise} objects.}
+\item{n.chains, n.iter, n.burnin, lower.rho, upper.rho}{MCMC settings and
+  correlation-prior bounds used for the analysis.}
+\item{call, version}{The matched function call and package version used to
+  create the object.}
 }
 \description{
 This function fits a Bayesian multivariate network meta-analysis model for
@@ -236,7 +255,7 @@ mvnma12$cor
 forest(mvnma12)
 
 # Print odds ratios for efficacy outcomes
-outc <- names(mvnma12)[names(mvnma12) != "cor"]
+outc <- mvnma12$outcomes
 #
 for (i in outc) {
   cat(paste0("\nOutcome: ", i, "\n\n"))
@@ -262,7 +281,7 @@ mvnma_all$cor
 forest(mvnma_all)
 
 # Print odds ratios for all outcomes
-outc <- names(mvnma_all)[names(mvnma_all) != "cor"]
+outc <- mvnma_all$outcomes
 #
 for (i in outc) {
   cat(paste0("\nOutcome: ", i, "\n\n"))

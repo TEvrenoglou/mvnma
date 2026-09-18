@@ -32,7 +32,7 @@ This R function is a wrapper function for
 load(.fname)
 
 # Print odds ratios for efficacy outcomes
-outc <- names(mvnma12)[names(mvnma12) != "cor"]
+outc <- mvnma12$outcomes
 #
 for (i in outc) {
   cat(paste0("\nOutcome: ", i, "\n\n"))

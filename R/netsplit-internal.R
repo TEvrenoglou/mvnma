@@ -185,12 +185,12 @@ splittable.comparisons <- function(x, combine = c("any", "all", "list")) {
 netsplit_pair <- function(x, treat1, treat2, univariate = TRUE,
                           tol.direct = 0.0005, ...) {
   
-  method.model <- attr(x, "method.model")
-  n.domain <- attr(x,"n.domain")
-  outcomes <- attr(x, "outcomes")
+  method.model <- x$method.model
+  n.domain <- x$n.domain
+  outcomes <- x$outcomes
   psi <- extract_het(x)
   #
-  level <- attr(x, "level")
+  level <- x$level
   #
   chklogical(univariate)
   #
@@ -208,7 +208,7 @@ netsplit_pair <- function(x, treat1, treat2, univariate = TRUE,
     direct_mvnma(x, treat1 = treat1, treat2 = treat2, ...)
   
   # which outcomes were actually fitted, and where each sits in `dir`
-  keep.out <- attr(dir, "keep")
+  keep.out <- dir$keep
   #
   if (is.null(keep.out))
     keep.out <- rep(TRUE, length(outcomes))
@@ -224,34 +224,16 @@ netsplit_pair <- function(x, treat1, treat2, univariate = TRUE,
   # per-outcome direct-comparison data and study counts, pulled off `dir`
   # *before* it gets subsetted below (subsetting drops non-standard
   # attributes, same reason `outcomes`/`level` are captured from `x` early)
-  direct.data <- attr(dir, "direct.data")
-  n.studies   <- attr(dir, "n.studies")
+  direct.data <- dir$direct.data
+  n.studies   <- dir$n.studies
   
   # Get rid of warning "no visible binding for global variable"
   lower <- upper <- NULL
   
-  # keep only outcome treatment effect estimates for mvnma
-  x <- x[names(x) != "cor"]
-  #
-  if (method.model == "DM") {
-    if (is.null(n.domain)) {
-      x <- x[names(x) != "sigma"]
-    }
-    else{
-      x <- x[!(names(x) %in% c("sigma1", "sigma2"))]
-    }
-  }
-  # keep only outcome treatment effect estimates for the direct comparison 
-  dir <- dir[names(dir) != "cor"]
-  #
-  if (method.model == "DM") {
-    if (is.null(n.domain)) {
-      dir <- dir[names(dir) != "sigma"]
-    }
-    else{
-      dir <- dir[!(names(dir) %in% c("sigma1", "sigma2"))]
-    }
-  }
+  # Keep only outcome treatment effect estimates for mvnma.
+  x <- x[outcomes]
+  # Keep only outcome treatment effect estimates for the direct comparison.
+  dir <- dir[names(dir) %in% outcomes]
   
   n.out <- length(x)
   
@@ -369,7 +351,7 @@ direct_mvnma <- function(x, treat1, treat2, ...){
   
   psi.preset <- extract_het(x)
   
-  outcomes <- attr(x, "outcomes")
+  outcomes <- x$outcomes
   n.out    <- length(data.dir)
   
   # number of studies contributing direct evidence, per outcome
@@ -387,15 +369,15 @@ direct_mvnma <- function(x, treat1, treat2, ...){
   if (length(psi.preset) == n.out)
     psi.preset <- psi.preset[keep]
   
-  scale.psi <- attr(x, "scale.psi")
+  scale.psi <- x$scale.psi
   #
   if (length(scale.psi) == n.out)
     scale.psi <- scale.psi[keep]
   #
   n.rho <- sum(keep) * (sum(keep) - 1) / 2
   
-  lower.rho <- attr(x, "lower.rho")
-  upper.rho <- attr(x, "upper.rho")
+  lower.rho <- x$lower.rho
+  upper.rho <- x$upper.rho
   #
   # correlations are indexed by pairs of outcomes, not by outcome, so
   # outcome-specific values cannot be carried over to a reduced model
@@ -409,9 +391,9 @@ direct_mvnma <- function(x, treat1, treat2, ...){
     scale.psi = scale.psi,
     lower.rho = lower.rho,
     upper.rho = upper.rho,
-    n.iter    = attr(x, "n.iter"),
-    n.burnin  = attr(x, "n.burnin"),
-    n.chains  = attr(x, "n.chains"),
+    n.iter    = x$n.iter,
+    n.burnin  = x$n.burnin,
+    n.chains  = x$n.chains,
     method    = "standard", # run always mvnma with standard model
     outclab = outcomes[keep],
     reference.group = treat2,
@@ -424,6 +406,10 @@ direct_mvnma <- function(x, treat1, treat2, ...){
     if (is.null(fit.args$lower.rho)) fit.args$lower.rho <- -1
     if (is.null(fit.args$upper.rho)) fit.args$upper.rho <- 1
   }
+  else {
+    fit.args$lower.rho <- NULL
+    fit.args$upper.rho <- NULL
+  }
   
   if (sum(keep) >= 1) {
     fit <- do.call(mvnma, c(data.dir[keep], fit.args))
@@ -434,9 +420,9 @@ direct_mvnma <- function(x, treat1, treat2, ...){
   
   # attach the raw per-outcome direct-comparison data, the study counts and the
   # outcomes actually fitted, so that netsplit_pair() can map results back
-  attr(fit, "direct.data") <- data.dir
-  attr(fit, "n.studies")   <- n.studies
-  attr(fit, "keep")        <- keep
+  fit <- c(fit, list(direct.data = data.dir,
+                     n.studies = n.studies,
+                     keep = keep))
   
   fit
 }
@@ -450,9 +436,9 @@ direct_metagen <- function(x, treat1, treat2, ...) {
   
   psi <- extract_het(x)
   
-  outcomes <- attr(x, "outcomes")
+  outcomes <- x$outcomes
   n.out    <- length(data.dir)
-  level    <- attr(x, "level")
+  level    <- x$level
   
   # number of rows contributing direct evidence, per outcome. NA's are now removed.
   n.studies <- vapply(data.dir,
@@ -483,7 +469,7 @@ direct_metagen <- function(x, treat1, treat2, ...) {
     m.i <- suppressWarnings(
       metagen(TE = d.i$TE[sel], seTE = d.i$seTE[sel],
               studlab = d.i$studlab[sel],
-              sm = if (!is.null(attr(x, "sm"))) attr(x, "sm")[i] else "",
+              sm = if (!is.null(x$sm)) x$sm[i] else "",
               level.ma = level,
               tau.preset = psi.i,
               method.tau.ci = "",
@@ -496,9 +482,9 @@ direct_metagen <- function(x, treat1, treat2, ...) {
                                   upper = m.i$upper.random))
   }
   
-  attr(fit, "direct.data") <- data.dir
-  attr(fit, "n.studies")   <- n.studies
-  attr(fit, "keep")        <- keep
+  fit <- c(fit, list(direct.data = data.dir,
+                     n.studies = n.studies,
+                     keep = keep))
   
   fit
 }
@@ -508,8 +494,8 @@ direct_pair <- function(x, t1, t2){
   
   chkclass(x, "mvnma")
   
-  pair.objects <- attr(x, "pair.objects")
-  outcomes     <- attr(x, "outcomes")
+  pair.objects <- x$pair.objects
+  outcomes     <- x$outcomes
   n.out        <- length(outcomes)
   #
   data.dir <- vector("list", n.out)
@@ -600,13 +586,9 @@ get_cell <- function(df, treat1, treat2) {
 # function to extract outcome-specific heterogeneity estimates
 extract_het <- function(x,...){
   
-  method.model <- attr(x, "method.model")
-  
-  x <- x[names(x) != "cor"]
-  
-  if (method.model == "DM") {
-    x <- x[names(x) != "sigma"]
-  }
+  method.model <- x$method.model
+  outcomes <- x$outcomes
+  x <- x[outcomes]
   
   het <- vector("list")
   

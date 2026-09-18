@@ -36,7 +36,7 @@
 #' load(.fname)
 #' 
 #' # Print odds ratios for efficacy outcomes
-#' outc <- names(mvnma12)[names(mvnma12) != "cor"]
+#' outc <- mvnma12$outcomes
 #' #
 #' for (i in outc) {
 #'   cat(paste0("\nOutcome: ", i, "\n\n"))
@@ -59,7 +59,9 @@ hasse.mvrank <- function(x, ...) {
   chkclass(x, "mvrank")
   x <- updateversion(x)
   #
-  method <- attr(x, "method")
+  method <- x$method
+  outcomes <- x$outcomes
+  x <- x$ranks
   #
   if (!(method %in% c("SUCRA", "pbest")))
     stop("Hasse diagram can only be produced for ",

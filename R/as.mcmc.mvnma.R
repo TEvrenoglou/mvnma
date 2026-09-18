@@ -56,10 +56,10 @@ as.mcmc.mvnma <- function(x, drop.reference.group = FALSE, ...) {
   #
   chklogical(drop.reference.group)
   #
-  trts <- attr(x, "trts")
-  reference.group <- attr(x, "reference.group")
+  trts <- x$trts
+  reference.group <- x$reference.group
   #
-  res <- as.mcmc.list(attr(x, "fit")$BUGSoutput, ...)
+  res <- as.mcmc.list(x$fit$BUGSoutput, ...)
   #
   for (i in seq_along(res)) {
     nam <- colnames(res[[i]])
