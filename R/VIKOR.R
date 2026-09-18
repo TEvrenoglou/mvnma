@@ -14,8 +14,6 @@
 #' @param v A scalar from 0 to 1 interpreted as the weight of the decision
 #'   making process. Following guidance from the multi-criteria decision
 #'   analysis field it is set to 0.5.
-#' @param digits A numeric specifying the number of digits to print the
-#'   ranking matrix Q.
 #' @param \dots Additional arguments (ignored).
 #'
 #' @details
@@ -26,7 +24,7 @@
 #' all outcomes (Opricovic & Tzeng, 2004).
 #' 
 #' The standard VIKOR approach is applied when the \code{method} argument is
-#' set to \code{"sucra"} or \code{"pBV"} in \code{\link{mvrank}}.
+#' set to \code{"sucra"} or \code{"pbest"} in \code{\link{mvrank}}.
 #' 
 #' A fuzzy VIKOR method (Opricovic, 2011) is applied when outcome-specific
 #' rankings are expressed in terms of median ranks and 95\% credible intervals.
@@ -70,6 +68,8 @@
 #' In addition to the ranking lists, the function also evaluates the necessary
 #' conditions defined by the VIKOR method and returns a message indicating the
 #' set of compromise solutions.
+#' 
+#' @seealso \code{\link[netmeta]{print.vikor}}
 #'
 #' @references
 #' Opricovic S, Tzeng GH (2004):
@@ -102,18 +102,19 @@
 #' # Use larger weight for response than remission
 #' vikor(ranks12, weights = c(0.6, 0.3))
 #'
-#' @rdname vikor
+#' @rdname vikor.mvrank
 #' @method vikor mvrank
 #' @export
 
 vikor.mvrank <- function(x, weights = NULL, v = 0.5, ...) {
   
   chkclass(x, "mvrank")
+  x <- updateversion(x)
   #
   trts <- sort(attr(x, "common_trts"))
   outcomes <- names(x)
   
-  if (attr(x, "method") %in% c("SUCRA", "pBV")) {
+  if (attr(x, "method") %in% c("SUCRA", "pbest")) {
     # Get rid of warning "no visible binding for global variable"
     treatment <- NULL
     
@@ -147,90 +148,4 @@ vikor.mvrank <- function(x, weights = NULL, v = 0.5, ...) {
   attr(res, "ranking.method") <- attr(x, "method")
   #
   res
-}
-
-
-#' @rdname vikor
-#' @method vikor matrix
-#' @export
-
-vikor.matrix <- function(x, weights = NULL, v = 0.5, ...) {
-  
-  chkclass(x, "matrix")
-  #
-  res <- vikor_internal(x, weights = weights, v = v)
-  #
-  res
-}
-
-
-#' @rdname vikor
-#' @export vikor
-
-vikor <- function(x, ...)
-  UseMethod("vikor")
-
-
-#' @rdname vikor
-#' @method print vikor
-#' @export
-
-print.vikor <- function(x, digits = 4, ...) {
-  
-  chkclass(x, "vikor")
-  #
-  chknumeric(digits, min = 0, length = 1)
-  
-  Q <- x %>% select(Q)
-  S <- x %>% select(S)
-  R <- x %>% select(R)
-  #
-  trts <- row.names(Q)
-  #
-  DQ <- 1 / (length(trts) - 1)
-  
-  cond1 <- Q$Q[2] - Q$Q[1] >= DQ
-  #
-  cond2_1 <- isTRUE(row.names(Q)[1] == row.names(S)[1])
-  cond2_2 <- isTRUE(row.names(Q)[1] == row.names(R)[1])
-  #
-  cond2 <- isTRUE(cond2_1 & cond2_2)
-  #
-  if (cond1 & cond2) {
-    solution <- row.names(Q)[1]
-    #
-    txt <- paste("The compromise treatment across all outcomes is:", solution)
-  }
-  else if ((cond1) & (!cond2)) {
-    solution <- paste(row.names(Q)[1:2], collapse = ", ")
-    #
-    txt <- paste("The compromise set of treatments across all outcomes are:",
-                 solution)
-  }
-  else if (!cond1) {
-    compr <- Q$Q - Q$Q[1] < DQ
-    #
-    E <- which(compr)
-    #
-    solution <- paste(row.names(Q)[E], collapse = ", ")
-    #
-    txt <- paste("The compromise set of treatments across all outcomes are:",
-                 solution)
-  }
-  else if (!cond1 & !cond2)
-    txt <- paste("No compromise solution was identified. Please consider",
-                 "different outcome weights.")
-  
-  res_mat <- cbind(Q, S, R)
-  
-  if (attr(x, "ranking.method") %in% c("SUCRA", "pBV"))
-    cat("VIKOR results\n\n")
-  else
-    cat("Fuzzy VIKOR results\n\n")
-  #
-  prmatrix(round(res_mat, digits = digits), quote = FALSE, right = TRUE)
-  #
-  cat(paste0("\n", txt, "\n"))
-  #
-  invisible(NULL)
 }

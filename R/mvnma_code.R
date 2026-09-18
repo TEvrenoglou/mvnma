@@ -1,31 +1,35 @@
-mvnma_code <- function(n.out, method, multiarm, n.dom) {
+mvnma_code <- function(n.out, arms = 2, method, n.dom, psi.preset, pooled) {
   
-  chknumeric(n.out, min = 2, length = 1)
+  chknumeric(n.out, min = 1, length = 1)
   method <- setchar(method, c("standard", "DM"))
-  chklogical(multiarm)
+  chknumeric(arms, min = 2, NA.ok = FALSE)
+  arms <- as.integer(arms)
   #
   txt <-
     paste0("model {\n",
-           "  # k = total number of studies\n",
-           "  # k2 = number of two-arm studies\n",
+           "  # n.studies = number of studies by number of arms\n",
            "  # n = number of treatments\n\n")
   #
   # Files with variances, covariances and estimates
   #
-  txt <- paste0(txt, code_covar_ests(n.out, multiarm))
+  txt <- paste0(txt, code_covar_ests(n.out, arms))
   #
-  txt <- paste0(txt, code_means(n.out, multiarm))
+  txt <- paste0(txt, code_means(n.out, arms))
   #
   txt <- paste0(txt, "\n")
   #
-  txt <- paste0(txt, code_priors(n.out, method,n.dom))
+  txt <- paste0(txt, code_priors(n.out, method,n.dom,psi.preset, pooled))
   #
   txt <- paste0(txt, "}\n")
   #
   txt
 }
 
-code_covar_ests <- function(n.out, multiarm) {
+code_covar_ests <- function(n.out, arms = 2) {
+  code_covar_ests_arm(n.out, arms)
+}
+
+code_covar_ests_arm <- function(n.out, arms) {
   
   txt <-
     paste0(
@@ -35,86 +39,14 @@ code_covar_ests <- function(n.out, multiarm) {
       "  #\n",
       "  #\n  \n")
   #
-  txt <-
-    paste0(txt,
-           "  #\n",
-           "  # Two-arm studies\n",
-           "  #\n")
-  #
-  txt <- paste0(txt, "  for (i in 1:k2) {\n")
-  #
-  txt <-
-    paste0(txt,
-           "    #\n",
-           "    # Variances\n",
-           "    #\n")
-  #
-  for (i in seq_len(n.out)) {
-    txt <-
-      paste0(txt,
-             "    S2[i, ", i, ", ", i, "] <- var", i, "[i] + ",
-             "psi", i, ".sq\n")
-  }
-  #
-  txt <-
-    paste0(txt,
-           "    #\n",
-           "    # Covariances\n",
-           "    #\n")
-  #
-  r <- 0
-  #
-  for (i in seq_len(n.out - 1)) {
-    for (j in (i + 1):n.out) {
-      r <- r + 1
-      #
-      txt <-
-        paste0(txt,
-               "    S2[i, ", i, ", ", j, "] <- ",
-               "sqrt(S2[i, ", i, ", ", i, "]) * ",
-               "sqrt(S2[i, ", j, ", ", j, "]) * ",
-               "control", "[i, ", i, "] * ",
-               "control", "[i, ", j, "] * ",
-               "rho", r, "\n")
-    }
-  }
-  #
-  txt <- paste0(txt, "    #\n")
-  #
-  for (i in seq_len(n.out - 1)) {
-    for (j in (i + 1):n.out) {
-      txt <-
-        paste0(txt,
-               "    S2[i, ", j, ", ", i, "] <- S2[i, ", i, ", ", j, "]\n")
-    }
-  }
-  #
-  txt <-
-    paste0(txt,
-           "    #\n",
-           "    # Estimates\n",
-           "    #\n")
-  #
-  txt <-
-    paste0(txt,
-           "    y[(", n.out, " * i - ", n.out - 1,
-           "):(", n.out, " * i)] ~ dmnorm.vcov(mean[(",
-           n.out, " * i - ", n.out - 1, "):(", n.out,
-           " * i)], S2[i, , ])\n")
-  #
-  txt <- paste0(txt, "  }\n")
-  #
-  if (multiarm) {
-    #
+  if (2 %in% arms) {
     txt <-
       paste0(txt,
              "  #\n",
-             "  # Three-arm studies\n",
+             "  # 2-arm studies\n",
              "  #\n")
     #
-    txt <- paste0(txt, "  for (i in 1:(k - k2)) {\n")
-    #
-    idx <- rep(seq_len(n.out), 2)
+    txt <- paste0(txt, "  for (i in 1:n.studies[", match(2, arms), "]) {\n")
     #
     txt <-
       paste0(txt,
@@ -122,18 +54,16 @@ code_covar_ests <- function(n.out, multiarm) {
              "    # Variances\n",
              "    #\n")
     #
-    for (i in seq_len(2 * n.out)) {
+    for (i in seq_len(n.out)) {
       txt <-
-        paste0(txt, "    S3[i, ", i, ", ", i, "] <- var", idx[i],
-               "[k2 + 2 * i",
-               if (i <= n.out) " - 1",
-               "] + psi", idx[i], ".sq\n")
-      #
-      if (idx[i] == n.out)
-        txt <- paste0(txt, "    #\n")
+        paste0(txt,
+               "    S2[i, ", i, ", ", i, "] <- varmat[i, ", i, "] + ",
+               "psi.sq[", i, "]\n")
     }
+    #
     txt <-
       paste0(txt,
+             "    #\n",
              "    # Covariances\n",
              "    #\n")
     #
@@ -145,90 +75,22 @@ code_covar_ests <- function(n.out, multiarm) {
         #
         txt <-
           paste0(txt,
-                 "    S3[i, ", i, ", ", j, "] <- ",
-                 "sqrt(S3[i, ", i, ", ", i, "]) * ",
-                 "sqrt(S3[i, ", j, ", ", j, "]) * ",
-                 "control", "[k2 + i, ", i, "] * ",
-                 "control", "[k2 + i, ", j, "] * ",
-                 "rho", r, "\n")
+                 "    S2[i, ", i, ", ", j, "] <- ",
+                 "sqrt(S2[i, ", i, ", ", i, "]) * ",
+                 "sqrt(S2[i, ", j, ", ", j, "]) * ",
+                 "contmat", "[i, ", i, "] * ",
+                 "contmat", "[i, ", j, "] * ",
+                 "rho[", r, "]\n")
       }
     }
     #
     txt <- paste0(txt, "    #\n")
-    #
-    r <- 0
     #
     for (i in seq_len(n.out - 1)) {
       for (j in (i + 1):n.out) {
-        r <- r + 1
-        #
         txt <-
           paste0(txt,
-                 "    S3[i, ", n.out + i, ", ", n.out + j, "] <- ",
-                 "sqrt(S3[i, ", n.out + i, ", ", n.out + i, "]) * ",
-                 "sqrt(S3[i, ", n.out + j, ", ", n.out + j, "]) * ",
-                 "control", "[k2 + i, ", i, "] * ",
-                 "control", "[k2 + i, ", j, "] * ",
-                 "rho", r, "\n")
-      }
-    }
-    #
-    txt <- paste0(txt, "    #\n")
-    #
-    for (i in seq_len(n.out)) {
-      txt <-
-        paste0(txt,
-               "    S3[i, ", i, ", ", i + n.out, "] <- 0.5 * ",
-               "sqrt(S3[i, ", i, ", ", i, "]) * ",
-               "sqrt(S3[i, ", i + n.out, ", ", i + n.out, "])\n")
-    }
-    #
-    txt <- paste0(txt, "    #\n")
-    #
-    r <- 0
-    #
-    for (i in seq_len(n.out - 1)) {
-      for (j in (i + 1):n.out) {
-        r <- r + 1
-        #
-        txt <-
-          paste0(txt,
-                 "    S3[i, ", i, ", ", j + n.out, "] <- 0.5 * ",
-                 "sqrt(S3[i, ", i, ", ", i, "]) * ",
-                 "sqrt(S3[i, ", j + n.out, ", ", j + n.out, "]) * ",
-                 "control", "[k2 + i, ", i, "] * ",
-                 "control", "[k2 + i, ", j, "] * ",
-                 "rho", r, "\n")
-      }
-    }
-    #
-    txt <- paste0(txt, "    #\n")
-    #
-    r <- 0
-    #
-    for (j in seq_len(n.out - 1)) {
-      for (i in (j + 1):n.out){
-        r <- r + 1
-        #
-        txt <-
-          paste0(
-            txt,
-            "    S3[i, ", i, ", ", n.out + j, "] <- 0.5 * ",
-            "sqrt(S3[i, ", i, ", ", i, "]) * ",
-            "sqrt(S3[i, ", n.out + j, ", ", n.out + j, "]) * ",
-            "control", "[k2 + i, ", j, "] * ",
-            "control", "[k2 + i, ", i, "] * ",
-            "rho", r, "\n")
-      }
-    }
-    #
-    txt <- paste0(txt, "    #\n")
-    #
-    for (i in seq_len(2 * n.out - 1)) {
-      for (j in (i + 1):(2 * n.out)) {
-        txt <-
-          paste0(txt,
-                 "    S3[i, ", j, ", ", i, "] <- S3[i, ", i, ", ", j, "]\n")
+                 "    S2[i, ", j, ", ", i, "] <- S2[i, ", i, ", ", j, "]\n")
       }
     }
     #
@@ -240,24 +102,160 @@ code_covar_ests <- function(n.out, multiarm) {
     #
     txt <-
       paste0(txt,
-             "    y[(", n.out, " * k2 + ", 2 * n.out, " * i - ",
-             2 * n.out - 1, "):(", n.out, " * k2 + ",
-             2 * n.out, " * i)] ~\n      dmnorm.vcov(mean[(",
-             n.out, " * k2 + ", 2 * n.out, " * i - ",
-             2 * n.out - 1,
-             "):(",
-             n.out, " * k2 + ", 2 * n.out,
-             " * i)], S3[i, , ])\n")
+             "    y[(", n.out, " * i - ", n.out - 1,
+             "):(", n.out, " * i)] ~ dmnorm.vcov(mean[(",
+             n.out, " * i - ", n.out - 1, "):(", n.out,
+             " * i)], S2[i, , ])\n")
     #
     txt <- paste0(txt, "  }\n")
   }
+  #
+  for (a in arms[arms > 2])
+    txt <- paste0(txt, code_covar_ests_multiarm(n.out, a, arms))
   #
   txt <- paste0(txt, "  \n")
   #
   txt
 }
 
-code_means <- function(n.out, multiarm) {
+code_covar_ests_multiarm <- function(n.out, a, arms) {
+  n.contr <- a - 1
+  n.par <- n.out * n.contr
+  arm.index <- match(a, arms)
+  var_offset <- code_var_offset(a, arms)
+  y_offset <- code_y_offset(a, n.out, arms)
+  txt <-
+    paste0(
+      "  #\n",
+      "  # ", a, "-arm studies\n",
+      "  #\n",
+      "  for (i in 1:n.studies[", arm.index, "]) {\n",
+      "    #\n",
+      "    # Variances\n",
+      "    #\n")
+  #
+  pos <- expand.grid(outcome = seq_len(n.out), contrast = seq_len(n.contr))
+  pos <- pos[order(pos$contrast, pos$outcome), ]
+  #
+  for (p in seq_len(n.par)) {
+    row <- code_multiarm_row(var_offset, n.contr, "i", pos$contrast[p])
+    txt <-
+      paste0(txt,
+             "    S", a, "[i, ", p, ", ", p, "] <- ",
+             "varmat[", row, ", ", pos$outcome[p], "] + ",
+             "psi.sq[", pos$outcome[p], "]\n")
+    #
+    if (pos$outcome[p] == n.out)
+      txt <- paste0(txt, "    #\n")
+  }
+  #
+  txt <-
+    paste0(txt,
+           "    # Covariances\n",
+           "    #\n")
+  #
+  for (p1 in seq_len(n.par - 1)) {
+    for (p2 in (p1 + 1):n.par) {
+      txt <- paste0(txt, code_multiarm_covariance(a,
+                                                  code_study_offset(a, arms),
+                                                  pos, p1, p2))
+    }
+  }
+  #
+  txt <- paste0(txt, "    #\n")
+  #
+  for (p1 in seq_len(n.par - 1)) {
+    for (p2 in (p1 + 1):n.par) {
+      #
+      txt <-
+        paste0(txt,
+               "    S", a, "[i, ", p2, ", ", p1, "] <- ",
+               "S", a, "[i, ", p1, ", ", p2, "]\n")
+    }
+  }
+  #
+  txt <-
+    paste0(txt,
+           "    #\n",
+           "    # Estimates\n",
+           "    #\n",
+           "    y[(", y_offset, " + ", n.par, " * i - ", n.par - 1,
+           "):(", y_offset, " + ", n.par, " * i)] ~\n",
+           "      dmnorm.vcov(mean[(", y_offset, " + ", n.par, " * i - ",
+           n.par - 1, "):(", y_offset, " + ", n.par, " * i)], ",
+           "S", a, "[i, , ])\n",
+           "  }\n")
+  #
+  txt
+}
+
+code_multiarm_covariance <- function(a, study_offset, pos, p1, p2) {
+  o1 <- pos$outcome[p1]
+  o2 <- pos$outcome[p2]
+  c1 <- pos$contrast[p1]
+  c2 <- pos$contrast[p2]
+  row <- code_index(study_offset, "i")
+  txt <-
+    paste0("    S", a, "[i, ", p1, ", ", p2, "] <- ",
+           if (c1 == c2) "" else "0.5 * ",
+           "sqrt(S", a, "[i, ", p1, ", ", p1, "]) * ",
+           "sqrt(S", a, "[i, ", p2, ", ", p2, "])")
+  #
+  if (o1 != o2) {
+    txt <-
+      paste0(txt,
+             " * contmat[", row, ", ", o1, "] * ",
+             "contmat[", row, ", ", o2, "] * ",
+             "rho[", code_rho_index(o1, o2, max(pos$outcome)), "]")
+  }
+  #
+  paste0(txt, "\n")
+}
+
+code_rho_index <- function(i, j, n.out) {
+  if (i > j) {
+    tmp <- i
+    i <- j
+    j <- tmp
+  }
+  #
+  sum(n.out - seq_len(i - 1)) + j - i
+}
+
+code_multiarm_row <- function(offset, n.contr, study, contrast) {
+  code_index(offset, paste0(n.contr, " * ", study, " - ",
+                            n.contr - contrast))
+}
+
+code_index <- function(offset, term) {
+  if (offset == "0")
+    term
+  else
+    paste0(offset, " + ", term)
+}
+
+code_var_offset <- function(a, arms) {
+  prev <- seq_len(match(a, arms) - 1)
+  if (!length(prev))
+    return("0")
+  #
+  paste0((arms[prev] - 1), " * n.studies[", prev, "]", collapse = " + ")
+}
+
+code_y_offset <- function(a, n.out, arms) {
+  prev <- seq_len(match(a, arms) - 1)
+  if (!length(prev))
+    return("0")
+  #
+  paste0(n.out * (arms[prev] - 1), " * n.studies[", prev, "]",
+         collapse = " + ")
+}
+
+code_means <- function(n.out, arms = 2) {
+  code_means_arm(n.out, arms)
+}
+
+code_means_arm <- function(n.out, arms) {
   
   txt <-
     paste0(
@@ -267,59 +265,79 @@ code_means <- function(n.out, multiarm) {
       "  #\n",
       "  #\n\n")
   #
-  txt <-
-    paste0(txt,
-           "  #\n",
-           "  # Two-arm studies\n",
-           "  #\n")
-  #
-  txt <- paste0(txt, "  for (i in 1:k2) {\n")
-  #
-  for (i in seq_len(n.out)) {
-    txt <-
-      paste0(txt, "    mean[", n.out, " * i",
-             if (i != n.out)
-               paste0(" - ", n.out - i)
-             else
-               strrep(" ", nchar(n.out - 1) + 3),
-             "] <- d", i, "[treat2[i]] - d", i, "[treat1[i]]\n")
-  }
-  #
-  txt <- paste0(txt, "  }\n")
-  #
-  if (multiarm) {
-    #
+  if (2 %in% arms) {
     txt <-
       paste0(txt,
              "  #\n",
-             "  # Three-arm studies\n",
+             "  # 2-arm studies\n",
              "  #\n")
     #
-    txt <- paste0(txt, "  for (i in 1:(k - k2)) {\n")
+    txt <- paste0(txt, "  for (i in 1:n.studies[", match(2, arms), "]) {\n")
     #
-    idx <- rep(seq_len(n.out), 2)
-    #
-    for (i in seq_len(2 * n.out)) {
+    for (i in seq_len(n.out)) {
       txt <-
-        paste0(txt, "    mean[", n.out, " * k2 + ", 2 * n.out, " * i",
-               if (i != 2 * n.out)
-                 paste0(" - ", 2 * n.out - i)
+        paste0(txt, "    mean[", n.out, " * i",
+               if (i != n.out)
+                 paste0(" - ", n.out - i)
                else
-                 strrep(" ", nchar(2 * n.out - 1) + 3),
-               "] <- d",
-               idx[i], "[treat", 2 + (i > n.out), "[k2 + i]] - d",
-               idx[i], "[treat1[k2 + i]]\n")
-      #
-      if (i != 2 * n.out & idx[i] == n.out)
-        txt <- paste0(txt, "    #\n")
+                 strrep(" ", nchar(n.out - 1) + 3),
+               "] <- d", i, "[trtmat[i, 2]] - d", i, "[trtmat[i, 1]]\n")
     }
     #
     txt <- paste0(txt, "  }\n")
   }
+  #
+  for (a in arms[arms > 2])
+    txt <- paste0(txt, code_means_multiarm(n.out, a, arms))
+  #
   txt
 }
 
-code_priors <- function(n.out, method,n.dom) {
+code_means_multiarm <- function(n.out, a, arms) {
+  n.contr <- a - 1
+  n.par <- n.out * n.contr
+  arm.index <- match(a, arms)
+  y_offset <- code_y_offset(a, n.out, arms)
+  study_offset <- code_study_offset(a, arms)
+  txt <-
+    paste0(
+      "  #\n",
+      "  # ", a, "-arm studies\n",
+      "  #\n",
+      "  for (i in 1:n.studies[", arm.index, "]) {\n")
+  #
+  p <- 0
+  for (c in seq_len(n.contr)) {
+    for (o in seq_len(n.out)) {
+      p <- p + 1
+      txt <-
+        paste0(txt, "    mean[", y_offset, " + ", n.par, " * i",
+               if (p != n.par)
+                 paste0(" - ", n.par - p)
+               else
+                 strrep(" ", nchar(n.par - 1) + 3),
+               "] <- d", o, "[trtmat[", code_index(study_offset, "i"),
+               ", ", c + 1, "]] - ",
+               "d", o, "[trtmat[", code_index(study_offset, "i"),
+               ", 1]]\n")
+    }
+    #
+    if (c != n.contr)
+      txt <- paste0(txt, "    #\n")
+  }
+  #
+  paste0(txt, "  }\n")
+}
+
+code_study_offset <- function(a, arms) {
+  prev <- seq_len(match(a, arms) - 1)
+  if (!length(prev))
+    return("0")
+  #
+  paste0("1 * n.studies[", prev, "]", collapse = " + ")
+}
+
+code_priors <- function(n.out, method,n.dom, psi.preset, pooled) {
   if (method == "standard")
     txt <- code_priors_standard(n.out)
   else
@@ -327,7 +345,7 @@ code_priors <- function(n.out, method,n.dom) {
   #
   txt <- paste0(txt, "  #\n")
   #
-  txt <- paste0(txt, code_priors_psi(n.out))
+  txt <- paste0(txt, code_priors_psi(n.out,psi.preset, pooled))
   #
   txt <- paste0(txt, "  #\n")
   #
@@ -528,16 +546,27 @@ code_priors_dumouchel <- function(n.out,n.dom) {
   txt
 }
 
-code_priors_psi <- function(n.out) {
+code_priors_psi <- function(n.out, psi.preset = NULL, pooled) {
   txt <- ""
   #
   for (i in seq_len(n.out))
-    txt <- paste0(txt, "  psi", i, ".sq <- psi", i, " * psi", i, "\n")
+    txt <- paste0(txt, "  psi.sq[", i, "] <- psi[", i, "] * psi[", i, "]\n")
   #
   txt <- paste0(txt, "  #\n")
   #
-  for (i in seq_len(n.out))
-    txt <- paste0(txt, "  psi", i, "  ~ dnorm(0, prec.psi", i, ")T(0, )\n")
+  for (i in seq_len(n.out)) {
+    if (is.null(psi.preset)) {
+      if (pooled == "random") {
+        txt <- paste0(txt, "  psi[", i, "]  ~ dnorm(0, prec.psi[", i, "])T(0, )\n")
+      }
+      else{
+        txt <- paste0(txt, "  psi[", i, "] = 0 \n")  
+      }
+    }
+    else{
+      txt <- paste0(txt, "  psi[", i, "] = ", psi.preset[i], "\n")  
+    }
+  }
   #
   txt
 }
@@ -547,8 +576,8 @@ code_priors_rho <- function(n.out) {
   #
   for (i in seq_len(choose(n.out, 2)))
     txt <-
-      paste0(txt, "  rho", i, " ~ dunif(lower.rho", i,
-             ", upper.rho", i, ")\n")
+      paste0(txt, "  rho[", i, "] ~ dunif(lower.rho[", i,
+             "], upper.rho[", i, "])\n")
   #
   txt
 }

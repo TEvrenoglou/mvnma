@@ -1,60 +1,51 @@
 #' mvnma: Brief overview of methods
 #'
 #' @description
-#' R package \bold{mvnma} provides R functions for Bayesian multivariate
-#' network meta-analysis (mvNMA). The mvNMA model supported by this package
-#' refers to the single correlation coefficient model, interpreted as an
-#' amalgam of within- and across-outcome correlations (Efthimiou et al., 2015)
-#' which is a generalisation of Riley et al. (2008).
-#' In this way, the model does not depend on the extraction of within-study
-#' outcome correlations, which are seldom reported at the study level.
+#' R package \bold{mvnma} provides R functions for Bayesian multivariate network meta-analysis (mvNMA). 
+#' The mvNMA model supported by this package refers to the single correlation coefficient model, interpreted as an
+#' amalgam of within- and across-outcome correlations (Efthimiou et al., 2015), which is a generalisation of Riley et al. (2008). 
+#' In this way, the model does not depend on the extraction of within-study outcome correlations, which are seldom reported at 
+#' the study level. Note that mvnma can be used to conduct a joint analysis across any number of outcomes and study arms.
+#'
+#' The model assumption of consistency is checked by performing the node-splitting method (Dias et al., 2010; König et al., 2013). 
+#' Within each outcome, and for each pairwise comparison for which both a direct and an indirect estimate can be calculated, 
+#' the method statistically evaluates whether their difference is equal to zero.
+#'
+#' The treatment effect estimates and confidence intervals can be summarised both in terms of per-outcome treatment hierarchies 
+#' and in terms of an across-outcomes benefit-risk assessment. The former is achieved using ranking methods such as the 
+#' surface under the cumulative ranking curve (SUCRA) (Salanti et al., 2011), the probability of being the best treatment, 
+#' and median (or mean) ranks, each accompanied by a credible interval.
 #' 
-#' DuMouchel priors assuming constant relative treatment effects across
-#' outcomes and enabling information sharing can be used (DuMouchel & Harris,
-#' 1983). This may improve precision but can introduce bias when outcomes from
-#' different domains (e.g., efficacy and safety) are analyzed jointly.
+#' A benefit-risk assessment is possible through the VišeKriterijumska Optimizacija I Kompromisno Rešenje (VIKOR) method 
+#' (Opricovic & Tzeng, 2004; Opricovic, 2011). This approach, originally proposed in the field of multi-criteria decision 
+#' analysis, uses a deterministic algorithm to derive an amalgamated treatment hierarchy across outcomes and to explicitly 
+#' identify the set of treatments that offer the best compromise between benefits and harms across all outcomes.
 #' 
-#' The treatment effect estimates
-#' and confidence intervals can be summarised both in terms of per-outcome
-#' treatment hierarchies and in terms of an across-outcomes benefit-risk
-#' assessment. The former is possible using ranking methods such as the surface
-#' under the cumulative ranking curve (SUCRA) (Salanti et al., 2011), the
-#' probability of best value, and median (or mean) ranks, each accompanied by a
-#' credible interval.
-#' 
-#' A benefit-risk assessment is possible through the VišeKriterijumska
-#' Optimizacija I Kompromisno Rešenje (VIKOR) method (Opricovic & Tzeng, 2004;
-#' Opricovic, 2011). This approach, originally proposed in the field of
-#' multi-criteria decision analysis, uses a deterministic algorithm to provide
-#' an amalgamated treatment hierarchy across outcomes and explicitly identify
-#' the set of treatments that offer the best compromise between benefits and
-#' harms across all outcomes.
-#' 
-#' Since the output of the method relies on Markov Chain Monte Carlo (MCMC)
-#' sampling, convergence can be checked using a series of diagnostics, including
-#' trace plots, density plots, and the R-hat statistic. Finally, this package
-#' offers the option to visualise the results of the mvNMA model through forest
-#' plots, which display the treatment effect estimates; scatter plots, which
-#' show the per-outcome rankings for any pair of outcomes; and Hasse diagrams
-#' (Carlsen & Bruggemann, 2014), which visualise the partial order of treatments
-#' across all outcomes (Rücker & Schwarzer, 2017), as well as alternative
-#' methods to yield a between-outcomes hierarchy, such as the spie chart method
-#' (Daly et al., 2020).
+#' Since the output of the method relies on Markov Chain Monte Carlo (MCMC) sampling, convergence can be assessed using a 
+#' series of diagnostics, including trace plots, density plots, and the R-hat statistic. Finally, this package offers 
+#' the option to visualise the results of the mvNMA model through forest plots, which display the treatment effect estimates 
+#' and consistency checks; scatter plots, which show the per-outcome rankings for any pair of outcomes; and Hasse diagrams 
+#' (Carlsen & Bruggemann, 2014), which visualise the partial order of treatments across all outcomes (Rücker & Schwarzer, 2017), 
+#' as well as alternative methods for deriving a between-outcomes hierarchy, such as the spie chart method (Daly et al., 2020).
 #' 
 #' @details
 #' The R package \bold{mvnma} provides the following functions:
 #' \itemize{
 #' \item Function \code{\link{mvnma}} to perform a Bayesian multivariate
 #'   network meta-analysis.
+#' \item Function \code{\link{netsplit.mvnma}} to perform local checks for
+#'   inconsistency using the node-splitting method.
 #' \item Function \code{\link{mvrank}} to get outcome-specific treatment
-#'  rankings.
-#' \item Function \code{\link{vikor}} to rank treatments across all outcomes
-#'   using the VIKOR multi-criteria decision analysis method. Additionally,
-#'   the function evaluates the concrete conditions defined by the VIKOR method
-#'   and identifies the set of treatments that offer the best compromise
-#'   between benefits and harms across all outcomes.
+#'   rankings.
+#' \item Function \code{\link{vikor.mvrank}} to rank treatments across all
+#'   outcomes using the VIKOR multi-criteria decision analysis method.
+#'   Additionally, the function evaluates the concrete conditions defined by
+#'   the VIKOR method and identifies the set of treatments that offer the best
+#'   compromise between benefits and harms across all outcomes.
 #' \item Function \code{\link{forest.mvnma}} to visualize the results of the
 #'   mvNMA model in terms of treatment effect estimates.
+#' \item Function \code{\link{forest.netsplit.mvnma}} to visualize the results
+#'   of the node-splitting consistency checks.
 #' \item Function \code{\link{plot.mvrank}} to visualize per outcome ranking
 #'   results for any pair of outcomes.
 #' \item Function \code{\link{hasse.mvrank}} to visualize the partial order of
@@ -138,19 +129,29 @@
 #' \emph{Journal of Clinical Epidemiology},
 #' \bold{64}, 163--71
 #' 
+#' Dias S, Welton NJ, Caldwell DM, Ades AE (2010):
+#' Checking consistency in mixed treatment comparison meta-analysis.
+#' \emph{Statistics in Medicine},
+#' \bold{29}, 932--44
+#' 
+#' König J, Krahn U, Binder H (2013):
+#' Visualizing the flow of evidence in network meta-analysis and characterizing mixed treatment comparisons
+#' \emph{Statistics in Medicine},
+#' \bold{32}, 5414--29
+#' 
 #' @keywords package
 #'
 #' @importFrom R2jags jags
 #' @importFrom coda as.mcmc as.mcmc.list
-#' @importFrom meta forest gs metagen pairwise
-#' @importFrom netmeta hasse netposet rankogram heatplot
+#' @importFrom meta forest gs metagen pairwise backtransf
+#' @importFrom netmeta hasse netposet rankogram heatplot netsplit vikor
 #' @importFrom matrixStats colSds
-#' @importFrom dplyr %>% all_of any_of arrange bind_rows bind_cols desc distinct filter group_by mutate rename select pull n_distinct
+#' @importFrom dplyr %>% all_of any_of arrange bind_rows bind_cols desc distinct filter group_by mutate rename select pull n_distinct rename_with
 #' @importFrom magrittr %<>%
 #' @importFrom rlist list.cbind list.rbind
 #' @importFrom graphics text
-#' @importFrom stats complete.cases quantile relevel
-#' @importFrom utils combn packageVersion
+#' @importFrom stats complete.cases quantile relevel pnorm qnorm runif sd
+#' @importFrom utils combn packageVersion capture.output modifyList
 #' @importFrom ggplot2 ggplot aes geom_tile geom_line geom_point geom_text scale_fill_gradient guides guide_colourbar guide_legend labs xlab ylab ylim scale_y_discrete theme theme_void theme_minimal element_text element_blank
 #' @importFrom forcats fct_rev
 #' @export as.mcmc

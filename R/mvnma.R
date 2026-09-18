@@ -2,38 +2,47 @@
 #' single-correlation coefficient model
 #' 
 #' @description
-#' This function fits a Bayesian multivariate network meta-analysis model.
-#' Currently, the function can simultaneously pool up to five outcomes.
-#' Additionally, the studies to be included should be of maximum three arms.
+#' This function fits a Bayesian multivariate network meta-analysis model for
+#' two or more outcomes. It can also be used to fit a univariate network
+#' meta-analysis model. Additionally, the studies can have multiple arms.
 #' 
-#' @param \dots Either two to five pairwise objects or a single list with
-#'   two to five pairwise objects.
+#' @param \dots Either one or more pairwise objects or a single list with
+#'   one or more pairwise objects.
 #' @param reference.group A common reference treatment across all outcomes.
 #' @param outclab An optional argument with labels for each outcome. If NULL,
-#'   the each outcome is labelled as 'outcome_1', 'outcome_2' etc.
+#'   outcomes are labelled as 'outcome_1', 'outcome_2', etc.
 #' @param n.chains Number of Markov chains (default=4). 
 #' @param n.domain Integer indicating the position of the last outcome in the 
-#' first outcome domain (based on the order of the supplied pairwise objects). 
-#' Used with `method = "DM"` to restrict information sharing within outcome 
-#' domains. Ignored when `method = "standard"`. Default is `NULL`.
+#'   first outcome domain (based on the order of the supplied pairwise objects). 
+#'   Used with `method = "DM"` to restrict information sharing within outcome 
+#'   domains. Ignored when `method = "standard"`. Default is `NULL`.
+#' @param pooled A character string indicating whether the common effects
+#'   (\code{"common"}) or random effects (\code{"random"}, default) model should
+#'   be considered. Can be abbreviated.
 #' @param n.thin Thinning rate. Default is equal to
 #'   \code{max(1, floor((n.iter - n.burnin) / 1000))}.
 #' @param n.iter Number of iterations (default: 10000).
 #' @param n.burnin Number of iterations for burn-in (default: 2000).
 #' @param level The level used to calculate confidence intervals
 #'   for network estimates.
-#' @param scale.psi Values for the scale parameter(s) of the Half-Normal prior
+#' @param scale.psi Values for the scale parameter(s) of the half-normal prior
 #'   used for the heterogeneity parameters within each outcome. If NULL, all
 #'   values are set to 1. If specified, it should have a length equal to the
 #'   number of outcomes.
-#' @param lower.rho Lower bounds for the Uniform prior(s) used for the
-#'   correlation coefficient. If NULL all bounds are set to -1.
-#' @param upper.rho Upper bounds for the Uniform prior(s) used for the
-#'   correlation coefficient. If NULL all bounds are set to 1.
+#' @param psi.preset Prespecified value for the between-study heterogeneity
+#'   parameter (default: `NULL`). If specified, it must be a numeric vector
+#'   of length equal to the number of outcomes, which will overwrite arguments
+#'   `scale.psi` and `pooled`.
+#' @param lower.rho Lower bounds for the uniform prior(s) used for the
+#'   correlation coefficient. If NULL, all bounds are set to -1. Input to this
+#'   argument is ignored for a single outcome.
+#' @param upper.rho Upper bounds for the uniform prior(s) used for the
+#'   correlation coefficient. If NULL, all bounds are set to 1. Input to this
+#'   argument is ignored for a single outcome.
 #' @param method A character string specifying the method to be used for model
 #'   fitting. This can be either "standard" (default), referring to the
-#'   standard bivariate model, or "DM", referring to the bivariate model based
-#'   on the DuMouchel method. The argument can be abbreviated.
+#'   standard model, or "DM", referring to the DuMouchel model. The argument
+#'   can be abbreviated. Set to "standard" for a single outcome.
 #' @param varTE.missing Assumed (very large) variance for outcomes not reported
 #'   in a study. By default, the largest variance times 1000000 is used. This is
 #'   the same value used for argument \code{seTE.ignore} in
@@ -56,10 +65,11 @@
 #' an amalgam of within- and across-outcome correlations
 #' (Efthimiou et al., 2015) which is a generalisation of Riley et al. (2008).
 #' 
-#' The function \code{\link{mvnma}} expects two to five outcomes /
+#' The function \code{\link{mvnma}} expects one or more outcomes /
 #' \code{\link[meta]{pairwise}} objects. A common reference treatment across
 #' all outcomes is required to only show comparisons with the reference in
-#' forest plots.
+#' forest plots. For a single \code{\link[meta]{pairwise}} object, a univariate
+#' network meta-analysis is conducted.
 #' 
 #' The Bayesian multivariate network meta-analysis model fitted in the
 #' \bold{mvnma} package assumes uniform priors for the between-outcome
@@ -82,7 +92,8 @@
 #' constant relative treatment effects across outcomes and enables information 
 #' sharing (DuMouchel & Harris, 1983). This may improve precision but can
 #' introduce bias when outcomes from different domains (e.g., efficacy and
-#' safety) are analyzed jointly.
+#' safety) are analyzed jointly. Note, the DuMouchel model is not available for
+#' a single outcome.
 #' 
 #' The argument `n.domain` can be used to restrict information sharing to 
 #' predefined outcome domains. It indicates the position (based on the order 
@@ -99,9 +110,9 @@
 #'  
 #' @return
 #' The function returns an 'mvnma' object. This consists of the results for each
-#' outcome and the correlation coefficient estimates between the combined
-#' outcomes. The outcome-specific estimates are expressed in the format of a
-#' list (one for each outcome) which contains:
+#' outcome and, for more than one outcome, the correlation coefficient estimates
+#' between the combined outcomes. The outcome-specific estimates are expressed
+#' in the format of a list (one for each outcome) which contains:
 #' \itemize{
 #' \item The basic estimates (i.e. treatment vs. reference.group) for each
 #'   outcome.
@@ -225,433 +236,279 @@
 #'   cat(paste0("\nOutcome: ", i, "\n\n"))
 #'   print(round(exp(mvnma_all[[i]]$TE.random), 2))
 #' }
+#' 
+#' # Results for a univariate Bayesian network meta-analysis
+#' set.seed(1941)
+#' bnma1 <- mvnma(pw1,
+#'   reference.group = "Placebo", outclab = outcomes[1],
+#'   n.iter = 100, n.burnin = 20)
+#' bnma1
+#' 
+#' # Results for a univariate frequentist network meta-analysis
+#' nma1 <- netmeta(pw1, reference.group = "Placebo", common = FALSE)
+#' print(nma1, backtransf = FALSE)
 #' }
 #' 
 #' @export mvnma
 
 mvnma <- function(...,
-                  reference.group = NULL, outclab = NULL,   
+                  #
+                  method = "standard",
+                  pooled = "random",
                   n.domain = NULL,
+                  #
+                  reference.group = NULL, outclab = NULL,   
+                  #
                   n.chains = 4, n.iter = 10000, 
                   n.burnin = 2000, 
                   n.thin = max(1, floor((n.iter - n.burnin) / 1000)), 
+                  #
                   level = gs("level.ma"),
+                  #
                   scale.psi,
+                  psi.preset = NULL,
                   lower.rho, upper.rho,
-                  method = "standard",
+                  #
                   varTE.missing = NULL,
                   quiet = FALSE) {
   
   # Get rid of warning "no visible binding for global variable"
   studlab <- NULL
+  
+  
   #
+  #
+  # (1) Extract pairwise() objects
+  #
+  #
+  
   args <- list(...)
   #
-  n.out <- length(args)
-  #
-  chknumeric(n.domain, min = 1, max = n.out)
-  n.dom <- n.domain
-  n.i <- seq_len(n.out)
-  #
-  if (n.out == 1) {
-    if (inherits(args[[1]], "pairwise"))
-      stop("Provide between two and five pairwise objects.",
-           call. = FALSE)
-    #
+  if (length(args) == 1 && !(inherits(args[[1]], "pairwise"))) {
     if (!is.list(args[[1]]))
-      stop("All elements of argument '...' must be of classes ",
-           "'netmeta', 'netcomb', or 'discomb'.",
+      stop("All elements of argument '...' must be of class 'pairwise'.",
            call. = FALSE)
     #
-    if (!inherits(args[[1]], "pairwise")) {
-      n.out <- length(args[[1]])
-      n.i <- seq_len(n.out)
-      #
-      args2 <- list()
-      for (i in n.i)
-        args2[[i]] <- args[[1]][[i]]
-    }
+    n.args <- length(args[[1]])
+    #
+    args2 <- vector("list", n.args)
+    #
+    for (i in seq_len(n.args))
+      args2[[i]] <- args[[1]][[i]]
+    #
     args <- args2
   }
+  #
+  n.out <- length(args)
+  n.rho <- choose(n.out, 2)
+  #
+  if (n.out < 1)
+    stop("Provide one or more pairwise objects.",
+         call. = FALSE)
   #  
-  for (i in n.i) {
+  for (i in seq_len(n.out)) {
     if (!inherits(args[[i]], "pairwise"))
       stop("All elements of argument '...' must be of class ",
            "'pairwise'.",
            call. = FALSE)
   }
   #
-  if (n.out < 2 | n.out > 5)
-    stop("Provide between two and five pairwise objects.",
-         call. = FALSE)
+  sm <- vector("character", n.out)
+  reference.groups <- vector("character", n.out)
+  trts_list <- vector("list", n.out)
   #
-  data <- mvdata(args)
+  for (i in seq_len(n.out)) {
+    sm[i] <- attr(args[[i]], "sm")
+    reference.groups[i] <- attr(args[[i]], "reference.group")
+    trts_list[[i]] <- sort(unique(c(args[[i]]$treat1, args[[i]]$treat2)))
+  }
   
-  trts.list <- data$trts.list
+  
   #
-  chknull(reference.group)
-  chklevel(level)
-  chklogical(quiet)
   #
+  # (2) Check and set additional arguments
+  #
+  #
+  
   method <- setchar(method, c("standard", "DM"))
+  chkchar(method, length = 1)
   #
-  # Extract number of outcomes
+  if (n.out == 1 & method == "DM") {
+    warning("Argument 'method' set to \"standard\" for single outcome.",
+            call. = FALSE)
+    method <- "standard"
+  }
   #
-  n.out <- ncol(data$var %>% select(-studlab))
-  n.cor <- choose(n.out, 2)
+  pooled <- setchar(pooled, c("random", "common"))
   #
-  miss.lower <- missing(lower.rho)
-  miss.upper <- missing(upper.rho)
-  miss.scale.psi <- missing(scale.psi)
+  chknumeric(n.domain, min = 1, max = n.out)
   #
-  if (!miss.lower)
-    chknumeric(lower.rho, min = -1, max = 1, length = n.cor, NA.ok = FALSE)
-  #
-  if (!miss.upper)
-    chknumeric(upper.rho, min = -1, max = 1, length = n.cor, NA.ok = FALSE)
-  #
-  if (!miss.lower & !miss.upper) {
-    if (any(lower.rho >= upper.rho))
-      stop("Values for argument 'lower.rho' must be smaller than values for ",
-           "argument 'upper.rho'.",
+  if (is.null(reference.group)) {
+    if (length(unique(reference.groups)) == 1)
+      reference.group <- unique(reference.groups)
+    else
+      stop("Argument 'reference.group' must be specified as it differs in ",
+           "pairwise() objects:\n  ",
+           paste0("'", reference.groups, "'", collapse = ", "),
            call. = FALSE)
   }
-  
-  #
-  if (!miss.scale.psi)
-    chknumeric(scale.psi,zero = TRUE, min = 0, length = n.out, NA.ok = FALSE)
-  
-  # Create bounds for correlation prior
-  #
-  if (miss.lower)
-    lower.rho1 <- -1
-  else
-    lower.rho1 <- lower.rho[1]
-  #
-  if (miss.upper)
-    upper.rho1 <- 1
-  else
-    upper.rho1 <- upper.rho[1]
-  #
-  if (n.out >= 3) {
-    if (miss.lower) {
-      lower.rho2 <- -1
-      lower.rho3 <- -1
-    }
-    else {
-      lower.rho2 <- lower.rho[2]
-      lower.rho3 <- lower.rho[3]
-    }
-    #
-    if (miss.upper) {
-      upper.rho2 <- 1
-      upper.rho3 <- 1
-    }
-    else {
-      upper.rho2 <- upper.rho[2]
-      upper.rho3 <- upper.rho[3]
-    }
-  }
-  #
-  if (n.out >= 4) {
-    if (miss.lower) {
-      lower.rho4 <- -1
-      lower.rho5 <- -1
-      lower.rho6 <- -1
-    }
-    else {
-      lower.rho4 <- lower.rho[4]
-      lower.rho5 <- lower.rho[5]
-      lower.rho6 <- lower.rho[6]
-    }
-    #
-    if (miss.upper) {
-      upper.rho4 <- 1
-      upper.rho5 <- 1
-      upper.rho6 <- 1
-    }
-    else {
-      upper.rho4 <- upper.rho[4]
-      upper.rho5 <- upper.rho[5]
-      upper.rho6 <- upper.rho[6]
-    }
-  }
-  #
-  if (n.out >= 5) {
-    if (miss.lower) {
-      lower.rho7  <- -1
-      lower.rho8  <- -1
-      lower.rho9  <- -1
-      lower.rho10 <- -1
-    }
-    else {
-      lower.rho7  <- lower.rho[7]
-      lower.rho8  <- lower.rho[8]
-      lower.rho9  <- lower.rho[9]
-      lower.rho10 <- lower.rho[10]
-    }
-    #
-    if (miss.upper) {
-      upper.rho7  <- 1
-      upper.rho8  <- 1
-      upper.rho9  <- 1
-      upper.rho10 <- 1
-    }
-    else {
-      upper.rho7  <- upper.rho[7]
-      upper.rho8  <- upper.rho[8]
-      upper.rho9  <- upper.rho[9]
-      upper.rho10 <- upper.rho[10]
-    }
-  }
-  
-  # Create values for the scale and precision of parameter psi
-  
-  if (miss.scale.psi) {
-    scale.psi1 <- 1
-    scale.psi2 <- 1
-  }  
   else {
-    scale.psi1 <- scale.psi[1]
-    scale.psi2 <- scale.psi[2]
+    reference.group <-
+      setchar(reference.group, sort(unique(unlist(trts_list))))
   }
-  
-  prec.psi1 <- 1 / scale.psi1^2
-  
-  prec.psi2 <- 1 / scale.psi2^2
-  
-  if (n.out >= 3) {
-    if (miss.scale.psi)
-      scale.psi3 <- 1
-    else
-      scale.psi3 <- scale.psi[3]
-    #
-    prec.psi3 <- 1 / scale.psi3^2
-  }
-  
-  if (n.out >= 4) {
-    if (miss.scale.psi)
-      scale.psi4 <- 1
-    else
-      scale.psi4 <- scale.psi[4]
-    #
-    prec.psi4 <- 1 / scale.psi4^2
-  }
-  
-  if (n.out >= 5) {
-    if (miss.scale.psi)
-      scale.psi5 <- 1
-    else
-      scale.psi5 <- scale.psi[5]
-    #
-    prec.psi5 <- 1 / scale.psi5^2
-  }
-  
-  # Create outcome labels if not provided
   #
   if (is.null(outclab))
     outclab <- paste("outcome", seq_len(n.out), sep = "_")  
   else if (length(outclab) != n.out)
     stop("Please provide labels for all outcomes.")
-  
-  trts <- data$trts
   #
-  ref <- unname(which(trts == reference.group))  
-  
-  multiarm <- ncol(data$T) > 2
+  chknumeric(n.chains, min = 1, length = 1)
+  chknumeric(n.iter, min = 1, length = 1)
+  chknumeric(n.burnin, min = 1, length = 1)
+  chknumeric(n.thin, min = 1, length = 1)
   #
-  dat_var <- data$var %>% filter(!duplicated(studlab))
+  chklevel(level)
+  #
+  if (missing(scale.psi))
+    scale.psi <- rep_len(1, n.out)
+  else
+    chknumeric(scale.psi, min = 0, zero = TRUE, length = n.out, NA.ok = FALSE)
+  #
+  if (pooled == "random")
+    prec.psi <- 1 / scale.psi^2
+  else
+    prec.psi <- NULL
+  #
+  if (!is.null(psi.preset)) {
+    chknumeric(psi.preset, min = 0, zero = FALSE, length = n.out, NA.ok = FALSE)
+    prec.psi <- NULL
+  }
+  #
+  miss.lower.rho <- missing(lower.rho)
+  miss.upper.rho <- missing(upper.rho)
+  #
+  if (miss.lower.rho) {
+    if (n.out == 1)
+      lower.rho <- NULL
+    else
+      lower.rho <- rep_len(-1, n.rho)
+  }
+  else {
+    if (n.out == 1) {
+      warning("Input to argument 'lower.rho' ignored for a single outcome.",
+              call. = FALSE)
+      lower.rho <- NULL
+    }
+    else
+      chknumeric(lower.rho, min = -1, max = 1, length = n.rho, NA.ok = FALSE)
+  }
+  #
+  if (miss.upper.rho) {
+    if (n.out == 1)
+      upper.rho <- NULL
+    else
+      upper.rho <- rep_len(1, n.rho)
+  }
+  else {
+    if (n.out == 1) {
+      warning("Input to argument 'upper.rho' ignored for a single outcome.",
+              call. = FALSE)
+      upper.rho <- NULL
+    }
+    else
+      chknumeric(upper.rho, min = -1, max = 1, length = n.rho, NA.ok = FALSE)
+  }
+  #
+  if (!miss.lower.rho & !miss.upper.rho & n.out > 1) {
+    if (any(lower.rho >= upper.rho))
+      stop("Values for argument 'lower.rho' must be smaller than values for ",
+           "argument 'upper.rho'.",
+           call. = FALSE)
+  }
+  #
+  if (!is.null(varTE.missing))
+    chknumeric(varTE.missing, min = 0, zero = TRUE, length = 1)
+  #
+  chklogical(quiet)
+  
+  
+  #
+  #
+  # (3) Create list with JAGS input
+  #
+  #
+  
+  dat <- mvdata(args)
+  #
+  # Check number of extracted outcomes
+  #
+  if (n.out != ncol(dat$var %>% select(-studlab)))
+    stop("Number of variances and outcomes differ.", call. = FALSE)
+  #
+  trts.list <- dat$trts.list
+  trts <- dat$trts
+  #
+  id_reference.group <- unname(which(trts == reference.group))
+  #
+  dat_var <- dat$var %>% filter(!duplicated(studlab))
   rownames(dat_var) <- dat_var$studlab
   dat_var %<>% select(-studlab)
   #
   control_matrix <- 1L * !is.na(dat_var)
   #
+  var_matrix <- as.matrix(dat$var %>% select(-studlab))
+  #
   if (is.null(varTE.missing)) {
-    varTE.missing <-
-      1000^2 * max(data$var %>% select(-studlab), na.rm = TRUE)
+    varTE.missing <- 1000^2 * max(var_matrix, na.rm = TRUE)
   }
   else {
-    chknumeric(varTE.missing, min = 0, zero = TRUE, length = 1)
-    #
-    if (varTE.missing < max(data$var %>% select(-studlab), na.rm = TRUE))
+    if (varTE.missing < max(dat$var %>% select(-studlab), na.rm = TRUE))
       stop("The value provided for argument 'varTE.missing' must be larger ",
            "than the largest available variance in the dataset.",
-           .call = FALSE)
+           call. = FALSE)
   }
   #
-  data$var[is.na(data$var)] <- varTE.missing
+  var_matrix[is.na(var_matrix)] <- varTE.missing
+  #
+  dat_jags <- list(
+    y = dat$y,
+    #
+    varmat = var_matrix,
+    contmat = if (n.out > 1) control_matrix else NULL,
+    trtmat = dat$treatments,
+    ref = id_reference.group,
+    #
+    n.studies = dat$n.studies,
+    n = dat$n,
+    #
+    prec.psi = prec.psi, lower.rho = lower.rho, upper.rho = upper.rho
+  )
   
-  run.data <- list(
-    y = data$y,
-    #
-    var1 = data$var$var1,
-    var2 = data$var$var2,
-    var3 = NA,
-    var4 = NA,
-    var5 = NA,
-    #
-    control = control_matrix,
-    #
-    ref = ref,
-    #
-    k = data$k,
-    k2 = data$k2,
-    n = data$n,
-    #
-    treat1 = data$T[, 1], treat2 = data$T[, 2], treat3 = NA,
-    #
-    prec.psi1 = prec.psi1, prec.psi2 = prec.psi2,
-    prec.psi3 = NA, prec.psi4 = NA, prec.psi5 = NA,
-    #
-    lower.rho1 = lower.rho1, upper.rho1 = upper.rho1,
-    lower.rho2 = NA, upper.rho2 = NA,
-    lower.rho3 = NA, upper.rho3 = NA,
-    lower.rho4 = NA, upper.rho4 = NA,
-    lower.rho5 = NA, upper.rho5 = NA,
-    lower.rho6 = NA, upper.rho6 = NA,
-    lower.rho7 = NA, upper.rho7 = NA,
-    lower.rho8 = NA, upper.rho8 = NA,
-    lower.rho9 = NA, upper.rho9 = NA,
-    lower.rho10 = NA, upper.rho10 = NA)
+  dat_jags <- Filter(Negate(is.null), dat_jags)
+  
   #
-  if (n.out >= 3) {
-    run.data$var3 <- data$var$var3
-    #
-    run.data$prec.psi3 <- prec.psi3
-    #
-    run.data$lower.rho2 <- lower.rho2
-    run.data$lower.rho3 <- lower.rho3
-    #
-    run.data$upper.rho2 <- upper.rho2
-    run.data$upper.rho3 <- upper.rho3
-  }
   #
-  if (n.out >= 4) {
-    run.data$var4 <- data$var$var4
-    #
-    run.data$prec.psi4 <- prec.psi4
-    #
-    run.data$lower.rho4 <- lower.rho4
-    run.data$lower.rho5 <- lower.rho5
-    run.data$lower.rho6 <- lower.rho6
-    #
-    run.data$upper.rho4 <- upper.rho4
-    run.data$upper.rho5 <- upper.rho5
-    run.data$upper.rho6 <- upper.rho6
-  }
+  # (3) Run Bayesian analysis
   #
-  if (n.out >= 5) {
-    run.data$var5 <- data$var$var5
-    #
-    run.data$prec.psi5 <- prec.psi5
-    #
-    run.data$lower.rho7 <- lower.rho7
-    run.data$lower.rho8 <- lower.rho8
-    run.data$lower.rho9 <- lower.rho9
-    run.data$lower.rho10 <- lower.rho10
-    #
-    run.data$upper.rho7 <- upper.rho7
-    run.data$upper.rho8 <- upper.rho8
-    run.data$upper.rho9 <- upper.rho9
-    run.data$upper.rho10 <- upper.rho10
-  }
   #
-  if (multiarm)
-    run.data$treat3 <- data$T[, 3]
-  else
-    run.data$treat3 <- NULL
-  #
-  if (n.out == 2) {
-    run.data$var3 <- run.data$var4 <- run.data$var5 <- NULL
-    #
-    run.data$prec.psi3 <- run.data$prec.psi4 <- run.data$prec.psi5 <- NULL
-    #
-    run.data$lower.rho2 <- run.data$lower.rho3 <- run.data$lower.rho4 <-
-      run.data$lower.rho5 <- run.data$lower.rho6 <- run.data$lower.rho7 <-
-      run.data$lower.rho8 <- run.data$lower.rho9 <- run.data$lower.rho10 <-
-      NULL
-    #
-    run.data$upper.rho2 <- run.data$upper.rho3 <- run.data$upper.rho4 <-
-      run.data$upper.rho5 <- run.data$upper.rho6 <- run.data$upper.rho7 <-
-      run.data$upper.rho8 <- run.data$upper.rho9 <- run.data$upper.rho10 <-
-      NULL
-    #
-    params <- c("d1", "d2", 
-                "psi1", "psi2",
-                "rho1")
-    #
-    model.code <- mvnma_code(n.out, method, multiarm, n.dom)
-  }
-  #
-  else if (n.out == 3) {
-    run.data$var4 <- run.data$var5 <- NULL
-    #
-    run.data$prec.psi4 <- run.data$prec.psi5 <- NULL
-    #
-    run.data$lower.rho4 <- run.data$lower.rho5 <- run.data$lower.rho6 <-
-      run.data$lower.rho7 <- run.data$lower.rho8 <- run.data$lower.rho9 <-
-      run.data$lower.rho10 <- NULL
-    #
-    run.data$upper.rho4 <- run.data$upper.rho5 <- run.data$upper.rho6 <-
-      run.data$upper.rho7 <- run.data$upper.rho8 <- run.data$upper.rho9 <-
-      run.data$upper.rho10 <- NULL
-    #
-    params <- c("d1", "d2", "d3", 
-                "psi1", "psi2", "psi3",
-                "rho1", "rho2", "rho3")
-    #
-    model.code <- mvnma_code(n.out, method, multiarm, n.dom)
-  }
-  #
-  else if (n.out == 4) {
-    run.data$var5 <- NULL
-    #
-    run.data$prec.psi5 <- NULL
-    #
-    run.data$lower.rho7 <- run.data$lower.rho8 <- run.data$lower.rho9 <-
-      run.data$lower.rho10 <- NULL
-    #
-    run.data$upper.rho7 <- run.data$upper.rho8 <- run.data$upper.rho9 <-
-      run.data$upper.rho10 <- NULL
-    #
-    params <- c("d1", "d2", "d3", "d4", 
-                "psi1", "psi2", "psi3", "psi4",
-                "rho1", "rho2", "rho3", "rho4", "rho5", "rho6")
-    #
-    model.code <- mvnma_code(n.out, method, multiarm, n.dom)
-  }
-  #
-  else if (n.out == 5) {
-    params <- c("d1", "d2", "d3", "d4", "d5",
-                "psi1", "psi2", "psi3", "psi4", "psi5",
-                "rho1", "rho2", "rho3", "rho4", "rho5", "rho6",
-                "rho7", "rho8", "rho9", "rho10")
-    #
-    model.code <- mvnma_code(n.out, method, multiarm, n.dom)
-  }
+  
+  params <- c(paste0("d", seq_len(n.out)), "psi", if (n.out > 1) "rho")
   #
   if (method == "DM") {
-    if (is.null(n.domain)) {
-      params <- c(params, "sigma")  
-    }
-    else{
-      params <- c(params, "sigma1", "sigma2") 
-    }
+    if (is.null(n.domain))
+      params <- c(params, "sigma")
+    else
+      params <- c(params, c("sigma1", "sigma2"))
   }
   #
-  if (!multiarm)
-    run.data$k <- NULL
-  
-  
+  model.code <-
+    mvnma_code(n.out, dat$arms, method, n.domain, psi.preset, pooled)
   #
-  # Run Bayesian analysis
-  #
-  
   text_conn <- textConnection(model.code)
   on.exit(close(text_conn), add = TRUE)
   #
   fit <- jags(
-    data = run.data,
+    data = dat_jags,
     inits = NULL,
     #
     parameters.to.save = params,
@@ -664,9 +521,10 @@ mvnma <- function(...,
     model.file = text_conn,
     quiet = quiet)
   #
-  samples <- fit$BUGSoutput$sims.list
-  colnames(samples$d1) <- trts
-  colnames(samples$d2) <- trts
+  # Column names set to treatment names
+  #
+  for (i in seq_len(n.out))
+    colnames(fit$BUGSoutput$sims.list[[paste0("d", i)]]) <- trts
   #
   # Manipulate the results and create suitable datasets
   #
@@ -681,15 +539,25 @@ mvnma <- function(...,
   #
   attr(res, "outcomes") <- outclab
   attr(res, "trts") <- trts
-  attr(res,"n.domain") <- n.domain
+  attr(res, "n.domain") <- n.domain
   attr(res, "reference.group") <- reference.group
   attr(res, "level") <- level
-  attr(res, "sm") <- attr(data, "sm")
+  attr(res, "sm") <- attr(dat, "sm")
   attr(res, "method.model") <- method
   attr(res, "model.code") <- model.code
   attr(res, "fit") <- fit
   attr(res, "params") <- params
   attr(res, "varTE.missing") <- varTE.missing
+  # new
+  attr(res, "scale.psi") <- scale.psi
+  attr(res,"pair.objects") <- args
+  attr(res, "n.chains") <- n.chains
+  attr(res, "n.iter") <- n.iter
+  attr(res,"n.burnin") <- n.burnin
+  attr(res,"lower.rho") <- lower.rho
+  attr(res,"upper.rho") <- upper.rho
+  attr(res,"n.domain") <- n.domain
+  #
   #
   class(res) <- "mvnma"
   #
@@ -716,7 +584,7 @@ print.mvnma <- function(x,
   level <- attr(x, "level")
   reference.group <- attr(x, "reference.group")
   method <- attr(x, "method")
-  n.domain <- attr(x,"n.domain")
+  n.domain <- attr(x, "n.domain")
   #
   ci.lab <- paste0(round(100 * level, 1), "%-CI")
   #
@@ -727,13 +595,14 @@ print.mvnma <- function(x,
       x <- x[names(x) != "sigma"]
     }
     else {
-      x <- x[!(names(x) %in% c("sigma1","sigma2"))]
+      x <- x[!(names(x) %in% c("sigma1", "sigma2"))]
     }
   }
+  #
   nam <- names(x)
   
   # Get rid of warning "no visible binding for global variable"
-  lower <- upper <- psi <- NULL
+  lower <- upper <- NULL
   #
   for (i in seq_along(nam)) {
     cat(paste0(if (i > 1) "\n" else "", "Outcome: ", nam[i], "\n\n"))

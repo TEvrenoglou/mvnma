@@ -29,15 +29,15 @@ outcome-specific treatment hierarchies obtained in terms of the
 probabilistic ranking metrics:
 \itemize{
 \item Surface Under the Cumulative Ranking curve (SUCRA), or
-\item probability of best value (pBV).
+\item probability of being best (pbest).
 }
 }
 \details{
 The spie chart is a modified pie chart in which each sector corresponds to
 a treatment and its radius is proportional to a ranking metric, so that
 sector area encodes treatment performance (Daly et al., 2020). This function
-constructs one spie chart per outcome using SUCRA or probability of best
-values (pBV) metrics, where each metric determines the radius of the
+constructs one spie chart per outcome using SUCRA or probability of being
+best (pbest) metrics, where each metric determines the radius of the
 corresponding sector.
 
 An amalgamated treatment hierarchy across outcomes is then derived by
